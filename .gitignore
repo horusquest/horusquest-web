@@ -141,3 +141,23 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
+
+# === OraQuest: dev & backup files (not needed to run the page) ===
+*.bak-*
+OraQuest.html.bak*
+OraQuest.TXT
+_serve.js
+server.js
+test.html
+TEST_RESULTS.md
+package.json
+.claude/
+docs/
+tests/
+tools/
+
+# Unused large assets (page only uses assets/ora.png)
+assets/ora-clean.png
+assets/ora-360.png
+assets/ora-512.png
+assets/ora-360.b64.txt
