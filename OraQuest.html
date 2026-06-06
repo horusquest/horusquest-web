@@ -1319,6 +1319,47 @@ const GAME_GUIDE = {
     ages:  { en:'Readers of all ages', es:'Lectores de todas las edades', fr:'Lecteurs de tous âges' }
   }
 };
+// Plain explanation of how Quiz points are calculated. These numbers mirror
+// calcQuestionScore(); update both together if scoring ever changes.
+const SCORING_HTML = {
+  en: `<p>Scoring rewards both knowledge and consistency, never spending. Here is exactly how points are calculated for a correct answer in a Quiz:</p>
+       <ul class="list-disc pl-5 space-y-1">
+         <li><strong>Base:</strong> +100 points per correct answer.</li>
+         <li><strong>Streak bonus:</strong> +10 for each correct answer in a row, up to a maximum of +50.</li>
+         <li><strong>Time bonus:</strong> up to +30, only if the optional timer is switched on (the faster you answer, the more you earn).</li>
+         <li><strong>Difficulty multiplier:</strong> the total is multiplied by 1.0 (easy), 1.25 (medium) or 1.5 (hard).</li>
+       </ul>
+       <p>A wrong answer simply scores 0 and resets the streak — there is no penalty. Saving a score to a leaderboard is optional and uses a short anonymous alias.</p>`,
+  es: `<p>La puntuación premia el conocimiento y la constancia, nunca el gasto. Así se calculan exactamente los puntos de una respuesta correcta en un Quiz:</p>
+       <ul class="list-disc pl-5 space-y-1">
+         <li><strong>Base:</strong> +100 puntos por respuesta correcta.</li>
+         <li><strong>Bonus por racha:</strong> +10 por cada acierto seguido, hasta un máximo de +50.</li>
+         <li><strong>Bonus por tiempo:</strong> hasta +30, solo si activas el temporizador opcional (cuanto antes respondas, más ganas).</li>
+         <li><strong>Multiplicador de dificultad:</strong> el total se multiplica por 1.0 (fácil), 1.25 (media) o 1.5 (difícil).</li>
+       </ul>
+       <p>Una respuesta incorrecta simplemente suma 0 y reinicia la racha: no hay penalización. Guardar una puntuación en una clasificación es opcional y usa un alias corto y anónimo.</p>`,
+  fr: `<p>Le score récompense le savoir et la régularité, jamais la dépense. Voici exactement comment les points sont calculés pour une bonne réponse dans un Quiz :</p>
+       <ul class="list-disc pl-5 space-y-1">
+         <li><strong>Base :</strong> +100 points par bonne réponse.</li>
+         <li><strong>Bonus de série :</strong> +10 par bonne réponse consécutive, jusqu’à +50 maximum.</li>
+         <li><strong>Bonus de temps :</strong> jusqu’à +30, uniquement si le minuteur optionnel est activé (plus tu réponds vite, plus tu gagnes).</li>
+         <li><strong>Multiplicateur de difficulté :</strong> le total est multiplié par 1.0 (facile), 1.25 (moyen) ou 1.5 (difficile).</li>
+       </ul>
+       <p>Une mauvaise réponse vaut simplement 0 et remet la série à zéro : aucune pénalité. Enregistrer un score dans un classement est facultatif et utilise un pseudo court et anonyme.</p>`
+};
+// Practical "how to use HorusQuest" guidance for families and teachers.
+const FAMILIES_USE_HTML = {
+  athome: {
+    en: `<p>Pick a short Daily Quest or a 10-question Quiz and play together on one device. Let children read the explanation after each answer — that is where the learning happens. Choose an age group that fits, switch the timer off for a calmer pace, and treat a wrong answer as a fun fact rather than a mistake.</p>`,
+    es: `<p>Elige un Reto Diario corto o un Quiz de 10 preguntas y jugad juntos en un mismo dispositivo. Deja que los niños lean la explicación después de cada respuesta: ahí ocurre el aprendizaje. Escoge un grupo de edad adecuado, desactiva el temporizador para un ritmo tranquilo y trata el error como un dato curioso, no como un fallo.</p>`,
+    fr: `<p>Choisis un court Défi du jour ou un Quiz de 10 questions et jouez ensemble sur un seul appareil. Laisse les enfants lire l’explication après chaque réponse : c’est là que se fait l’apprentissage. Choisis une tranche d’âge adaptée, désactive le minuteur pour un rythme plus calme et traite une erreur comme une anecdote, pas comme une faute.</p>`
+  },
+  inclass: {
+    en: `<p>Create a team and share the join code so a class can play the same challenge. Use categories to match a lesson (Science, Geography, History and more), project a round for the whole group, or let pairs play on shared devices. There is no public chat and no real names are needed, so it stays manageable in a classroom.</p>`,
+    es: `<p>Crea un equipo y comparte el código para que una clase juegue el mismo reto. Usa las categorías para encajar con una lección (Ciencia, Geografía, Historia y más), proyecta una ronda para todo el grupo o deja que jueguen por parejas en dispositivos compartidos. No hay chat público ni se necesitan nombres reales, así que es fácil de gestionar en clase.</p>`,
+    fr: `<p>Crée une équipe et partage le code pour qu’une classe joue le même défi. Utilise les catégories pour coller à une leçon (Sciences, Géographie, Histoire, etc.), projette une manche pour tout le groupe ou laisse les élèves jouer en binômes sur des appareils partagés. Il n’y a pas de chat public ni besoin de vrais noms : c’est facile à gérer en classe.</p>`
+  }
+};
 
 const HOME_SEO_HTML = {
   en: `
@@ -7435,6 +7476,12 @@ function viewOraQuestHome() {
 
     ${AdSlot()}
 
+    <!-- How scoring works -->
+    <section class="max-w-4xl mx-auto px-4 sm:px-6 pb-16">
+      <h2 class="font-display text-3xl font-bold">${pick({en:'How scoring works',es:'Cómo funciona la puntuación',fr:'Comment fonctionne le score'})}</h2>
+      <div class="mt-5 card p-6 md:p-8 space-y-3 text-slate-700 leading-relaxed">${pick(SCORING_HTML)}</div>
+    </section>
+
     <!-- SEO content -->
     <section class="max-w-4xl mx-auto px-4 sm:px-6 pb-16">
       <h2 class="font-display text-3xl font-bold">${t('seoTitle')}</h2>
@@ -8176,6 +8223,24 @@ function viewParents() {
           <a href="${pathFor('privacy', state.lang)}" onclick="navGo(event,'privacy')" class="text-brand-violet hover:underline focus-ring">${t('footerPrivacy')} →</a>
           <a href="${pathFor('cookies', state.lang)}" onclick="navGo(event,'cookies')" class="text-brand-violet hover:underline focus-ring">${t('footerCookies')} →</a>
         </div>
+      </section>
+      <section class="mt-6 grid md:grid-cols-2 gap-4" aria-label="${pick({en:'Using HorusQuest',es:'Usar HorusQuest',fr:'Utiliser HorusQuest'})}">
+        <div class="card p-6">
+          <h2 class="font-display text-lg font-bold text-slate-900">🏠 ${pick({en:'At home',es:'En casa',fr:'À la maison'})}</h2>
+          <div class="mt-2 text-sm text-slate-600 leading-relaxed">${pick(FAMILIES_USE_HTML.athome)}</div>
+        </div>
+        <div class="card p-6">
+          <h2 class="font-display text-lg font-bold text-slate-900">🏫 ${pick({en:'In the classroom',es:'En clase',fr:'En classe'})}</h2>
+          <div class="mt-2 text-sm text-slate-600 leading-relaxed">${pick(FAMILIES_USE_HTML.inclass)}</div>
+        </div>
+      </section>
+      <section class="mt-6 card p-6 md:p-8" aria-labelledby="families-aliases-title">
+        <h2 id="families-aliases-title" class="font-display text-lg font-bold text-slate-900">${pick({en:'How aliases and scores work',es:'Cómo funcionan los alias y las puntuaciones',fr:'Comment fonctionnent les pseudos et les scores'})}</h2>
+        <p class="mt-2 text-sm text-slate-600 leading-relaxed">${pick({
+          en:'Playing never requires a name. If you choose to save a score, the game uses a short alias of a few letters and numbers (for example "ORA7") — not a real name, email or photo. Scores are stored in the browser on your device. Points reward correct answers, answer streaks and (optionally) speed; you can read the exact formula on the OraQuest page under "How scoring works".',
+          es:'Jugar nunca requiere un nombre. Si decides guardar una puntuación, el juego usa un alias corto de unas pocas letras y números (por ejemplo "ORA7"), no un nombre real, correo ni foto. Las puntuaciones se guardan en el navegador de tu dispositivo. Los puntos premian los aciertos, las rachas y (opcionalmente) la rapidez; puedes leer la fórmula exacta en la página de OraQuest en "Cómo funciona la puntuación".',
+          fr:'Jouer n’exige jamais de nom. Si tu choisis d’enregistrer un score, le jeu utilise un pseudo court de quelques lettres et chiffres (par exemple « ORA7 »), pas un vrai nom, e-mail ou photo. Les scores sont stockés dans le navigateur de ton appareil. Les points récompensent les bonnes réponses, les séries et (en option) la rapidité ; tu peux lire la formule exacte sur la page OraQuest, à « Comment fonctionne le score ».'
+        })}</p>
       </section>
       ${AdSlot()}
     </main>
