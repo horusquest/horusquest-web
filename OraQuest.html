@@ -5117,22 +5117,22 @@ const ANIMALS = [
 const AFFILIATE_PRODUCTS = [
   { id:1, emoji:'📖', en:{title:'National Geographic Kids: Animal Encyclopedia', desc:'Stunning photos and fascinating facts about animals from around the world.', age:'8–13', merchant:'Amazon'},
     es:{title:'Enciclopedia de animales National Geographic Kids', desc:'Fotos espectaculares y datos fascinantes sobre animales del mundo.', age:'8–13', merchant:'Amazon'},
-    fr:{title:'National Geographic Kids : Encyclopédie des animaux', desc:'Photos splendides et anecdotes fascinantes sur les animaux du monde entier.', age:'8–13', merchant:'Amazon'}, url:'https://example.com/affiliate/1' },
+    fr:{title:'National Geographic Kids : Encyclopédie des animaux', desc:'Photos splendides et anecdotes fascinantes sur les animaux du monde entier.', age:'8–13', merchant:'Amazon'}, url:'' },
   { id:2, emoji:'🧪', en:{title:'STEM Science Experiment Kit', desc:'Over 50 hands-on experiments that make science fun for curious minds.', age:'8–12', merchant:'Amazon'},
     es:{title:'Kit de experimentos STEM de ciencia', desc:'Más de 50 experimentos prácticos que hacen la ciencia divertida.', age:'8–12', merchant:'Amazon'},
-    fr:{title:'Kit d\'expériences scientifiques STEM', desc:'Plus de 50 expériences pratiques qui rendent la science amusante pour les curieux.', age:'8–12', merchant:'Amazon'}, url:'https://example.com/affiliate/2' },
+    fr:{title:'Kit d\'expériences scientifiques STEM', desc:'Plus de 50 expériences pratiques qui rendent la science amusante pour les curieux.', age:'8–12', merchant:'Amazon'}, url:'' },
   { id:3, emoji:'🗺️', en:{title:'World Geography Puzzle Map', desc:'Learn countries, capitals and landmarks through interactive puzzle play.', age:'6–12', merchant:'Amazon'},
     es:{title:'Mapa-puzle de geografía mundial', desc:'Aprende países, capitales y monumentos con un puzle interactivo.', age:'6–12', merchant:'Amazon'},
-    fr:{title:'Puzzle carte du monde', desc:'Apprends pays, capitales et monuments grâce à un puzzle interactif.', age:'6–12', merchant:'Amazon'}, url:'https://example.com/affiliate/3' },
+    fr:{title:'Puzzle carte du monde', desc:'Apprends pays, capitales et monuments grâce à un puzzle interactif.', age:'6–12', merchant:'Amazon'}, url:'' },
   { id:4, emoji:'🎲', en:{title:'Family Quiz Night Board Game', desc:'Hundreds of trivia questions for the whole family to enjoy together.', age:'Family', merchant:'Amazon'},
     es:{title:'Juego de mesa para noche de quiz en familia', desc:'Cientos de preguntas de trivia para disfrutar en familia.', age:'Familia', merchant:'Amazon'},
-    fr:{title:'Jeu de société : soirée quiz en famille', desc:'Des centaines de questions de trivia pour s\'amuser en famille.', age:'Famille', merchant:'Amazon'}, url:'https://example.com/affiliate/4' },
+    fr:{title:'Jeu de société : soirée quiz en famille', desc:'Des centaines de questions de trivia pour s\'amuser en famille.', age:'Famille', merchant:'Amazon'}, url:'' },
   { id:5, emoji:'🦕', en:{title:'Dinosaurs Encyclopedia for Kids', desc:'Explore the world of dinosaurs with detailed illustrations and fun facts.', age:'5–10', merchant:'Amazon'},
     es:{title:'Enciclopedia de dinosaurios para niños', desc:'Explora el mundo de los dinosaurios con ilustraciones y datos curiosos.', age:'5–10', merchant:'Amazon'},
-    fr:{title:'Encyclopédie des dinosaures pour enfants', desc:'Explore le monde des dinosaures avec des illustrations détaillées et des anecdotes.', age:'5–10', merchant:'Amazon'}, url:'https://example.com/affiliate/5' },
+    fr:{title:'Encyclopédie des dinosaures pour enfants', desc:'Explore le monde des dinosaures avec des illustrations détaillées et des anecdotes.', age:'5–10', merchant:'Amazon'}, url:'' },
   { id:6, emoji:'🌌', en:{title:'Solar System Model Kit', desc:'Build and paint your own solar system while learning about each planet.', age:'8–14', merchant:'Amazon'},
     es:{title:'Kit para montar el Sistema Solar', desc:'Construye y pinta tu propio Sistema Solar mientras aprendes sobre cada planeta.', age:'8–14', merchant:'Amazon'},
-    fr:{title:'Maquette du Système solaire', desc:'Construis et peins ton propre Système solaire en apprenant tout sur les planètes.', age:'8–14', merchant:'Amazon'}, url:'https://example.com/affiliate/6' }
+    fr:{title:'Maquette du Système solaire', desc:'Construis et peins ton propre Système solaire en apprenant tout sur les planètes.', age:'8–14', merchant:'Amazon'}, url:'' }
 ];
 
 const MERCH_PRODUCTS = [
@@ -5141,32 +5141,28 @@ const MERCH_PRODUCTS = [
     kind: 'tshirt',
     icon: '🧭',
     name: 'Ora Explorer T-shirt',
-    desc: 'A soft everyday tee for young explorers, quiz fans and family learning days.',
-    url: 'https://printify.com/products/ora-explorer-t-shirt-placeholder'
+    desc: 'A soft everyday tee for young explorers, quiz fans and family learning days.'
   },
   {
     id: 'team-ora-tshirt',
     kind: 'tshirt',
     icon: '✨',
     name: 'Team Ora T-shirt',
-    desc: 'A calm team-style shirt for families, classrooms and friends who learn together.',
-    url: 'https://printify.com/products/team-ora-t-shirt-placeholder'
+    desc: 'A calm team-style shirt for families, classrooms and friends who learn together.'
   },
   {
     id: 'horusquest-mug',
     kind: 'mug',
     icon: '🏺',
     name: 'HorusQuest Mug',
-    desc: 'A simple mug for curious mornings, study breaks and shared quiz sessions.',
-    url: 'https://printify.com/products/horusquest-mug-placeholder'
+    desc: 'A simple mug for curious mornings, study breaks and shared quiz sessions.'
   },
   {
     id: 'ask-ora-mug',
     kind: 'mug',
     icon: '💬',
     name: 'Ask Ora Mug',
-    desc: 'A friendly desk mug inspired by Ora, the guide to the HorusQuest learning universe.',
-    url: 'https://printify.com/products/ask-ora-mug-placeholder'
+    desc: 'A friendly desk mug inspired by Ora, the guide to the HorusQuest learning universe.'
   }
 ];
 
@@ -7369,9 +7365,9 @@ function ProductCard(p) {
       <div class="mt-3 flex items-center justify-between text-xs text-slate-500">
         <span>${t('shopAge')}: <strong class="text-slate-700">${d.age}</strong></span>
       </div>
-      <a href="${p.url}" target="_blank" rel="sponsored nofollow noopener noreferrer" onclick="trackEvent('affiliate_click',{id:${p.id}})" class="mt-4 btn-primary w-full text-sm">
-        ${t('shopCTA')} ↗
-      </a>
+      ${p.url
+        ? `<a href="${p.url}" target="_blank" rel="sponsored nofollow noopener noreferrer" onclick="trackEvent('affiliate_click',{id:${p.id}})" class="mt-4 btn-primary w-full text-sm">${t('shopCTA')} ↗</a>`
+        : `<button type="button" disabled aria-disabled="true" class="mt-4 btn-ghost w-full text-sm opacity-60 cursor-not-allowed">${t('comingSoon')}</button>`}
     </div>
   </div>`;
 }
@@ -7974,9 +7970,7 @@ function MerchProductCard(p) {
         <span class="chip bg-amber-100 text-amber-800 flex-shrink-0">${t('comingSoon')}</span>
       </div>
       <p class="mt-2 text-sm leading-relaxed text-slate-600 flex-1">${escapeHtml(p.desc)}</p>
-      <a href="${p.url}" target="_blank" rel="noopener noreferrer" onclick="trackEvent('merch_click',{id:'${p.id}'})" class="mt-5 btn-ghost text-sm w-full">
-        View product ↗
-      </a>
+      <button type="button" disabled aria-disabled="true" class="mt-5 btn-ghost text-sm w-full opacity-60 cursor-not-allowed">${t('comingSoon')}</button>
     </div>
   </article>`;
 }
@@ -8008,7 +8002,12 @@ function viewShop() {
       </section>
 
       <section class="mt-8 rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4">
-        <p class="text-sm leading-relaxed text-amber-950">Products are created and fulfilled through our print-on-demand partner. Production and shipping times may vary by location.</p>
+        <p class="text-sm leading-relaxed text-amber-950">${pick({
+          en:'These products are previews and are not available to buy yet — nothing here is a real purchase. When the store opens, items may be fulfilled by a print-on-demand partner and some links may be affiliate links, at no extra cost to you. You never need to buy anything to play, and shop content is kept separate from the games and from any future ads.',
+          es:'Estos productos son una vista previa y aún no están a la venta: nada aquí es una compra real. Cuando la tienda abra, los artículos podrían gestionarse mediante un socio de impresión bajo demanda y algunos enlaces podrían ser de afiliado, sin coste adicional para ti. Nunca necesitas comprar nada para jugar, y el contenido de la tienda se mantiene separado de los juegos y de cualquier anuncio futuro.',
+          fr:'Ces produits sont des aperçus et ne sont pas encore en vente : rien ici n\'est un achat réel. À l\'ouverture de la boutique, les articles pourront être gérés par un partenaire d\'impression à la demande et certains liens pourront être des liens d\'affiliation, sans surcoût pour toi. Tu n\'as jamais besoin d\'acheter quoi que ce soit pour jouer, et le contenu boutique reste séparé des jeux et de toute publicité future.'
+        })}</p>
+        <a href="${pathFor('affiliate', state.lang)}" onclick="navGo(event,'affiliate')" class="mt-2 inline-block text-sm font-semibold text-amber-900 hover:underline focus-ring">${t('footerAffiliate')} →</a>
       </section>
 
       <section class="mt-10" aria-labelledby="store-more-title">
