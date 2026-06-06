@@ -483,6 +483,7 @@ const I18N = {
     aliasTooShort: 'Your alias needs at least 3 characters.',
     aliasTooLong: 'Your alias can be at most 4 characters.',
     aliasInvalid: 'Use only letters and numbers — no spaces or symbols.',
+    aliasNotAllowed: 'Please choose a friendly alias.',
     roundN: 'Round',
     nextRound: 'Next animal',
     seeResults: 'See results',
@@ -735,6 +736,7 @@ const I18N = {
     aliasTooShort: 'El alias debe tener al menos 3 caracteres.',
     aliasTooLong: 'El alias no puede tener más de 4 caracteres.',
     aliasInvalid: 'Usa solo letras y números (sin espacios ni símbolos).',
+    aliasNotAllowed: 'Elige un alias amistoso, por favor.',
     roundN: 'Ronda',
     nextRound: 'Siguiente animal',
     seeResults: 'Ver resultados',
@@ -987,6 +989,7 @@ const I18N = {
     aliasTooShort: 'Le pseudo doit comporter au moins 3 caractères.',
     aliasTooLong: 'Le pseudo ne peut pas dépasser 4 caractères.',
     aliasInvalid: 'Utilise seulement des lettres et des chiffres (sans espaces ni symboles).',
+    aliasNotAllowed: 'Choisis un pseudo sympa, s’il te plaît.',
     roundN: 'Manche',
     nextRound: 'Animal suivant',
     seeResults: 'Voir les résultats',
@@ -8749,10 +8752,29 @@ function normalizeAlias(alias) {
     .normalize('NFD').replace(/[̀-ͯ]/g,'')
     .replace(/[^A-Z0-9]/g,'');
 }
+// Minimal multilingual (en/es/fr) blocklist for 3–4 char leaderboard aliases.
+// Tokens are already accent-stripped & uppercased to match normalizeAlias()
+// (e.g. coño -> CONO). Matched as substrings. Conservative on purpose for a
+// family audience; not meant to be exhaustive. Email/phone/long free text is
+// already rejected by the alphanumeric + 3–4 char rules above.
+const ALIAS_BLOCKLIST = [
+  // en
+  'FUCK','FUK','FCK','SHIT','SHT','CUNT','KUNT','DICK','COCK','KOCK','TWAT',
+  'SLUT','FAG','NIGR','NGGR','RAPE','JIZZ','WANK','PISS','TITS','COON','KKK',
+  'PORN','WHOR','HORE','SEX',
+  // es
+  'PUTA','PUTO','CONO','CULO','ZORR','MIER','VERG','PENE','TETA','JOTO','CABR','GILI',
+  // fr
+  'MERD','PUTE','BITE','NIQU','SALO','CONN','ENCU'
+];
+function aliasIsAllowed(alias) {
+  return !ALIAS_BLOCKLIST.some(bad => alias.indexOf(bad) !== -1);
+}
 function validateLeaderboardAlias(alias) {
   if (!/^[A-Z0-9]+$/.test(alias)) return { ok:false, error:'aliasInvalid' };
   if (alias.length < MIN_ALIAS_LENGTH) return { ok:false, error:'aliasTooShort' };
   if (alias.length > MAX_ALIAS_LENGTH) return { ok:false, error:'aliasTooLong' };
+  if (!aliasIsAllowed(alias)) return { ok:false, error:'aliasNotAllowed' };
   return { ok:true };
 }
 function generateGuestAlias() {
