@@ -8775,7 +8775,9 @@ function generateGuestAlias() {
 // faked success. The Teams page is now an honest "in development" notice.
 function submitContact() { toast(t('contactSent')); }
 function submitReport() { toast(t('toastReportThanks')); }
-function trackEvent(name, data) { console.log('[OraQuest]', name, data); }
+// Dev-only diagnostics: logs to the console only off-production (localhost /
+// local file). Never sends anything to the network and adds no analytics.
+function trackEvent(name, data) { if (!isProd()) console.log('[OraQuest]', name, data); }
 function toggleMobileMenu() { state.mobileMenu = !state.mobileMenu; state.universeMenu = false; render(); }
 
 /* -------------------- 8) BOOT -------------------- */
