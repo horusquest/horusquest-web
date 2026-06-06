@@ -17,12 +17,12 @@
 <meta property="og:title" content="HorusQuest — Family-Friendly Quizzes, Guessing Games and Word Challenges" id="og-title" />
 <meta property="og:description" content="Play, guess, quiz and learn with Ora. HorusQuest brings together family-friendly educational games, daily quizzes, guessing challenges and word games for every age." id="og-description" />
 <meta property="og:url" content="https://horusquest.com/" id="og-url" />
-<meta property="og:image" content="https://horusquest.com/oraquest/og-image.png" />
+<meta property="og:image" content="https://horusquest.com/assets/og-image.png" />
 <!-- Twitter -->
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content="HorusQuest" />
 <meta name="twitter:description" content="Family-friendly quizzes, guessing games and word challenges guided by Ora." />
-<meta name="twitter:image" content="https://horusquest.com/oraquest/og-image.png" />
+<meta name="twitter:image" content="https://horusquest.com/assets/og-image.png" />
 <!-- Structured data: Organization + WebSite -->
 <script type="application/ld+json">
 {
@@ -5440,7 +5440,7 @@ function go(route, params={}, options={}) {
     try {
       const nextPath = pathFor(route, state.lang);
       if (location.pathname !== nextPath) history.pushState({ route, lang:state.lang }, '', nextPath);
-    } catch(e) { /* file:// protocol does not support pushState — navigation still works via state */ }
+    } catch(e) { /* local file protocol does not support pushState — navigation still works via state */ }
   }
   render();
   if (!options.keepScroll) window.scrollTo({top:0, behavior:'instant'});
@@ -5458,7 +5458,7 @@ function setLang(l) {
     try {
       const nextPath = pathFor(state.route, state.lang);
       if (location.pathname !== nextPath) history.pushState({ route:state.route, lang:state.lang }, '', nextPath);
-    } catch(e) { /* file:// protocol */ }
+    } catch(e) { /* local file protocol */ }
   }
   render();
   updateMeta();
