@@ -1,0 +1,13 @@
+# Netlify configuration for OraQuest (static single-file SPA)
+
+[build]
+  # No build step — the site is plain HTML/CSS/PNG served from the repo root
+  publish = "."
+
+# Serve OraQuest.html for every route (200 = rewrite, not redirect).
+# This handles the root URL, all client-side SPA routes (/play, /oraquest, …)
+# and page refreshes on those routes.
+[[redirects]]
+  from = "/*"
+  to = "/OraQuest.html"
+  status = 200
