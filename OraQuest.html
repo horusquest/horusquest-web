@@ -1299,6 +1299,26 @@ const COMING_SOON_INFO = {
     }
   }
 };
+// Short educational guide per playable game: the skill it builds and the
+// approximate ages it suits. Used to enrich the Play hub cards.
+const GAME_GUIDE = {
+  daily: {
+    skill: { en:'General knowledge & daily curiosity', es:'Cultura general y curiosidad diaria', fr:'Culture générale et curiosité quotidienne' },
+    ages:  { en:'All ages / family', es:'Todas las edades / familia', fr:'Tous âges / famille' }
+  },
+  oraquest: {
+    skill: { en:'General knowledge across 8 categories, with an explanation after every question', es:'Cultura general en 8 categorías, con una explicación tras cada pregunta', fr:'Culture générale dans 8 catégories, avec une explication après chaque question' },
+    ages:  { en:'Ages 5–7 to adults, plus a family mode', es:'De 5–7 años a adultos, con modo familia', fr:'De 5–7 ans aux adultes, avec un mode famille' }
+  },
+  guess: {
+    skill: { en:'Deductive reasoning: read the clues, narrow it down, name the answer', es:'Razonamiento deductivo: lee las pistas, descarta y nombra la respuesta', fr:'Raisonnement déductif : lis les indices, élimine et nomme la réponse' },
+    ages:  { en:'All ages, great to play together', es:'Todas las edades, ideal para jugar en familia', fr:'Tous âges, idéal à jouer ensemble' }
+  },
+  words: {
+    skill: { en:'Spelling, vocabulary and word patterns in several languages', es:'Ortografía, vocabulario y patrones de palabras en varios idiomas', fr:'Orthographe, vocabulaire et structures de mots en plusieurs langues' },
+    ages:  { en:'Readers of all ages', es:'Lectores de todas las edades', fr:'Lecteurs de tous âges' }
+  }
+};
 
 const HOME_SEO_HTML = {
   en: `
@@ -6154,16 +6174,39 @@ function viewPlay() {
       <div class="text-center max-w-3xl mx-auto">
         <h1 class="font-display text-4xl md:text-5xl font-bold">${t('playTitle')}</h1>
         <p class="mt-4 text-lg text-slate-600">${t('playSub')}</p>
+        <p class="mt-4 text-slate-600 leading-relaxed">${pick({
+          en:'Every game is free, works in your browser and can be played without an account. Pick a challenge below — each card shows the skill it builds and the ages it suits.',
+          es:'Todos los juegos son gratis, funcionan en tu navegador y se pueden jugar sin cuenta. Elige un reto abajo: cada tarjeta indica la habilidad que desarrolla y las edades a las que se adapta.',
+          fr:'Chaque jeu est gratuit, fonctionne dans ton navigateur et se joue sans compte. Choisis un défi ci-dessous : chaque carte indique la compétence travaillée et les âges adaptés.'
+        })}</p>
       </div>
       <div class="mt-10 grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-        ${cards.map(card=>`
-          <a href="${pathFor(card.route, state.lang)}" onclick="navGo(event,'${card.route}')" class="card card-hover p-6 focus-ring">
+        ${cards.map(card=>{
+          const g = GAME_GUIDE[card.route];
+          return `
+          <a href="${pathFor(card.route, state.lang)}" onclick="navGo(event,'${card.route}')" class="card card-hover p-6 focus-ring flex flex-col">
             <div class="text-4xl" aria-hidden="true">${card.icon}</div>
             <h2 class="mt-4 font-display text-xl font-bold">${card.title}</h2>
-            <p class="mt-2 text-sm text-slate-600">${card.desc}</p>
-          </a>
-        `).join('')}
+            <p class="mt-2 text-sm text-slate-600 flex-1">${card.desc}</p>
+            ${g ? `<dl class="mt-4 space-y-1.5 text-xs text-slate-500">
+              <div class="flex gap-2"><dt class="font-semibold text-slate-600 shrink-0">🧠 ${pick({en:'Skill',es:'Habilidad',fr:'Compétence'})}:</dt><dd>${pick(g.skill)}</dd></div>
+              <div class="flex gap-2"><dt class="font-semibold text-slate-600 shrink-0">👥 ${pick({en:'Ages',es:'Edades',fr:'Âges'})}:</dt><dd>${pick(g.ages)}</dd></div>
+            </dl>` : ''}
+          </a>`;
+        }).join('')}
       </div>
+      <section class="mt-10 card p-6 md:p-8" aria-labelledby="play-safe-title">
+        <h2 id="play-safe-title" class="font-display text-xl font-bold text-slate-900">${pick({en:'How to play safely',es:'Cómo jugar de forma segura',fr:'Comment jouer en toute sécurité'})}</h2>
+        <p class="mt-3 text-sm text-slate-600 leading-relaxed">${pick({
+          en:'You can play as a guest with no sign-up. We never ask for a real name, email or phone number, and there is no chat between players. If you save a score, it uses a short anonymous alias. Children should play with a parent, guardian or teacher when saving scores or joining a team.',
+          es:'Puedes jugar como invitado sin registrarte. Nunca pedimos nombre real, correo ni teléfono, y no hay chat entre jugadores. Si guardas una puntuación, se usa un alias corto y anónimo. Los menores deben jugar con un adulto al guardar puntuaciones o unirse a un equipo.',
+          fr:'Tu peux jouer en invité sans inscription. Nous ne demandons jamais de vrai nom, d’e-mail ni de téléphone, et il n’y a pas de chat entre joueurs. Si tu enregistres un score, un pseudo court et anonyme est utilisé. Les enfants doivent jouer avec un adulte pour enregistrer un score ou rejoindre une équipe.'
+        })}</p>
+        <div class="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-sm font-semibold">
+          <a href="${pathFor('parents', state.lang)}" onclick="navGo(event,'parents')" class="text-brand-violet hover:underline focus-ring">${t('navFamilies')} →</a>
+          <a href="${pathFor('privacy', state.lang)}" onclick="navGo(event,'privacy')" class="text-brand-violet hover:underline focus-ring">${t('footerPrivacy')} →</a>
+        </div>
+      </section>
     </main>
     ${Footer()}
   </div>`;
