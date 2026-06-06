@@ -5860,7 +5860,7 @@ function Footer() {
       ['play', t('navPlay')],['oraquest', 'OraQuest'],['guess', 'OraGuess'],['words', 'OraWords'],['leaderboards', t('navLeader')]
     ]},
     { t:t('navUniverse'), links:[
-      ['universe', t('navUniverse')],['parents', t('navFamilies')],['teams', t('navTeams')],['blog', t('navBlog')],['shop', t('navShop')]
+      ['universe', t('navUniverse')],['parents', t('navFamilies')],['teams', t('navTeams')+' · '+t('comingSoon')],['blog', t('navBlog')],['shop', t('navShop')]
     ]},
     { t:t('footerAbout'), links:[
       ['about', t('footerAbout')],['contact', t('footerContact')],['editorial', t('footerEditorial')],['report', t('footerReport')]
@@ -7363,13 +7363,13 @@ function viewOraQuestHome() {
           { r:"go('daily')", icon:'🔥', t:t('modeDailyT'), d:t('modeDailyD'), grad:'from-rose-500 to-orange-500' },
           { r:"go('quiz')", icon:'⚡', t:t('modeQuizT'), d:t('modeQuizD'), grad:'from-sky-500 to-indigo-500' },
           { r:"go('guess')", icon:'🔍', t:t('modeGuessT'), d:t('modeGuessD'), grad:'from-violet-500 to-fuchsia-500' },
-          { r:"go('teams')", icon:'👥', t:t('modeTeamQuestT'), d:t('modeTeamQuestD'), grad:'from-emerald-500 to-teal-500' },
+          { r:"go('teams')", icon:'👥', t:t('modeTeamQuestT'), d:t('modeTeamQuestD'), grad:'from-emerald-500 to-teal-500', soon:true },
           { r:"go('quiz',{category:'logic'})", icon:'🧠', t:t('modeBrainT'), d:t('modeBrainD'), grad:'from-amber-500 to-orange-500' },
           { r:"go('quiz',{age:'family'})", icon:'👨‍👩‍👧‍👦', t:t('modeFamilyT'), d:t('modeFamilyD'), grad:'from-cyan-500 to-blue-500' }
         ].map(m=>`
           <button onclick="${m.r}" class="card card-hover p-6 text-left focus-ring">
             <div class="w-12 h-12 rounded-xl bg-gradient-to-br ${m.grad} flex items-center justify-center text-2xl" aria-hidden="true">${m.icon}</div>
-            <h3 class="mt-4 font-display text-xl font-bold">${m.t}</h3>
+            <h3 class="mt-4 font-display text-xl font-bold flex items-center gap-2">${m.t}${m.soon?` <span class="chip bg-amber-100 text-amber-800 !text-[10px] !py-1">${t('comingSoon')}</span>`:''}</h3>
             <p class="mt-1 text-sm text-slate-600">${m.d}</p>
           </button>
         `).join('')}
@@ -8089,7 +8089,11 @@ function viewTeams() {
         </ul>
       </div>
       <div class="mt-6 card p-5 bg-amber-50 border border-amber-200">
-        <p class="text-sm text-amber-900">⚠️ ${t('parentsWarn')}</p>
+        <p class="text-sm text-amber-900">⚠️ ${pick({
+          en:'Children should use HorusQuest with a parent, guardian or teacher. When team features are introduced, they will use safe aliases and will not require real names or emails.',
+          es:'Los niños deben usar HorusQuest con un padre, madre, tutor o profesor. Cuando se introduzcan las funciones de equipo, usarán alias seguros y no pedirán nombres reales ni correos.',
+          fr:'Les enfants doivent utiliser HorusQuest avec un parent, tuteur ou enseignant. Quand les fonctions d’équipe seront introduites, elles utiliseront des pseudos sûrs et ne demanderont ni vrais noms ni e-mails.'
+        })}</p>
       </div>
       <div class="mt-6 text-center">
         <a href="${pathFor('play', state.lang)}" onclick="navGo(event,'play')" class="btn-primary">${t('navPlay')} →</a>
