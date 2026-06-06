@@ -332,6 +332,13 @@ const ROUTE_PATHS = {
   affiliate: { en:'/affiliate-disclosure', es:'/es/afiliados', fr:'/fr/affiliation' },
   report: { en:'/report', es:'/es/reportar', fr:'/fr/signaler' }
 };
+// Routes whose content is still thin / "coming soon" (blog has no real
+// articles yet; the store only shows placeholder products). They stay fully
+// accessible — netlify.toml still 200-rewrites them and they render normally —
+// but they are marked noindex,follow and excluded from sitemap.xml so search
+// engines don't index placeholder/under-construction content (AdSense readiness).
+// Keep in sync with NOINDEX_ROUTES in tools/_gen-sitemap.js.
+const NOINDEX_ROUTES = new Set(['blog', 'shop']);
 const PATH_TO_ROUTE = Object.keys(ROUTE_PATHS).reduce((acc, route) => {
   LANGS.forEach(lang => { acc[ROUTE_PATHS[route][lang]] = { route, lang }; });
   return acc;
@@ -5540,6 +5547,17 @@ function updateMeta() {
   setAttr('og-description', 'content', desc);
   LANGS.forEach(lang => setAttr('alternate-' + lang, 'href', 'https://horusquest.com' + pathFor(routeForAlt, lang)));
   setAttr('alternate-x-default', 'href', 'https://horusquest.com' + pathFor(routeForAlt, 'en'));
+  // Thin/"coming soon" routes: inject noindex,follow so placeholder content is
+  // not indexed. The tag is created/removed per route so SPA navigation between
+  // indexable and noindex routes always reflects the current page (default =
+  // indexable, i.e. no robots tag present).
+  let robotsEl = document.querySelector('meta[name="robots"]');
+  if (NOINDEX_ROUTES.has(r)) {
+    if (!robotsEl) { robotsEl = document.createElement('meta'); robotsEl.name = 'robots'; document.head.appendChild(robotsEl); }
+    robotsEl.content = 'noindex,follow';
+  } else if (robotsEl) {
+    robotsEl.remove();
+  }
   const faqEl = document.getElementById('faq-jsonld');
   if (faqEl) {
     const faqs = r === 'home' || r === 'universe' ? [

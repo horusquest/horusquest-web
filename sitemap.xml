@@ -213,36 +213,6 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://horusquest.com/store</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://horusquest.com/store"/>
-    <xhtml:link rel="alternate" hreflang="es" href="https://horusquest.com/es/tienda"/>
-    <xhtml:link rel="alternate" hreflang="fr" href="https://horusquest.com/fr/boutique"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://horusquest.com/store"/>
-    <lastmod>2026-06-06</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://horusquest.com/es/tienda</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://horusquest.com/store"/>
-    <xhtml:link rel="alternate" hreflang="es" href="https://horusquest.com/es/tienda"/>
-    <xhtml:link rel="alternate" hreflang="fr" href="https://horusquest.com/fr/boutique"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://horusquest.com/store"/>
-    <lastmod>2026-06-06</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://horusquest.com/fr/boutique</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://horusquest.com/store"/>
-    <xhtml:link rel="alternate" hreflang="es" href="https://horusquest.com/es/tienda"/>
-    <xhtml:link rel="alternate" hreflang="fr" href="https://horusquest.com/fr/boutique"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://horusquest.com/store"/>
-    <lastmod>2026-06-06</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://horusquest.com/for-families</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://horusquest.com/for-families"/>
     <xhtml:link rel="alternate" hreflang="es" href="https://horusquest.com/es/familias"/>
@@ -358,36 +328,6 @@
     <xhtml:link rel="alternate" hreflang="es" href="https://horusquest.com/es/oraquest/equipos"/>
     <xhtml:link rel="alternate" hreflang="fr" href="https://horusquest.com/fr/oraquest/equipes"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://horusquest.com/oraquest/teams"/>
-    <lastmod>2026-06-06</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://horusquest.com/oraquest/blog</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://horusquest.com/oraquest/blog"/>
-    <xhtml:link rel="alternate" hreflang="es" href="https://horusquest.com/es/oraquest/blog"/>
-    <xhtml:link rel="alternate" hreflang="fr" href="https://horusquest.com/fr/oraquest/blog"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://horusquest.com/oraquest/blog"/>
-    <lastmod>2026-06-06</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://horusquest.com/es/oraquest/blog</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://horusquest.com/oraquest/blog"/>
-    <xhtml:link rel="alternate" hreflang="es" href="https://horusquest.com/es/oraquest/blog"/>
-    <xhtml:link rel="alternate" hreflang="fr" href="https://horusquest.com/fr/oraquest/blog"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://horusquest.com/oraquest/blog"/>
-    <lastmod>2026-06-06</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://horusquest.com/fr/oraquest/blog</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://horusquest.com/oraquest/blog"/>
-    <xhtml:link rel="alternate" hreflang="es" href="https://horusquest.com/es/oraquest/blog"/>
-    <xhtml:link rel="alternate" hreflang="fr" href="https://horusquest.com/fr/oraquest/blog"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://horusquest.com/oraquest/blog"/>
     <lastmod>2026-06-06</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
