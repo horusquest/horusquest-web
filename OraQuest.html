@@ -338,7 +338,7 @@ const ROUTE_PATHS = {
 // but they are marked noindex,follow and excluded from sitemap.xml so search
 // engines don't index placeholder/under-construction content (AdSense readiness).
 // Keep in sync with NOINDEX_ROUTES in tools/_gen-sitemap.js.
-const NOINDEX_ROUTES = new Set(['blog', 'shop']);
+const NOINDEX_ROUTES = new Set(['blog', 'shop', 'teams']);
 const PATH_TO_ROUTE = Object.keys(ROUTE_PATHS).reduce((acc, route) => {
   LANGS.forEach(lang => { acc[ROUTE_PATHS[route][lang]] = { route, lang }; });
   return acc;
@@ -8056,57 +8056,51 @@ function setLbFilter(key, v) {
 }
 function toggleLbLegacy() { state.lbShowLegacy = !state.lbShowLegacy; render(); }
 
+// Team play has no backend yet, so this page is intentionally an honest
+// "in development" notice — no create/join forms that only fake success.
+// The route stays 200-served but is noindex (see NOINDEX_ROUTES).
 function viewTeams() {
+  const bullets = [
+    pick({
+      en:'No account is required to play HorusQuest, and team play will not change that.',
+      es:'No hace falta cuenta para jugar a HorusQuest, y el modo en equipo no cambiará eso.',
+      fr:'Aucun compte n’est requis pour jouer à HorusQuest, et le mode équipe n’y changera rien.'
+    }),
+    pick({
+      en:'We will never ask for emails, real names or any personal information.',
+      es:'Nunca pediremos correos, nombres reales ni información personal.',
+      fr:'Nous ne demanderons jamais d’e-mails, de vrais noms ni d’informations personnelles.'
+    }),
+    pick({
+      en:'Future team features will keep the same short, safe aliases used on the leaderboards — no free chat.',
+      es:'Las futuras funciones de equipo mantendrán los mismos alias cortos y seguros de las clasificaciones, sin chat libre.',
+      fr:'Les futures fonctions d’équipe garderont les mêmes pseudos courts et sûrs que les classements, sans chat libre.'
+    })
+  ];
   return `
   <div class="min-h-screen bg-slate-50">
     ${Header()}
-    <main class="max-w-4xl mx-auto px-4 sm:px-6 py-10">
+    <main class="max-w-3xl mx-auto px-4 sm:px-6 py-10">
       <div class="text-center mb-8">
-        <h1 class="font-display text-3xl md:text-4xl font-bold">${t('teamTitle')}</h1>
-        <p class="text-slate-600">${t('teamHelp')}</p>
+        <span class="chip bg-amber-100 text-amber-800">🕒 ${t('comingSoon')}</span>
+        <h1 class="mt-4 font-display text-3xl md:text-4xl font-bold">${t('teamTitle')}</h1>
+        <p class="mt-2 text-slate-600 max-w-xl mx-auto">${pick({
+          en:'Team play is in development. There is nothing to create or join yet — when it is ready, families and classrooms will be able to play together with safe, anonymous aliases.',
+          es:'El modo en equipo está en desarrollo. Todavía no hay nada que crear ni a lo que unirse: cuando esté listo, familias y clases podrán jugar juntas con alias seguros y anónimos.',
+          fr:'Le mode équipe est en développement. Il n’y a encore rien à créer ni à rejoindre : quand ce sera prêt, familles et classes pourront jouer ensemble avec des pseudos sûrs et anonymes.'
+        })}</p>
       </div>
-      <div class="grid md:grid-cols-2 gap-5">
-        <div class="card p-6">
-          <div class="w-12 h-12 rounded-xl bg-violet-100 flex items-center justify-center text-2xl">➕</div>
-          <h2 class="mt-3 font-display text-xl font-bold">${t('teamCreate')}</h2>
-          <div class="mt-4 space-y-3">
-            <div>
-              <label class="text-sm font-medium">${t('teamName')}</label>
-              <input id="team-name" type="text" maxlength="30" class="mt-1 w-full px-3 py-2 rounded-lg border border-slate-200 focus-ring" placeholder="${t('teamNamePh')}"/>
-            </div>
-            <div>
-              <label class="text-sm font-medium">${t('teamType')}</label>
-              <select id="team-type" class="mt-1 w-full px-3 py-2 rounded-lg border border-slate-200 focus-ring">
-                <option value="family">${t('family')}</option>
-                <option value="classroom">${t('classroom')}</option>
-                <option value="friends">${t('friends')}</option>
-                <option value="other">${t('other')}</option>
-              </select>
-            </div>
-            <div>
-              <label class="text-sm font-medium">${t('visibility')}</label>
-              <select id="team-vis" class="mt-1 w-full px-3 py-2 rounded-lg border border-slate-200 focus-ring">
-                <option value="private">${t('private')}</option>
-                <option value="public">${t('public')}</option>
-              </select>
-            </div>
-            <button onclick="createTeam()" class="btn-primary w-full">${t('createBtn')}</button>
-          </div>
-        </div>
-        <div class="card p-6">
-          <div class="w-12 h-12 rounded-xl bg-sky-100 flex items-center justify-center text-2xl">🔗</div>
-          <h2 class="mt-3 font-display text-xl font-bold">${t('teamJoin')}</h2>
-          <div class="mt-4 space-y-3">
-            <div>
-              <label class="text-sm font-medium">${t('joinCode')}</label>
-              <input id="team-code" type="text" maxlength="8" class="mt-1 w-full px-3 py-3 rounded-lg border border-slate-200 text-center text-xl font-mono uppercase tracking-widest focus-ring" placeholder="ABC123"/>
-            </div>
-            <button onclick="joinTeam()" class="btn-primary w-full">${t('joinBtn')}</button>
-          </div>
-        </div>
+      <div class="card p-6 md:p-8">
+        <h2 class="font-display text-xl font-bold">${pick({en:'What to expect',es:'Qué esperar',fr:'À quoi s’attendre'})}</h2>
+        <ul class="mt-4 space-y-3 text-slate-700 text-sm leading-relaxed">
+          ${bullets.map(li=>`<li class="flex gap-3"><span aria-hidden="true">✅</span><span>${li}</span></li>`).join('')}
+        </ul>
       </div>
       <div class="mt-6 card p-5 bg-amber-50 border border-amber-200">
-        <p class="text-sm text-amber-900">⚠️ ${t('teamRules')}</p>
+        <p class="text-sm text-amber-900">⚠️ ${t('parentsWarn')}</p>
+      </div>
+      <div class="mt-6 text-center">
+        <a href="${pathFor('play', state.lang)}" onclick="navGo(event,'play')" class="btn-primary">${t('navPlay')} →</a>
       </div>
       ${AdSlot()}
     </main>
@@ -8766,20 +8760,8 @@ function generateGuestAlias() {
   const p = prefixes[Math.floor(Math.random()*prefixes.length)];
   return p + Math.floor(Math.random()*10); // 4 chars, e.g. ORA7
 }
-function createTeam() {
-  const name = (document.getElementById('team-name').value || '').trim();
-  if (name.length < 2 || name.length > 30) { toast(t('nameRequired')); return; }
-  const clean = name.replace(/[^a-zA-Z0-9À-ÿ\s\-_.]/g,'');
-  const code = randId(6);
-  toast(`${t('teamCreated')} ${code}`);
-  trackEvent('team_created', { name:clean });
-}
-function joinTeam() {
-  const code = (document.getElementById('team-code').value || '').trim().toUpperCase();
-  if (code.length < 4) { toast(t('invalidCode')); return; }
-  toast(t('teamJoined'));
-  trackEvent('team_joined', { code });
-}
+// Team create/join intentionally removed: there is no backend, so these only
+// faked success. The Teams page is now an honest "in development" notice.
 function submitContact() { toast(t('contactSent')); }
 function submitReport() { toast(t('toastReportThanks')); }
 function trackEvent(name, data) { console.log('[OraQuest]', name, data); }
@@ -8918,8 +8900,6 @@ window.submitGuess = submitGuess;
 window.showGuessAnswer = showGuessAnswer;
 window.nextAnimal = nextAnimal;
 window.playAgainGuess = playAgainGuess;
-window.createTeam = createTeam;
-window.joinTeam = joinTeam;
 window.submitContact = submitContact;
 window.submitReport = submitReport;
 window.trackEvent = trackEvent;
