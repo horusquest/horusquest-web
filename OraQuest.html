@@ -614,7 +614,6 @@ const I18N = {
     teamHelp: 'Create a team or join with a code.',
     teamNamePh: 'e.g. Space Explorers',
     parentsWarn: 'Children should use OraQuest with a parent, guardian or teacher when creating accounts or joining teams.',
-    readArticle: 'Read article →',
     lastUpdated: 'Last updated',
     editorialP1: 'All questions and facts are written by our editorial team and reviewed for factual accuracy and age-appropriateness. We never copy from other sites.',
     editorialP2: 'If you find an error, use the contact page to report it. We correct issues as quickly as possible.',
@@ -867,7 +866,6 @@ const I18N = {
     teamHelp: 'Crea un equipo o únete con un código.',
     teamNamePh: 'p. ej. Exploradores del espacio',
     parentsWarn: 'Los niños deben usar OraQuest con un adulto al crear cuentas o unirse a equipos.',
-    readArticle: 'Leer artículo →',
     lastUpdated: 'Última actualización',
     editorialP1: 'Todas las preguntas y datos los escribe nuestro equipo editorial y se revisan en precisión y adecuación por edad. Nunca copiamos de otros sitios.',
     editorialP2: 'Si encuentras un error, usa la página de contacto. Lo corregimos lo antes posible.',
@@ -1120,7 +1118,6 @@ const I18N = {
     teamHelp: 'Crée une équipe ou rejoins avec un code.',
     teamNamePh: 'p. ex. Explorateurs de l\'espace',
     parentsWarn: 'Les enfants doivent utiliser OraQuest avec un parent, tuteur ou enseignant pour créer un compte ou rejoindre une équipe.',
-    readArticle: 'Lire l\'article →',
     lastUpdated: 'Dernière mise à jour',
     editorialP1: 'Toutes les questions et anecdotes sont rédigées par notre équipe éditoriale et relues pour la précision et l\'adéquation à l\'âge. Nous ne copions jamais d\'autres sites.',
     editorialP2: 'Si tu trouves une erreur, utilise la page contact pour la signaler. Nous corrigeons aussi vite que possible.',
@@ -5189,8 +5186,30 @@ const BLOG_POSTS = [
   { slug:'classroom-teams',
     en:{title:'Using OraQuest in the classroom', desc:'Practical tips for teachers running team-based quiz rounds.'},
     es:{title:'Usar OraQuest en clase', desc:'Consejos prácticos para profes que hacen rondas de quiz en equipo.'},
-    fr:{title:'Utiliser OraQuest en classe', desc:'Conseils pratiques pour les profs qui animent des manches en équipe.'} }
+    fr:{title:'Utiliser OraQuest en classe', desc:'Conseils pratiques pour les profs qui animent des manches en équipe.'} },
+  { slug:'spelling-confidence',
+    en:{title:'Building spelling confidence, one word at a time', desc:'How short, low-pressure word games help children remember tricky spellings.'},
+    es:{title:'Ganar confianza con la ortografía, palabra a palabra', desc:'Cómo los juegos de palabras breves y sin presión ayudan a recordar grafías difíciles.'},
+    fr:{title:'Gagner confiance en orthographe, mot après mot', desc:'Comment des jeux de mots courts et sans pression aident à retenir les orthographes difficiles.'} },
+  { slug:'curiosity-questions',
+    en:{title:'Turning everyday questions into learning moments', desc:'Simple ways to follow a child’s "why?" with a quick, friendly challenge.'},
+    es:{title:'Convertir las preguntas cotidianas en aprendizaje', desc:'Formas sencillas de acompañar el "¿por qué?" de un niño con un reto rápido y amable.'},
+    fr:{title:'Transformer les questions du quotidien en apprentissage', desc:'Des façons simples d’accompagner le « pourquoi ? » d’un enfant par un petit défi convivial.'} },
+  { slug:'geography-at-home',
+    en:{title:'Sparking geography curiosity at home', desc:'Maps, flags and countries: easy prompts to explore the world together.'},
+    es:{title:'Despertar la curiosidad por la geografía en casa', desc:'Mapas, banderas y países: ideas fáciles para explorar el mundo en familia.'},
+    fr:{title:'Éveiller la curiosité géographique à la maison', desc:'Cartes, drapeaux et pays : des idées simples pour explorer le monde ensemble.'} }
 ];
+// Honest blog intro + status note. The topics above are planned, not yet
+// published; the page is intentionally noindex until real articles exist.
+const BLOG_INTRO_HTML = {
+  en: `<p>The HorusQuest learning journal is where we plan to share short, practical ideas for families and teachers: how to make quizzes part of everyday curiosity, how word and guessing games support learning, and how to keep screen time calm, safe and useful. Everything here is written by our team in plain language, with no clickbait and no claims of guaranteed results.</p>
+        <p>The articles below are the topics we are preparing first. They are not published yet, so this page is intentionally kept out of search results until each piece has real, useful content. No fake dates or authors are shown.</p>`,
+  es: `<p>El diario de aprendizaje de HorusQuest es donde queremos compartir ideas breves y prácticas para familias y docentes: cómo integrar los quizzes en la curiosidad diaria, cómo los juegos de palabras y adivinanzas apoyan el aprendizaje, y cómo mantener el tiempo de pantalla tranquilo, seguro y útil. Todo lo escribe nuestro equipo en lenguaje claro, sin clickbait ni promesas de resultados garantizados.</p>
+        <p>Los artículos de abajo son los temas que preparamos primero. Aún no están publicados, por eso esta página se mantiene fuera de los resultados de búsqueda hasta que cada texto tenga contenido real y útil. No mostramos fechas ni autores falsos.</p>`,
+  fr: `<p>Le journal d’apprentissage de HorusQuest est l’endroit où nous prévoyons de partager des idées courtes et pratiques pour les familles et les enseignants : comment intégrer les quiz à la curiosité quotidienne, comment les jeux de mots et de devinettes soutiennent l’apprentissage, et comment garder le temps d’écran calme, sûr et utile. Tout est écrit par notre équipe en langage clair, sans putaclic ni promesse de résultats garantis.</p>
+        <p>Les articles ci-dessous sont les sujets que nous préparons en premier. Ils ne sont pas encore publiés ; cette page est donc volontairement tenue hors des résultats de recherche jusqu’à ce que chaque texte ait un contenu réel et utile. Aucune date ni auteur fictif n’est affiché.</p>`
+};
 
 /* -------------------- ORAWORDS DATA + ENGINE -------------------- */
 const ORAWORDS_GAME_MODES = [
@@ -8079,17 +8098,26 @@ function viewBlog() {
         <h1 class="font-display text-3xl md:text-4xl font-bold">${t('blogTitle')}</h1>
         <p class="text-slate-600">${t('blogSub')}</p>
       </div>
+      <section class="card p-6 md:p-8 mb-8" aria-label="${t('blogTitle')}">
+        <div class="space-y-3 text-slate-700 leading-relaxed">${pick(BLOG_INTRO_HTML)}</div>
+      </section>
+      <h2 class="font-display text-2xl font-bold text-slate-900 mb-4">${pick({en:'Topics we are preparing',es:'Temas que estamos preparando',fr:'Sujets que nous préparons'})}</h2>
       <div class="grid md:grid-cols-3 gap-5">
         ${BLOG_POSTS.map(p=>{
           const d = ({en:p.en, es:p.es, fr:p.fr})[state.lang] || p.en;
-          return `<article class="card card-hover p-6">
-            <span class="chip bg-violet-100 text-violet-700">📝 Blog</span>
-            <h2 class="mt-3 font-display text-xl font-bold">${d.title}</h2>
-            <p class="mt-2 text-sm text-slate-600">${d.desc}</p>
-            <button onclick="toast(t('comingSoon'))" class="mt-4 text-sm font-semibold text-brand-violet hover:underline focus-ring">${t('readArticle')}</button>
+          return `<article class="card p-6 flex flex-col">
+            <span class="chip bg-amber-100 text-amber-800 self-start">🕒 ${t('comingSoon')}</span>
+            <h3 class="mt-3 font-display text-xl font-bold">${d.title}</h3>
+            <p class="mt-2 text-sm text-slate-600 flex-1">${d.desc}</p>
+            <p class="mt-4 text-xs font-medium text-slate-400">${pick({en:'Article in preparation',es:'Artículo en preparación',fr:'Article en préparation'})}</p>
           </article>`;
         }).join('')}
       </div>
+      <p class="mt-8 text-center text-sm text-slate-500">${pick({
+        en:'Want a topic covered first? Let us know through the contact page.',
+        es:'¿Quieres que tratemos un tema primero? Escríbenos desde la página de contacto.',
+        fr:'Un sujet à traiter en priorité ? Dis-le-nous via la page de contact.'
+      })} <a href="${pathFor('contact', state.lang)}" onclick="navGo(event,'contact')" class="font-semibold text-brand-violet hover:underline focus-ring">${t('footerContact')} →</a></p>
       ${AdSlot()}
     </main>
     ${Footer()}
