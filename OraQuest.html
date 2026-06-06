@@ -1271,6 +1271,34 @@ const ORA_UNIVERSE_GAMES = [
     description:{ en:'Math challenges by age.', es:'Retos de matemáticas por edad.', fr:'Défis de mathématiques par âge.' }
   }
 ];
+// Honest detail for the not-yet-released universe games: what players will
+// learn and the real development status. No release dates are promised.
+const COMING_SOON_INFO = {
+  oraworld: {
+    learn: {
+      en: 'Geography for curious explorers: continents, countries, capitals, flags and famous landmarks, through friendly map-based challenges with short explanations.',
+      es: 'Geografía para exploradores curiosos: continentes, países, capitales, banderas y monumentos famosos, mediante retos con mapas y explicaciones breves.',
+      fr: 'La géographie pour les explorateurs curieux : continents, pays, capitales, drapeaux et monuments célèbres, via des défis cartographiques avec de courtes explications.'
+    },
+    status: {
+      en: 'In early development. There is no release date yet — when it is ready we will announce it here and on the Ora Universe page.',
+      es: 'En desarrollo inicial. Aún no hay fecha de lanzamiento; cuando esté listo lo anunciaremos aquí y en la página Universo Ora.',
+      fr: 'En début de développement. Il n’y a pas encore de date de sortie ; lorsqu’il sera prêt, nous l’annoncerons ici et sur la page Univers Ora.'
+    }
+  },
+  oramath: {
+    learn: {
+      en: 'Mental-maths practice by age: number sense, arithmetic, patterns and simple problem-solving, with clear explanations instead of time pressure.',
+      es: 'Práctica de cálculo mental por edad: sentido numérico, aritmética, patrones y resolución de problemas sencillos, con explicaciones claras y sin presión de tiempo.',
+      fr: 'Entraînement au calcul mental par âge : sens du nombre, arithmétique, motifs et résolution de problèmes simples, avec des explications claires plutôt que la pression du temps.'
+    },
+    status: {
+      en: 'In early development. There is no release date yet — when it is ready we will announce it here and on the Ora Universe page.',
+      es: 'En desarrollo inicial. Aún no hay fecha de lanzamiento; cuando esté listo lo anunciaremos aquí y en la página Universo Ora.',
+      fr: 'En début de développement. Il n’y a pas encore de date de sortie ; lorsqu’il sera prêt, nous l’annoncerons ici et sur la page Univers Ora.'
+    }
+  }
+};
 
 const HOME_SEO_HTML = {
   en: `
@@ -6153,6 +6181,29 @@ function viewOraUniverse() {
       </section>
       <section class="mt-12 grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
         ${ORA_UNIVERSE_GAMES.map(game => UniverseGameCard(game, { compact:true })).join('')}
+      </section>
+      <section class="mt-14" aria-labelledby="coming-soon-title">
+        <h2 id="coming-soon-title" class="font-display text-3xl font-bold text-center">${pick({en:'Coming soon to the universe',es:'Próximamente en el universo',fr:'Bientôt dans l’univers'})}</h2>
+        <p class="mt-2 text-center text-slate-600 max-w-2xl mx-auto">${pick({
+          en:'These learning areas are still being built. Here is what they will cover and where they stand — no release dates promised.',
+          es:'Estas áreas de aprendizaje aún se están construyendo. Esto es lo que cubrirán y en qué punto están, sin prometer fechas.',
+          fr:'Ces espaces d’apprentissage sont encore en construction. Voici ce qu’ils couvriront et où ils en sont, sans promettre de dates.'
+        })}</p>
+        <div class="mt-8 grid sm:grid-cols-2 gap-5">
+          ${ORA_UNIVERSE_GAMES.filter(g => g.status !== 'live' && COMING_SOON_INFO[g.key]).map(g => `
+            <article id="${g.key}-info" class="card p-6">
+              <div class="flex items-center gap-3">
+                <div class="w-11 h-11 rounded-xl bg-gradient-to-br ${g.color} flex items-center justify-center text-xl text-white" aria-hidden="true">${g.icon}</div>
+                <h3 class="font-display text-xl font-bold">${g.name}</h3>
+                <span class="chip bg-amber-100 text-amber-800 ml-auto">${t('comingSoon')}</span>
+              </div>
+              <p class="mt-4 text-sm font-semibold text-slate-700">${pick({en:'What you will learn',es:'Qué aprenderás',fr:'Ce que tu apprendras'})}</p>
+              <p class="mt-1 text-sm text-slate-600 leading-relaxed">${pick(COMING_SOON_INFO[g.key].learn)}</p>
+              <p class="mt-3 text-sm font-semibold text-slate-700">${pick({en:'Status',es:'Estado',fr:'Statut'})}</p>
+              <p class="mt-1 text-sm text-slate-600 leading-relaxed">${pick(COMING_SOON_INFO[g.key].status)}</p>
+            </article>
+          `).join('')}
+        </div>
       </section>
       <section class="mt-14 ui-panel p-8 md:p-10">
         <h2 class="font-display text-3xl font-bold">${t('connectTitle')}</h2>
