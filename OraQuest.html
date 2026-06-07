@@ -94,6 +94,19 @@
   .scroll-hide::-webkit-scrollbar { display:none; }
   .scroll-hide { scrollbar-width: none; }
   .min-h-screen { min-height: 100vh; }
+  /* Sticky header backdrop. `.glass` is applied to the <header> but was never
+     defined, leaving it transparent so page content showed through it on scroll
+     (looked like the header overlapping the content). Give it an opaque,
+     frosted background so content scrolls cleanly behind it. */
+  :root { --header-offset: 4rem; } /* sticky header height (h-16 = 4rem) */
+  .glass { background-color: rgba(255,255,255,0.9); backdrop-filter: saturate(180%) blur(12px); -webkit-backdrop-filter: saturate(180%) blur(12px); }
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) { .glass { background-color: #ffffff; } }
+  /* `.hide` toggle utility was also undefined, so the collapsed mobile nav and the
+     dismissed cookie banner never actually hid — on mobile the always-open nav made
+     the sticky header very tall and cover content. Define it as a force-hide. */
+  .hide { display: none !important; }
+  /* Keep in-page #anchor targets clear of the sticky header on navigation. */
+  html { scroll-padding-top: calc(var(--header-offset) + 1rem); }
 </style>
 </head>
 <body>
@@ -1405,6 +1418,8 @@ const LEGAL_HTML = {
       <p>The games save a small amount of data in your browser's local storage, on your own device: your game progress and best scores, your language choice, your daily-streak count, and whether you accepted or rejected non-essential cookies. This information stays on your device — there is currently no HorusQuest account server that it is sent to.</p>
       <h2 class="${LEGAL_H}">Leaderboard display names</h2>
       <p>If you choose to save a score to a leaderboard, we store a short display alias (for example "ORA7") together with that score. The alias is not your real name: it is limited to a few letters and numbers and is meant to keep players anonymous.</p>
+      <h2 class="${LEGAL_H}">Word checks and external dictionary</h2>
+      <p>Some OraWords modes can check whether a word you type is real using a free external dictionary service (Datamuse). Only the single word you submit is sent, and only when you press submit — never as you type. We do not send your name, email, alias, scores or any profile, and the lookup is not linked to your identity. If the service is unavailable, the game falls back to its built-in word list and keeps working offline.</p>
       <h2 class="${LEGAL_H}">Children's privacy</h2>
       <p>HorusQuest is designed to be family-friendly. We do not ask children for real names, exact dates of birth, addresses or phone numbers. Children under 13 (or the minimum age in their country) should use HorusQuest together with a parent, guardian or teacher, especially when saving scores or joining a team.</p>
       <h2 class="${LEGAL_H}">Advertising and third parties</h2>
@@ -1421,6 +1436,8 @@ const LEGAL_HTML = {
       <p>Los juegos guardan una pequeña cantidad de datos en el almacenamiento local de tu navegador, en tu propio dispositivo: tu progreso y mejores puntuaciones, tu idioma, tu racha diaria y si aceptaste o rechazaste las cookies no esenciales. Esta información permanece en tu dispositivo: actualmente no hay un servidor de cuentas de HorusQuest al que se envíe.</p>
       <h2 class="${LEGAL_H}">Nombres en las clasificaciones</h2>
       <p>Si decides guardar una puntuación en una clasificación, almacenamos un alias corto (por ejemplo "ORA7") junto con esa puntuación. El alias no es tu nombre real: se limita a unas pocas letras y números y sirve para mantener el anonimato.</p>
+      <h2 class="${LEGAL_H}">Comprobación de palabras y diccionario externo</h2>
+      <p>Algunos modos de OraWords pueden comprobar si una palabra que escribes es real usando un servicio de diccionario externo gratuito (Datamuse). Solo se envía la palabra que envías, y únicamente al pulsar enviar, nunca mientras escribes. No enviamos tu nombre, correo, alias, puntuaciones ni ningún perfil, y la consulta no se vincula a tu identidad. Si el servicio no está disponible, el juego usa su lista de palabras integrada y sigue funcionando sin conexión.</p>
       <h2 class="${LEGAL_H}">Privacidad de los menores</h2>
       <p>HorusQuest está pensado para toda la familia. No pedimos a los menores nombres reales, fechas exactas de nacimiento, direcciones ni teléfonos. Los menores de 13 años (o la edad mínima de su país) deben usar HorusQuest junto a un padre, tutor o docente, especialmente al guardar puntuaciones o unirse a un equipo.</p>
       <h2 class="${LEGAL_H}">Publicidad y terceros</h2>
@@ -1437,6 +1454,8 @@ const LEGAL_HTML = {
       <p>Les jeux enregistrent une petite quantité de données dans le stockage local de ton navigateur, sur ton propre appareil : ta progression et tes meilleurs scores, ta langue, ta série quotidienne et le fait d'avoir accepté ou refusé les cookies non essentiels. Ces informations restent sur ton appareil : il n'existe pour l'instant aucun serveur de comptes HorusQuest auquel elles seraient envoyées.</p>
       <h2 class="${LEGAL_H}">Pseudonymes des classements</h2>
       <p>Si tu choisis d'enregistrer un score dans un classement, nous stockons un pseudo court (par exemple « ORA7 ») avec ce score. Le pseudo n'est pas ton vrai nom : il se limite à quelques lettres et chiffres et sert à préserver l'anonymat.</p>
+      <h2 class="${LEGAL_H}">Vérification des mots et dictionnaire externe</h2>
+      <p>Certains modes d'OraWords peuvent vérifier si un mot que tu tapes est réel à l'aide d'un service de dictionnaire externe gratuit (Datamuse). Seul le mot que tu valides est envoyé, et uniquement au moment où tu appuies sur valider, jamais pendant que tu écris. Nous n'envoyons ni ton nom, ni e-mail, ni pseudo, ni scores, ni aucun profil, et la requête n'est pas liée à ton identité. Si le service est indisponible, le jeu utilise sa liste de mots intégrée et continue de fonctionner hors ligne.</p>
       <h2 class="${LEGAL_H}">Vie privée des enfants</h2>
       <p>HorusQuest est pensé pour toute la famille. Nous ne demandons pas aux enfants de vrais noms, de date de naissance exacte, d'adresse ni de téléphone. Les enfants de moins de 13 ans (ou l'âge minimum de leur pays) doivent utiliser HorusQuest avec un parent, tuteur ou enseignant, surtout pour enregistrer des scores ou rejoindre une équipe.</p>
       <h2 class="${LEGAL_H}">Publicité et tiers</h2>
@@ -6315,12 +6334,24 @@ function viewWords() {
   if (mode === 'daily-word-quest') return viewDailyWordQuest();
   const modeCards = ORAWORDS_GAME_MODES.map(m => {
     const isLive = m.id === 'spelling-sprint' || m.id === 'letter-rush' || m.id === 'vocabulary-quest' || m.id === 'anagram-challenge' || m.id === 'daily-word-quest';
-    return `
-      <button onclick="${isLive ? `go('words',{mode:'${m.id}'})` : `toast(t('comingSoon'))`}" class="card card-hover p-5 text-left focus-ring ${isLive?'':'opacity-75'}">
+    if (isLive) {
+      return `
+      <button onclick="go('words',{mode:'${m.id}'})" class="card card-hover p-5 text-left focus-ring">
         <div class="text-3xl" aria-hidden="true">${m.icon}</div>
         <h2 class="mt-3 font-display text-xl font-bold">${pick(m)}</h2>
-        <p class="mt-2 text-sm text-slate-600">${isLive ? wordModeBlurb(m.id) : t('comingSoon')}</p>
+        <p class="mt-2 text-sm text-slate-600">${wordModeBlurb(m.id)}</p>
       </button>`;
+    }
+    // Coming-soon modes: honest, visually disabled card — not a clickable button.
+    return `
+      <div class="card p-5 text-left opacity-60 cursor-not-allowed select-none" aria-disabled="true">
+        <div class="flex items-start justify-between gap-2">
+          <div class="text-3xl" aria-hidden="true">${m.icon}</div>
+          <span class="chip bg-amber-100 text-amber-800 flex-shrink-0">🕒 ${t('comingSoon')}</span>
+        </div>
+        <h2 class="mt-3 font-display text-xl font-bold">${pick(m)}</h2>
+        <p class="mt-2 text-sm text-slate-600">${t('comingSoon')}</p>
+      </div>`;
   }).join('');
   return `
   <div class="min-h-screen bg-slate-50">
@@ -6335,6 +6366,11 @@ function viewWords() {
       <div class="mt-8 grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
         ${modeCards}
       </div>
+      <p class="mt-8 text-xs text-slate-500 leading-relaxed max-w-3xl">${pick({
+        en:'Note: some word games check whether a word is real using a free external dictionary (Datamuse). Only the word you submit is sent, and only when you press submit — never as you type. No names, emails, aliases, scores or profiles are sent. If the service is unavailable, the game uses its built-in word list and keeps working offline.',
+        es:'Nota: algunos juegos de palabras comprueban si una palabra es real usando un diccionario externo gratuito (Datamuse). Solo se envía la palabra que envías, y únicamente al pulsar enviar, nunca mientras escribes. No se envían nombres, correos, alias, puntuaciones ni perfiles. Si el servicio no está disponible, el juego usa su lista de palabras integrada y sigue funcionando sin conexión.',
+        fr:'Note : certains jeux de mots vérifient si un mot est réel via un dictionnaire externe gratuit (Datamuse). Seul le mot que tu valides est envoyé, et uniquement au moment de valider, jamais pendant que tu écris. Aucun nom, e-mail, pseudo, score ou profil n’est envoyé. Si le service est indisponible, le jeu utilise sa liste de mots intégrée et fonctionne hors ligne.'
+      })}</p>
     </main>
     ${Footer()}
   </div>`;
@@ -6343,7 +6379,9 @@ function viewWords() {
 function defaultSpellingCombo() {
   const byLang = {
     en: { gameMode:'spelling-sprint', category:'everyday', ageGroup:'family', difficulty:'easy' },
-    es: { gameMode:'spelling-sprint', category:'history', ageGroup:'adults', difficulty:'medium' },
+    // ES aligned to everyday/family/easy (was history/adults/medium): family-appropriate
+    // default, consistent with EN/FR, and uses the existing es:everyday:family:easy bank.
+    es: { gameMode:'spelling-sprint', category:'everyday', ageGroup:'family', difficulty:'easy' },
     fr: { gameMode:'spelling-sprint', category:'everyday', ageGroup:'family', difficulty:'easy' }
   };
   return { language: state.lang, ...(byLang[state.lang] || byLang.en) };
@@ -6994,7 +7032,11 @@ const ORAWORDS_LETTER_SETS = {
     { id:'en-lr-001', t:{en:'Planters',es:'Planters',fr:'Planters'}, letters:'PLANTERS', ages:['family','8-10','11-13','teens','adults'], category:'everyday', difficulty:'easy',
       words:'plant plants plane planet planets plate plates slate slant learn pearl snare stale steal petal petals parent parents rental antler antlers planters' },
     { id:'en-lr-002', t:{en:'Oceans',es:'Oceans',fr:'Oceans'}, letters:'OCEANS', ages:['family','8-10','11-13','teens','adults'], category:'everyday', difficulty:'medium',
-      words:'ocean oceans canoe canoes cone cones cane canes scan scone once acne ace aces sane' }
+      words:'ocean oceans canoe canoes cone cones cane canes scan scone once acne ace aces sane' },
+    { id:'en-lr-003', t:{en:'Garden mix',es:'Mezcla de jardín',fr:'Mélange jardin'}, letters:'GARDENS', ages:['family','8-10','11-13','teens','adults'], category:'everyday', difficulty:'easy',
+      words:'garden gardens grand grade grades danger anger range ranges sedan snare sand reads dares' },
+    { id:'en-lr-004', t:{en:'Friendly mix',es:'Mezcla amistosa',fr:'Mélange amical'}, letters:'FRIENDS', ages:['family','8-10','11-13','teens','adults'], category:'everyday', difficulty:'easy',
+      words:'friend friends finds fired fries diner diners rinse rinsed rides finer nerds dines dries' }
   ],
   es: [
     { id:'es-lr-001', t:{en:'Oceans',es:'Océanos',fr:'Océans'}, letters:'OCÉANOS', ages:['family','8-10','11-13','teens','adults'], category:'everyday', difficulty:'easy',
@@ -7002,13 +7044,21 @@ const ORAWORDS_LETTER_SETS = {
     { id:'es-lr-002', t:{en:'Trees',es:'Árboles',fr:'Arbres'}, letters:'ÁRBOLES', ages:['family','8-10','11-13','teens','adults'], category:'everyday', difficulty:'medium',
       words:'árbol árboles roble robles sobre sable labor labores bola bolas bolsa oral base bares rosa rosal oblea' },
     { id:'es-lr-003', t:{en:'Geography',es:'Geografía',fr:'Géographie'}, letters:'GEOGRAFÍA', ages:['family','11-13','teens','adults'], category:'history', difficulty:'hard',
-      words:'geografía grafía feria faro gira garfio agria riega griega fea ría gafa rifa regio regia' }
+      words:'geografía grafía feria faro gira garfio agria riega griega fea ría gafa rifa regio regia' },
+    { id:'es-lr-004', t:{en:'Space',es:'Espacio',fr:'Espace'}, letters:'PLANETAS', ages:['family','8-10','11-13','teens','adults'], category:'everyday', difficulty:'easy',
+      words:'planta plantas planeta planetas plata pena penal sala nata lata pala lana tela' },
+    { id:'es-lr-005', t:{en:'Routes',es:'Rutas',fr:'Routes'}, letters:'CAMINOS', ages:['family','8-10','11-13','teens','adults'], category:'everyday', difficulty:'easy',
+      words:'camino caminos cima cosa mano manos mina mona mosca caos coma saco mico anis' }
   ],
   fr: [
     { id:'fr-lr-001', t:{en:'Planets',es:'Planètes',fr:'Planètes'}, letters:'PLANÈTES', ages:['family','8-10','11-13','teens','adults'], category:'everyday', difficulty:'easy',
       words:'plan plans plat plats plante plantes planète planètes pente pentes lente lentes sept tape tapes' },
     { id:'fr-lr-002', t:{en:'Houses',es:'Casas',fr:'Maisons'}, letters:'MAISONS', ages:['family','8-10','11-13','teens','adults'], category:'everyday', difficulty:'medium',
-      words:'maison maisons main mains mois soin soins sain sains oasis anis ami amis mas son ions' }
+      words:'maison maisons main mains mois soin soins sain sains oasis anis ami amis mas son ions' },
+    { id:'fr-lr-003', t:{en:'Reading',es:'Lectura',fr:'Lecture'}, letters:'LIVRES', ages:['family','8-10','11-13','teens','adults'], category:'everyday', difficulty:'easy',
+      words:'livre livres lire vire vires rive rives sel les lis ver vers vil vile ire' },
+    { id:'fr-lr-004', t:{en:'Nature',es:'Naturaleza',fr:'Nature'}, letters:'RACINES', ages:['family','8-10','11-13','teens','adults'], category:'everyday', difficulty:'easy',
+      words:'racine racines carie caries crâne scie scier nacre ancre ancres rance crise aine' }
   ]
 };
 
@@ -7078,13 +7128,29 @@ function lrWordsHtml(s){
   if (!s.words.length) return '<span class="text-sm text-slate-500">' + pick({en:'Accepted words will appear here.',es:'Las palabras aceptadas aparecerán aquí.',fr:'Les mots acceptés apparaîtront ici.'}) + '</span>';
   return s.words.map(w => '<span class="chip bg-emerald-100 text-emerald-800 m-0.5">' + escapeHtml(w) + '</span>').join('');
 }
+// Initial letter order for a round: always shuffled so the starting tiles never
+// spell the set's base string (e.g. PLANETAS). Compares the resulting VISIBLE
+// string (not the index permutation) so repeated letters can't sneak the base
+// order back in. Caps attempts and falls back safely if no distinct arrangement
+// exists (e.g. all-identical letters). Does NOT consume a player shuffle.
+function lrInitialLetterOrder(letters){
+  const base = String(letters);
+  const idx = base.split('').map((_, i) => i);
+  if (idx.length < 2) return idx;
+  let order = idx;
+  for (let k = 0; k < 24; k++){
+    order = shuffle(idx);
+    if (order.map(i => base[i]).join('') !== base) return order;
+  }
+  return order; // fallback: no distinct permutation (e.g. all identical letters)
+}
 function startLetterRush(){
   const combo = defaultLetterRushCombo();
   const set = pickLetterRushSet(combo);
   if (!set){ toast(pick({en:'No letter sets for this combo yet.',es:'Aún no hay sets de letras para esta combinación.',fr:'Pas encore de grilles pour cette combinaison.'})); return; }
   if (state.lrSession && state.lrSession.timer){ clearInterval(state.lrSession.timer); }
   state.lrSession = Object.assign({}, combo, {
-    activeSet:set, letterOrder:set.letters.split('').map((_, i) => i),
+    activeSet:set, letterOrder:lrInitialLetterOrder(set.letters),
     timeLeft: LR_TIMER_BY_AGE[combo.ageGroup] || 120,
     score:0, words:[], streak:0, longestWord:'', attempts:0, validAttempts:0,
     shufflesLeft:3, saved:false, startedAt:Date.now(), timer:null
