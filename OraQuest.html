@@ -6355,7 +6355,9 @@ function viewWords() {
 function defaultSpellingCombo() {
   const byLang = {
     en: { gameMode:'spelling-sprint', category:'everyday', ageGroup:'family', difficulty:'easy' },
-    es: { gameMode:'spelling-sprint', category:'history', ageGroup:'adults', difficulty:'medium' },
+    // ES aligned to everyday/family/easy (was history/adults/medium): family-appropriate
+    // default, consistent with EN/FR, and uses the existing es:everyday:family:easy bank.
+    es: { gameMode:'spelling-sprint', category:'everyday', ageGroup:'family', difficulty:'easy' },
     fr: { gameMode:'spelling-sprint', category:'everyday', ageGroup:'family', difficulty:'easy' }
   };
   return { language: state.lang, ...(byLang[state.lang] || byLang.en) };
@@ -7006,7 +7008,11 @@ const ORAWORDS_LETTER_SETS = {
     { id:'en-lr-001', t:{en:'Planters',es:'Planters',fr:'Planters'}, letters:'PLANTERS', ages:['family','8-10','11-13','teens','adults'], category:'everyday', difficulty:'easy',
       words:'plant plants plane planet planets plate plates slate slant learn pearl snare stale steal petal petals parent parents rental antler antlers planters' },
     { id:'en-lr-002', t:{en:'Oceans',es:'Oceans',fr:'Oceans'}, letters:'OCEANS', ages:['family','8-10','11-13','teens','adults'], category:'everyday', difficulty:'medium',
-      words:'ocean oceans canoe canoes cone cones cane canes scan scone once acne ace aces sane' }
+      words:'ocean oceans canoe canoes cone cones cane canes scan scone once acne ace aces sane' },
+    { id:'en-lr-003', t:{en:'Gardens',es:'Gardens',fr:'Gardens'}, letters:'GARDENS', ages:['family','8-10','11-13','teens','adults'], category:'everyday', difficulty:'easy',
+      words:'garden gardens grand grade grades danger anger range ranges sedan snare sand reads dares' },
+    { id:'en-lr-004', t:{en:'Friends',es:'Friends',fr:'Friends'}, letters:'FRIENDS', ages:['family','8-10','11-13','teens','adults'], category:'everyday', difficulty:'easy',
+      words:'friend friends finds fired fries diner diners rinse rinsed rides finer nerds dines dries' }
   ],
   es: [
     { id:'es-lr-001', t:{en:'Oceans',es:'Océanos',fr:'Océans'}, letters:'OCÉANOS', ages:['family','8-10','11-13','teens','adults'], category:'everyday', difficulty:'easy',
@@ -7014,13 +7020,21 @@ const ORAWORDS_LETTER_SETS = {
     { id:'es-lr-002', t:{en:'Trees',es:'Árboles',fr:'Arbres'}, letters:'ÁRBOLES', ages:['family','8-10','11-13','teens','adults'], category:'everyday', difficulty:'medium',
       words:'árbol árboles roble robles sobre sable labor labores bola bolas bolsa oral base bares rosa rosal oblea' },
     { id:'es-lr-003', t:{en:'Geography',es:'Geografía',fr:'Géographie'}, letters:'GEOGRAFÍA', ages:['family','11-13','teens','adults'], category:'history', difficulty:'hard',
-      words:'geografía grafía feria faro gira garfio agria riega griega fea ría gafa rifa regio regia' }
+      words:'geografía grafía feria faro gira garfio agria riega griega fea ría gafa rifa regio regia' },
+    { id:'es-lr-004', t:{en:'Planets',es:'Planetas',fr:'Planètes'}, letters:'PLANETAS', ages:['family','8-10','11-13','teens','adults'], category:'everyday', difficulty:'easy',
+      words:'planta plantas planeta planetas plata pena penal sala nata lata pala lana tela' },
+    { id:'es-lr-005', t:{en:'Paths',es:'Caminos',fr:'Chemins'}, letters:'CAMINOS', ages:['family','8-10','11-13','teens','adults'], category:'everyday', difficulty:'easy',
+      words:'camino caminos cima cosa mano manos mina mona mosca caos coma saco mico anis' }
   ],
   fr: [
     { id:'fr-lr-001', t:{en:'Planets',es:'Planètes',fr:'Planètes'}, letters:'PLANÈTES', ages:['family','8-10','11-13','teens','adults'], category:'everyday', difficulty:'easy',
       words:'plan plans plat plats plante plantes planète planètes pente pentes lente lentes sept tape tapes' },
     { id:'fr-lr-002', t:{en:'Houses',es:'Casas',fr:'Maisons'}, letters:'MAISONS', ages:['family','8-10','11-13','teens','adults'], category:'everyday', difficulty:'medium',
-      words:'maison maisons main mains mois soin soins sain sains oasis anis ami amis mas son ions' }
+      words:'maison maisons main mains mois soin soins sain sains oasis anis ami amis mas son ions' },
+    { id:'fr-lr-003', t:{en:'Books',es:'Libros',fr:'Livres'}, letters:'LIVRES', ages:['family','8-10','11-13','teens','adults'], category:'everyday', difficulty:'easy',
+      words:'livre livres lire vire vires rive rives sel les lis ver vers vil vile ire' },
+    { id:'fr-lr-004', t:{en:'Roots',es:'Raíces',fr:'Racines'}, letters:'RACINES', ages:['family','8-10','11-13','teens','adults'], category:'everyday', difficulty:'easy',
+      words:'racine racines carie caries crâne scie scier nacre ancre ancres rance crise aine' }
   ]
 };
 
