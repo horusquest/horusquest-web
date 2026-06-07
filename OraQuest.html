@@ -6315,12 +6315,24 @@ function viewWords() {
   if (mode === 'daily-word-quest') return viewDailyWordQuest();
   const modeCards = ORAWORDS_GAME_MODES.map(m => {
     const isLive = m.id === 'spelling-sprint' || m.id === 'letter-rush' || m.id === 'vocabulary-quest' || m.id === 'anagram-challenge' || m.id === 'daily-word-quest';
-    return `
-      <button onclick="${isLive ? `go('words',{mode:'${m.id}'})` : `toast(t('comingSoon'))`}" class="card card-hover p-5 text-left focus-ring ${isLive?'':'opacity-75'}">
+    if (isLive) {
+      return `
+      <button onclick="go('words',{mode:'${m.id}'})" class="card card-hover p-5 text-left focus-ring">
         <div class="text-3xl" aria-hidden="true">${m.icon}</div>
         <h2 class="mt-3 font-display text-xl font-bold">${pick(m)}</h2>
-        <p class="mt-2 text-sm text-slate-600">${isLive ? wordModeBlurb(m.id) : t('comingSoon')}</p>
+        <p class="mt-2 text-sm text-slate-600">${wordModeBlurb(m.id)}</p>
       </button>`;
+    }
+    // Coming-soon modes: honest, visually disabled card — not a clickable button.
+    return `
+      <div class="card p-5 text-left opacity-60 cursor-not-allowed select-none" aria-disabled="true">
+        <div class="flex items-start justify-between gap-2">
+          <div class="text-3xl" aria-hidden="true">${m.icon}</div>
+          <span class="chip bg-amber-100 text-amber-800 flex-shrink-0">🕒 ${t('comingSoon')}</span>
+        </div>
+        <h2 class="mt-3 font-display text-xl font-bold">${pick(m)}</h2>
+        <p class="mt-2 text-sm text-slate-600">${t('comingSoon')}</p>
+      </div>`;
   }).join('');
   return `
   <div class="min-h-screen bg-slate-50">
