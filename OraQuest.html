@@ -508,6 +508,7 @@ const I18N = {
     attemptsLeft: 'Attempts left',
     guessGameOver: 'Game Over',
     gameOverMsg: 'You have used your 3 attempts. The game is over.',
+    guessRoundOut: 'Out of tries for this animal — here it is! On to the next round.',
     guessTitle: 'Guess the Animal',
     guessIntro: 'I am thinking of an animal. Use the clues to guess before they all appear!',
     revealClue: 'Reveal next clue',
@@ -766,6 +767,7 @@ const I18N = {
     attemptsLeft: 'Intentos restantes',
     guessGameOver: 'Fin de la partida',
     gameOverMsg: 'Has usado tus 3 intentos. La partida ha terminado.',
+    guessRoundOut: 'Sin intentos para este animal: ¡aquí está! Vamos a la siguiente ronda.',
     guessTitle: 'Adivina el animal',
     guessIntro: 'Estoy pensando en un animal. ¡Usa las pistas para adivinar antes de que aparezcan todas!',
     revealClue: 'Revelar siguiente pista',
@@ -1024,6 +1026,7 @@ const I18N = {
     attemptsLeft: 'Essais restants',
     guessGameOver: 'Partie terminée',
     gameOverMsg: 'Tu as utilisé tes 3 essais. La partie est terminée.',
+    guessRoundOut: 'Plus d\'essais pour cet animal — le voici ! On passe à la ronde suivante.',
     guessTitle: 'Devine l\'animal',
     guessIntro: 'Je pense à un animal. Utilise les indices pour deviner avant qu\'ils ne soient tous révélés !',
     revealClue: 'Révéler le prochain indice',
@@ -8078,7 +8081,7 @@ function viewGuess() {
   const attemptsLeft = MAX_FAILED_ATTEMPTS - gs.failed;
   const hearts = '❤️'.repeat(attemptsLeft) + '🖤'.repeat(gs.failed);
   const lastRound = gs.idx + 1 >= gs.animals.length;
-  const nextLabel = (lastRound || gs.endOnNext) ? `${t('seeResults')} →` : `${t('nextRound')} →`;
+  const nextLabel = lastRound ? `${t('seeResults')} →` : `${t('nextRound')} →`;
   return `
   <div class="min-h-screen bg-slate-50">
     ${Header()}
@@ -9041,10 +9044,11 @@ function submitGuess() {
     gs.streak = 0;
     trackEvent('guess_attempt', { correct:false, cluesUsed:gs.revealed });
     if (gs.failed >= MAX_FAILED_ATTEMPTS) {
-      // Out of attempts: reveal the correct answer, then end the game on "next"
+      // Out of attempts for THIS round: reveal the answer (with its facts) and
+      // let the player move on. Attempts are per-round, so one tough animal
+      // never ends the whole game — see nextAnimal(), which resets them.
       gs.shownAnswer = true;
-      gs.endOnNext = true;
-      toast(t('gameOverMsg'));
+      toast(t('guessRoundOut'));
       render();
       return;
     }
@@ -9061,12 +9065,12 @@ function showGuessAnswer() {
 function nextAnimal() {
   const gs = state.guessSession;
   if (!gs || gs.over) return;
-  if (gs.endOnNext) { finishGuessGame('failed'); return; }
   if (gs.idx + 1 >= gs.animals.length) { finishGuessGame('completed'); return; }
   gs.idx++;
   gs.revealed = 0;
   gs.guessed = false;
   gs.shownAnswer = false;
+  gs.failed = 0; // attempts are per-round: refill the hearts for the next animal
   render();
 }
 function playAgainGuess() {
