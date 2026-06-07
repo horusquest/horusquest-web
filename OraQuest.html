@@ -468,7 +468,7 @@ const I18N = {
     pickDiff: 'Pick difficulty',
     metaCategory: 'Category', metaAge: 'Age group', metaDifficulty: 'Difficulty',
     metaMoreSoon: 'More categories and difficulty options will be added as the word banks grow.',
-    challengeSet: 'Challenge set', currentChallenge: 'Current challenge',
+    currentChallenge: 'Current challenge',
     onlyAvailableBanks: 'Only available word banks are shown.',
     metaSmallBank: 'This set has a smaller word bank and may repeat sooner.',
     pickTimer: 'Timer (optional)',
@@ -726,7 +726,7 @@ const I18N = {
     pickDiff: 'Elige dificultad',
     metaCategory: 'Categoría', metaAge: 'Grupo de edad', metaDifficulty: 'Dificultad',
     metaMoreSoon: 'Añadiremos más categorías y niveles cuando los bancos de palabras crezcan.',
-    challengeSet: 'Conjunto del reto', currentChallenge: 'Reto actual',
+    currentChallenge: 'Reto actual',
     onlyAvailableBanks: 'Solo se muestran bancos de palabras disponibles.',
     metaSmallBank: 'Este conjunto tiene un banco más pequeño y puede repetirse antes.',
     pickTimer: 'Temporizador (opcional)',
@@ -984,7 +984,7 @@ const I18N = {
     pickDiff: 'Choisis la difficulté',
     metaCategory: 'Catégorie', metaAge: 'Groupe d’âge', metaDifficulty: 'Difficulté',
     metaMoreSoon: 'D’autres catégories et niveaux seront ajoutés à mesure que les banques de mots s’enrichissent.',
-    challengeSet: 'Jeu de défi', currentChallenge: 'Défi actuel',
+    currentChallenge: 'Défi actuel',
     onlyAvailableBanks: 'Seules les banques de mots disponibles sont affichées.',
     metaSmallBank: 'Cet ensemble a une banque plus petite et peut se répéter plus vite.',
     pickTimer: 'Minuteur (facultatif)',
@@ -6553,73 +6553,108 @@ function viewWords() {
   </div>`;
 }
 
-/* -------- OraWords challenge-set selection (real combos derived from banks) -------- */
-// A combo is selectable only if its bank has at least ORAWORDS_ROUND_SIZE
-// active+reviewed items, so we never offer a combination without data.
-function getOraWordsValidCombos(gameMode, language) {
+/* -------- OraWords setup selection (OraQuest-style cards, real banks only) --------
+   Reusable across future Ora Universe word games. Options are derived straight
+   from ORAWORDS_BANK; a combo is offered only if its bank has at least
+   ORAWORDS_ROUND_SIZE active+reviewed items, so we never show a combination
+   without data. Selection cascades age -> category -> difficulty. */
+function getAvailableOraWordsCombos(mode, lang) {
   const counts = {};
-  (ORAWORDS_BANK[gameMode] || []).forEach(it => {
-    if (it.active === false || it.reviewed === false || it.language !== language) return;
-    const key = it.category + '|' + it.ageGroup + '|' + it.difficulty;
-    (counts[key] || (counts[key] = { category:it.category, ageGroup:it.ageGroup, difficulty:it.difficulty, count:0 })).count++;
+  (ORAWORDS_BANK[mode] || []).forEach(it => {
+    if (it.active === false || it.reviewed === false || it.language !== lang) return;
+    const key = it.ageGroup + '|' + it.category + '|' + it.difficulty;
+    (counts[key] || (counts[key] = { ageGroup:it.ageGroup, category:it.category, difficulty:it.difficulty, count:0 })).count++;
   });
-  return Object.keys(counts).map(k => counts[k])
-    .filter(c => c.count >= ORAWORDS_ROUND_SIZE)
-    .sort((a, b) => b.count - a.count); // richest banks first
+  return Object.keys(counts).map(k => counts[k]).filter(c => c.count >= ORAWORDS_ROUND_SIZE);
 }
-function oraWordsComboKey(c) { return c.category + '|' + c.ageGroup + '|' + c.difficulty; }
-// The combo a mode should play: the player's chosen one if still valid, else the
-// default if valid, else the richest available bank. Falls back to `fallback`
-// untouched if a mode somehow has no playable bank.
-function resolveWordsCombo(gameMode, fallback) {
-  const language = state.lang;
-  const valid = getOraWordsValidCombos(gameMode, language);
-  if (!valid.length) return { language, gameMode, category:fallback.category, ageGroup:fallback.ageGroup, difficulty:fallback.difficulty };
-  const chosenKey = state.wordsCombo && state.wordsCombo[gameMode + ':' + language];
-  const c = (chosenKey && valid.find(x => oraWordsComboKey(x) === chosenKey))
-         || valid.find(x => oraWordsComboKey(x) === oraWordsComboKey(fallback))
-         || valid[0];
-  return { language, gameMode, category:c.category, ageGroup:c.ageGroup, difficulty:c.difficulty };
+function getAvailableAgeGroups(mode, lang) {
+  const combos = getAvailableOraWordsCombos(mode, lang);
+  return AGE_GROUPS.map(a => a.id).filter(id => combos.some(c => c.ageGroup === id));
 }
-function setWordsCombo(gameMode, key) {
-  if (!state.wordsCombo) state.wordsCombo = {};
-  state.wordsCombo[gameMode + ':' + state.lang] = key;
+function getAvailableCategories(mode, lang, age) {
+  const combos = getAvailableOraWordsCombos(mode, lang).filter(c => c.ageGroup === age);
+  return ORAWORDS_CATEGORIES.map(c => c.id).filter(id => combos.some(c => c.category === id));
+}
+function getAvailableDifficulties(mode, lang, age, category) {
+  const combos = getAvailableOraWordsCombos(mode, lang).filter(c => c.ageGroup === age && c.category === category);
+  return ['easy', 'medium', 'hard'].filter(d => combos.some(c => c.difficulty === d));
+}
+// Coerce a (possibly stale/partial) selection into a fully valid combo, cascading
+// age -> category -> difficulty and picking the first valid option at each level.
+function resolveValidOraWordsCombo(mode, lang, sel) {
+  sel = sel || {};
+  const ages = getAvailableAgeGroups(mode, lang);
+  if (!ages.length) return null;
+  const ageGroup = ages.indexOf(sel.ageGroup) !== -1 ? sel.ageGroup : ages[0];
+  const cats = getAvailableCategories(mode, lang, ageGroup);
+  const category = cats.indexOf(sel.category) !== -1 ? sel.category : cats[0];
+  const diffs = getAvailableDifficulties(mode, lang, ageGroup, category);
+  const difficulty = diffs.indexOf(sel.difficulty) !== -1 ? sel.difficulty : diffs[0];
+  return { language:lang, gameMode:mode, ageGroup, category, difficulty };
+}
+// The combo a mode plays now: the player's stored selection coerced to a valid
+// combo, falling back to `fallback` if a mode has no playable bank at all.
+function resolveWordsCombo(mode, fallback) {
+  const lang = state.lang;
+  const stored = state.wordsSel && state.wordsSel[mode + ':' + lang];
+  const resolved = resolveValidOraWordsCombo(mode, lang, stored || { ageGroup:fallback.ageGroup, category:fallback.category, difficulty:fallback.difficulty });
+  return resolved || { language:lang, gameMode:mode, ageGroup:fallback.ageGroup, category:fallback.category, difficulty:fallback.difficulty };
+}
+// Update one dimension of the selection, then re-resolve so dependent dimensions
+// stay valid (cascade). Re-renders the setup screen.
+function setWordsSel(mode, field, value) {
+  const lang = state.lang;
+  if (!state.wordsSel) state.wordsSel = {};
+  const k = mode + ':' + lang;
+  const cur = state.wordsSel[k] || resolveValidOraWordsCombo(mode, lang, {});
+  if (!cur) return;
+  const next = { ageGroup:cur.ageGroup, category:cur.category, difficulty:cur.difficulty };
+  next[field] = value;
+  state.wordsSel[k] = resolveValidOraWordsCombo(mode, lang, next);
   render();
 }
-// Renders a real <select> when more than one combo has data, otherwise shows the
-// fixed values as non-interactive "current challenge" metadata. Adds honest notes.
-function oraWordsComboPanel(gameMode, combo) {
-  const valid = getOraWordsValidCombos(gameMode, state.lang);
-  const selKey = oraWordsComboKey(combo);
-  const cur = valid.find(c => oraWordsComboKey(c) === selKey);
+// Reusable OraQuest-style choice cards. items: [{ value, label, emoji }].
+function renderChoiceCardGroup(headerLabel, items, currentValue, mode, field, cols) {
+  return `
+          <div>
+            <h2 class="font-semibold mb-3 text-left">${headerLabel}</h2>
+            <div class="grid ${cols || 'grid-cols-2 sm:grid-cols-3'} gap-2">
+              ${items.map(it => `
+                <button onclick="setWordsSel('${mode}','${field}','${it.value}')" class="select-cell p-3 text-center ${it.value === currentValue ? 'is-selected border-brand-violet bg-violet-50' : 'border-slate-200'} focus-ring">
+                  ${it.emoji ? `<div class="text-2xl">${it.emoji}</div>` : ''}
+                  <div class="text-sm font-semibold ${it.emoji ? 'mt-1' : ''}">${it.label}</div>
+                </button>`).join('')}
+            </div>
+          </div>`;
+}
+// OraWords setup panel: OraQuest-style cards when more than one bank exists,
+// honest non-interactive "Current challenge" when only one does.
+function oraWordsSetupPanel(mode, combo) {
+  const lang = state.lang;
+  const combos = getAvailableOraWordsCombos(mode, lang);
   const diffLabel = d => t('difficulty' + d.charAt(0).toUpperCase() + d.slice(1));
   const ageLabel = a => ageName(AGE_GROUPS.find(g => g.id === a) || AGE_GROUPS[5]);
-  const cells = `
-          <div class="mt-6 grid sm:grid-cols-3 gap-3 text-sm">
-            <div class="ui-cell p-4"><div class="text-[11px] uppercase tracking-wide text-slate-400">${t('metaCategory')}</div><strong class="block mt-1">${wordCatName(combo.category)}</strong></div>
-            <div class="ui-cell p-4"><div class="text-[11px] uppercase tracking-wide text-slate-400">${t('metaAge')}</div><strong class="block mt-1">${ageLabel(combo.ageGroup)}</strong></div>
-            <div class="ui-cell p-4"><div class="text-[11px] uppercase tracking-wide text-slate-400">${t('metaDifficulty')}</div><strong class="block mt-1">${diffLabel(combo.difficulty)}</strong></div>
-          </div>`;
-  const smallNote = (cur && cur.count < 30)
-    ? `<p class="mt-2 text-xs text-amber-600">${t('metaSmallBank')}</p>` : '';
-  if (valid.length > 1) {
-    const options = valid.map(c => {
-      const k = oraWordsComboKey(c);
-      const label = wordCatName(c.category) + ' · ' + ageLabel(c.ageGroup) + ' · ' + diffLabel(c.difficulty);
-      return `<option value="${k}"${k === selKey ? ' selected' : ''}>${label}</option>`;
-    }).join('');
+  const ageEmoji = a => (AGE_GROUPS.find(g => g.id === a) || {}).emoji || '';
+  const cur = combos.find(c => c.ageGroup === combo.ageGroup && c.category === combo.category && c.difficulty === combo.difficulty);
+  const smallNote = (cur && cur.count < 30) ? `<p class="mt-4 text-xs text-amber-600 text-center">${t('metaSmallBank')}</p>` : '';
+  if (combos.length <= 1) {
     return `
-          <div class="mt-6 max-w-md mx-auto text-left">
-            <label for="words-set-${gameMode}" class="block text-sm font-medium text-slate-700">${t('challengeSet')}</label>
-            <select id="words-set-${gameMode}" onchange="setWordsCombo('${gameMode}', this.value)" class="mt-1 w-full px-3 py-2 rounded-lg border border-slate-300 bg-white focus-ring">${options}</select>
-            <p class="mt-1 text-xs text-slate-400">${t('onlyAvailableBanks')}</p>
-          </div>
-          ${cells}${smallNote}`;
+          <div class="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-5">
+            <p class="text-[11px] uppercase tracking-wide text-slate-400">${t('currentChallenge')}</p>
+            <p class="mt-1 font-display text-lg font-bold text-slate-900">${wordCatName(combo.category)} · ${ageLabel(combo.ageGroup)} · ${diffLabel(combo.difficulty)}</p>
+            <p class="mt-2 text-xs text-slate-400">${t('metaMoreSoon')}</p>
+          </div>${smallNote}`;
   }
+  const ages = getAvailableAgeGroups(mode, lang).map(a => ({ value:a, label:ageLabel(a), emoji:ageEmoji(a) }));
+  const cats = getAvailableCategories(mode, lang, combo.ageGroup).map(c => ({ value:c, label:wordCatName(c) }));
+  const diffs = getAvailableDifficulties(mode, lang, combo.ageGroup, combo.category).map(d => ({ value:d, label:diffLabel(d) }));
   return `
-          <p class="mt-6 text-[11px] uppercase tracking-wide text-slate-400">${t('currentChallenge')}</p>
-          ${cells}
-          <p class="mt-3 text-xs text-slate-400">${t('metaMoreSoon')}</p>${smallNote}`;
+          <div class="mt-6 card p-5 md:p-6 space-y-6 text-left">
+            ${renderChoiceCardGroup(t('metaAge'), ages, combo.ageGroup, mode, 'ageGroup', 'grid-cols-2 sm:grid-cols-4')}
+            ${renderChoiceCardGroup(t('metaCategory'), cats, combo.category, mode, 'category', 'grid-cols-2 sm:grid-cols-4')}
+            ${renderChoiceCardGroup(t('metaDifficulty'), diffs, combo.difficulty, mode, 'difficulty', 'grid-cols-3')}
+            <p class="text-xs text-slate-400">${t('onlyAvailableBanks')}</p>
+          </div>${smallNote}`;
 }
 function defaultSpellingCombo() {
   const byLang = {
@@ -6689,7 +6724,7 @@ function viewSpellingSprint() {
           <span class="chip bg-emerald-100 text-emerald-800">✍️ ${wordModeName('spelling-sprint')}</span>
           <h1 class="mt-4 font-display text-3xl md:text-4xl font-bold">${wordModeName('spelling-sprint')}</h1>
           <p class="mt-3 text-slate-600">${pick({en:'Choose the correctly spelled word. Questions and options are shuffled every round.', es:'Elige la palabra escrita correctamente. Las preguntas y opciones se mezclan en cada ronda.', fr:'Choisis le mot correctement orthographié. Les questions et options sont mélangées à chaque manche.'})}</p>
-          ${oraWordsComboPanel('spelling-sprint', combo)}
+          ${oraWordsSetupPanel('spelling-sprint', combo)}
           ${available
             ? `<button onclick="startSpellingSprint()" class="mt-7 btn-primary">▶ ${t('startQuiz')}</button>`
             : `<div class="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">${pick({en:'Not enough word challenges yet. Try another category or difficulty.', es:'Todavía no hay suficientes retos de palabras. Prueba otra categoría o dificultad.', fr:'Il n’y a pas encore assez de défis de mots. Essaie une autre catégorie ou difficulté.'})}</div>`}
@@ -6848,7 +6883,7 @@ function viewVocabQuest() {
           <span class="chip bg-emerald-100 text-emerald-800">📖 ${wordModeName('vocabulary-quest')}</span>
           <h1 class="mt-4 font-display text-3xl md:text-4xl font-bold">${wordModeName('vocabulary-quest')}</h1>
           <p class="mt-3 text-slate-600">${pick({en:'Choose the word closest in meaning. Questions and options are shuffled every round.', es:'Elige la palabra de significado más cercano. Las preguntas y opciones se mezclan en cada ronda.', fr:'Choisis le mot au sens le plus proche. Les questions et options sont mélangées à chaque manche.'})}</p>
-          ${oraWordsComboPanel('vocabulary-quest', combo)}
+          ${oraWordsSetupPanel('vocabulary-quest', combo)}
           ${available
             ? `<button onclick="startVocabQuest()" class="mt-7 btn-primary">▶ ${t('startQuiz')}</button>`
             : `<div class="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">${pick({en:'Not enough word challenges yet. Try another category or difficulty.', es:'Todavía no hay suficientes retos de palabras. Prueba otra categoría o dificultad.', fr:'Il n’y a pas encore assez de défis de mots. Essaie une autre catégorie ou difficulté.'})}</div>`}
@@ -7179,7 +7214,7 @@ function viewAnagramChallenge() {
           <span class="chip bg-emerald-100 text-emerald-800">🔀 ${wordModeName('anagram-challenge')}</span>
           <h1 class="mt-4 font-display text-3xl md:text-4xl font-bold">${wordModeName('anagram-challenge')}</h1>
           <p class="mt-3 text-slate-600">${pick({en:'Unscramble the letters to find the word. You get three tries, with a hint after a miss.', es:'Ordena las letras para encontrar la palabra. Tienes tres intentos, con una pista tras fallar.', fr:'Remets les lettres dans l’ordre pour trouver le mot. Tu as trois essais, avec un indice après une erreur.'})}</p>
-          ${oraWordsComboPanel('anagram-challenge', combo)}
+          ${oraWordsSetupPanel('anagram-challenge', combo)}
           ${available
             ? `<button onclick="startAnagramChallenge()" class="mt-7 btn-primary">▶ ${t('startQuiz')}</button>`
             : `<div class="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">${pick({en:'Not enough anagrams yet. Try another category or difficulty.', es:'Todavía no hay suficientes anagramas. Prueba otra categoría o dificultad.', fr:'Il n’y a pas encore assez d’anagrammes. Essaie une autre catégorie ou difficulté.'})}</div>`}
