@@ -30,12 +30,13 @@ Note: `tools/` is **gitignored** (generators do not deploy) — they are local d
 helpers only. `ads.txt` is a placeholder comment until the real AdSense publisher
 ID exists; do not invent a `pub-XXXX` id.
 
-## OraGuess (guess game) — fairness notes (Fase 2e tanda 1 — done)
+## OraGuess (guess game) — fairness + education notes (Fase 2e tandas 1–2 — done)
 
 The guess game lives in `OraQuest.html`: `ANIMALS` bank (100 entries, en/es/fr,
-each with `emoji`, `category`, `difficulty`, a free `starterClue`, 3 extra
-`clues`, 2 `facts`, optional `aliases`) + engine wrapped in
-`__GUESSENGINE_START__/END__` sentinels.
+each with `emoji`, `category`, `difficulty`, structured taxonomy
+(`animalClass`, `habitat`, `diet`, `size`, `region[]`, `lifestyle`, optional
+`role`, `traits[]`), a free `starterClue`, 3 extra `clues`, 2 `facts`, optional
+`aliases`) + engine wrapped in `__GUESSENGINE_START__/END__` sentinels.
 
 **Clue flow:** every round opens with the `starterClue` shown free (it does NOT
 count toward score). The 3 `clues` are the "extra clues" revealed on demand via
@@ -55,9 +56,30 @@ Fixed the "tigre → oso" unfairness (generic clues + harsh scoring):
 - **Discriminant first clues** for confusable animals (bear, lion, fox, spider,
   worm, newt, salamander). Keep the first clue specific enough to point at ~1 answer.
 
-Pending (approved plan, NOT yet done): taxonomy fixes (spider/scorpion=arachnid,
-snail=mollusk, worm=annelid), structured edu data (habitat/diet/region),
-difficulty/category selector, more animals (leopard/jaguar/puma), broader tests.
+**Taxonomy + educational data (tanda 2 — done).**
+- **Structured taxonomy** on all 100 animals as compact tokens, translated at
+  render time by `TAXO_I18N` (en/es/fr) via `taxoLabel()`. Token-based keeps the
+  bank small, consistent and testable (tests reject any out-of-vocab token). The
+  one-shot `tools/_add-taxonomy.js` (gitignored) injected the fields.
+- **Corrected classifications:** dolphin/whale/orca = mammal (not fish),
+  bat = mammal (not bird), penguin/ostrich = bird (flightless), spider/scorpion =
+  arachnid, snail/octopus/squid/oyster = mollusk, worm = annelid,
+  crab/lobster/shrimp = crustacean, jellyfish = cnidarian, frog/toad/newt/
+  salamander/axolotl = amphibian. `category` (gameplay grouping) was left intact;
+  `animalClass` is the taxonomic source of truth.
+- **Educational result card** (`GuessEduCard` + `animalEduCard()`): on every
+  resolved round (correct, 3 fails, or give-up) it shows name, type/class,
+  habitat, diet, region, size, lifestyle, role, traits, 2–3 facts and a
+  gender-safe "What you learned" sentence (`animalEduText()`), all in en/es/fr.
+- **Feedback:** correct → positive banner with points earned
+  (`guessRoundPoints()`); fail → encouragement + the key clue (`animalKeyClue()`,
+  the discriminant starter clue) before the card, then advance — no total Game
+  Over (per-round attempts still apply). `guess-engine.test.js` covers taxonomy,
+  trilingual cards, card-on-win/fail, and a full 10-round mixed flow.
+
+Pending (approved plan, NOT yet done): difficulty/category selector for OraGuess,
+large animal-bank expansion (e.g. leopard/jaguar/puma), possible new categories,
+and any later tests/UX polish.
 
 ## Validation
 - `npm run lint` — lints the inline `<script>` block
