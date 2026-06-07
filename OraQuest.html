@@ -466,6 +466,11 @@ const I18N = {
     pickAge: 'Pick your age group',
     pickCat: 'Pick a category',
     pickDiff: 'Pick difficulty',
+    metaCategory: 'Category', metaAge: 'Age group', metaDifficulty: 'Difficulty',
+    metaMoreSoon: 'More categories and difficulty options will be added as the word banks grow.',
+    currentChallenge: 'Current challenge',
+    onlyAvailableBanks: 'Only available word banks are shown.',
+    metaSmallBank: 'This set has a smaller word bank and may repeat sooner.',
     pickTimer: 'Timer (optional)',
     timerOn: 'On (15s per question)',
     timerOff: 'Off — take your time',
@@ -719,6 +724,11 @@ const I18N = {
     pickAge: 'Elige tu grupo de edad',
     pickCat: 'Elige una categoría',
     pickDiff: 'Elige dificultad',
+    metaCategory: 'Categoría', metaAge: 'Grupo de edad', metaDifficulty: 'Dificultad',
+    metaMoreSoon: 'Añadiremos más categorías y niveles cuando los bancos de palabras crezcan.',
+    currentChallenge: 'Reto actual',
+    onlyAvailableBanks: 'Solo se muestran bancos de palabras disponibles.',
+    metaSmallBank: 'Este conjunto tiene un banco más pequeño y puede repetirse antes.',
     pickTimer: 'Temporizador (opcional)',
     timerOn: 'Activado (15s por pregunta)',
     timerOff: 'Desactivado — tómate tu tiempo',
@@ -972,6 +982,11 @@ const I18N = {
     pickAge: 'Choisis ta tranche d\'âge',
     pickCat: 'Choisis une catégorie',
     pickDiff: 'Choisis la difficulté',
+    metaCategory: 'Catégorie', metaAge: 'Groupe d’âge', metaDifficulty: 'Difficulté',
+    metaMoreSoon: 'D’autres catégories et niveaux seront ajoutés à mesure que les banques de mots s’enrichissent.',
+    currentChallenge: 'Défi actuel',
+    onlyAvailableBanks: 'Seules les banques de mots disponibles sont affichées.',
+    metaSmallBank: 'Cet ensemble a une banque plus petite et peut se répéter plus vite.',
     pickTimer: 'Minuteur (facultatif)',
     timerOn: 'Activé (15 s par question)',
     timerOff: 'Désactivé — prends ton temps',
@@ -5407,7 +5422,25 @@ const ORAWORDS_BANK = {
       ['window','windo','windoe','winndow','Window ends with ow.'],
       ['picture','picter','pictur','pitcher','Picture includes the ture ending.'],
       ['travel','travell','travil','traval','Travel has one l in standard US/UK base spelling.'],
-      ['garden','gardin','gardan','gardenn','Garden ends with en.']
+      ['garden','gardin','gardan','gardenn','Garden ends with en.'],
+      ['morning','morming','mornning','moarning','Morning is spelled m-o-r-n-i-n-g.'],
+      ['evening','evning','eveming','eveening','Evening keeps the e after v: e-v-e-n-i-n-g.'],
+      ['weather','wether','weathar','wheather','Weather begins with wea and ends with ther.'],
+      ['butter','buter','buttar','bbutter','Butter has double t.'],
+      ['yellow','yelow','yellou','yallow','Yellow has double l.'],
+      ['pencil','pencle','pensil','penncil','Pencil ends with c-i-l.'],
+      ['summer','sumer','summmer','sommer','Summer has double m.'],
+      ['winter','winer','wintter','wintar','Winter is spelled w-i-n-t-e-r.'],
+      ['kitchen','kichen','kitchin','kitchenn','Kitchen has a t before chen: kit-chen.'],
+      ['animal','aminal','animel','annimal','Animal is spelled a-n-i-m-a-l.'],
+      ['water','watter','waer','watar','Water has one t.'],
+      ['bicycle','bycicle','bicicle','bicyle','Bicycle is spelled b-i-c-y-c-l-e.'],
+      ['birthday','birthay','birtday','birthdey','Birthday joins birth and day.'],
+      ['breakfast','breakfest','brekfast','breakfust','Breakfast joins break and fast.'],
+      ['chocolate','choclate','chocolat','chocalate','Chocolate has cho-co-late.'],
+      ['mountain','mountian','montain','mountainn','Mountain ends with tain.'],
+      ['umbrella','umbrela','umberella','umbrellla','Umbrella has double l.'],
+      ['holiday','holliday','holaday','holidey','Holiday has one l: ho-li-day.']
     ]),
     ...makeSpellingSet('spell-en-advanced-teens-hard', 'en', 'advanced', 'teens', 'hard', [
       ['conscience','consciense','concience','consience','Conscience includes sci in the middle.'],
@@ -5449,7 +5482,25 @@ const ORAWORDS_BANK = {
       ['camino','kamino','camínoz','caminno','Camino se escribe con c y sin tilde.'],
       ['jardín','jardim','gardín','jardínn','Jardín lleva j y tilde en í.'],
       ['lápiz','lapis','lápiso','lápyz','Lápiz lleva tilde en á y termina en z.'],
-      ['música','mucica','múzica','músika','Música lleva tilde en ú y se escribe con s.']
+      ['música','mucica','múzica','músika','Música lleva tilde en ú y se escribe con s.'],
+      ['cuaderno','quaderno','cuaderrno','cuadermo','Cuaderno se escribe con c.'],
+      ['biblioteca','viblioteca','biblioteka','bibliuteca','Biblioteca lleva b y c.'],
+      ['naranja','naranya','narangha','naranjja','Naranja se escribe con j.'],
+      ['cocina','kocina','cosina','cocinna','Cocina se escribe con c.'],
+      ['caballo','cabayo','cavallo','caballlo','Caballo lleva b y doble l.'],
+      ['verano','berano','veranno','verrano','Verano se escribe con v.'],
+      ['invierno','imbierno','invvierno','inviermo','Invierno se escribe con v.'],
+      ['playa','plalla','plaia','pllaya','Playa se escribe con y.'],
+      ['montaña','montania','montanya','montaja','Montaña lleva ñ.'],
+      ['pájaro','pagaro','pajharo','pajarro','Pájaro lleva j y tilde en á.'],
+      ['comida','komida','comyda','commida','Comida se escribe con c y m.'],
+      ['bicicleta','bicikleta','vicicleta','bicecleta','Bicicleta lleva c.'],
+      ['hermano','ermano','hermanno','hermamo','Hermano lleva h inicial.'],
+      ['guitarra','gitarra','guittarra','guitara','Guitarra lleva gu y doble r.'],
+      ['mariposa','maripossa','marriposa','maripoza','Mariposa se escribe con s.'],
+      ['pelota','peluta','pellota','perlota','Pelota se escribe con una l.'],
+      ['ciudad','ciudadd','siudad','ciudada','Ciudad termina en d.'],
+      ['cumpleaños','cumpleagnos','cumplaños','cumpleanho','Cumpleaños lleva ñ.']
     ]),
     ...makeSpellingSet('spell-fr-everyday-family-easy', 'fr', 'everyday', 'family', 'easy', [
       ['école','écolleu','écolle','ékole','École commence par é et prend un seul l.'],
@@ -5463,7 +5514,25 @@ const ORAWORDS_BANK = {
       ['français','françaiz','françai','fransais','Français prend ç et se termine par ais.'],
       ['élève','élèvo','élavé','elèvez','Élève prend deux accents.'],
       ['voiture','vouture','voitture','voitur','Voiture contient oi et se termine par ure.'],
-      ['gâteau','gâteu','gatteau','gâto','Gâteau prend un accent circonflexe sur â.']
+      ['gâteau','gâteu','gatteau','gâto','Gâteau prend un accent circonflexe sur â.'],
+      ['fenêtre','fenettre','fenaitre','fenestre','Fenêtre prend un accent circonflexe sur le premier e.'],
+      ['chien','chein','chiien','chian','Chien s’écrit c-h-i-e-n.'],
+      ['soleil','soleille','souleil','solail','Soleil se termine par eil.'],
+      ['fleur','fleure','fluer','flleur','Fleur se termine par eur.'],
+      ['arbre','arbe','arrbre','arbree','Arbre s’écrit a-r-b-r-e.'],
+      ['livre','livr','liivre','livree','Livre se termine par re.'],
+      ['table','tabel','tablle','tabble','Table se termine par ble.'],
+      ['banane','bannane','bananne','bananee','Banane prend une seule n à chaque syllabe.'],
+      ['poisson','poison','poissson','poissont','Poisson prend deux s.'],
+      ['cheval','chevale','chveal','chevall','Cheval s’écrit c-h-e-v-a-l.'],
+      ['lumière','luumière','lumièrre','lumiaire','Lumière prend un accent grave sur le deuxième e.'],
+      ['musique','musik','musiqe','mousique','Musique se termine par que.'],
+      ['cuisine','cuisinne','quisine','cuissine','Cuisine s’écrit c-u-i-s-i-n-e.'],
+      ['nuage','nouage','nuaje','nuagge','Nuage se termine par ge.'],
+      ['montagne','montaigne','montagnne','montanne','Montagne s’écrit avec gn.'],
+      ['vélo','véleau','vélau','vbélo','Vélo prend un accent aigu sur le e.'],
+      ['crayon','craillon','craion','crayyon','Crayon s’écrit c-r-a-y-o-n.'],
+      ['orange','oranje','orrange','orangue','Orange se termine par ge.']
     ])
   ],
   'vocabulary-quest': [
@@ -5479,7 +5548,25 @@ const ORAWORDS_BANK = {
       ['ancient','old','modern','new','fresh','Ancient means very old.'],
       ['clever','smart','silly','slow','weak','Clever and smart mean quick to understand.'],
       ['begin','start','finish','stop','end','Begin and start both mean to commence.'],
-      ['strong','powerful','weak','soft','faint','Strong and powerful mean having great force.']
+      ['strong','powerful','weak','soft','faint','Strong and powerful mean having great force.'],
+      ['small','little','huge','loud','bright','Small and little mean not big.'],
+      ['cold','chilly','warm','happy','loud','Cold and chilly mean low temperature.'],
+      ['quiet','silent','loud','fast','bright','Quiet and silent mean making little noise.'],
+      ['pretty','lovely','ugly','heavy','slow','Pretty and lovely describe something nice to see.'],
+      ['tired','sleepy','awake','strong','happy','Tired and sleepy mean needing rest.'],
+      ['funny','amusing','boring','sad','slow','Funny and amusing make you laugh.'],
+      ['kind','caring','cruel','lazy','loud','Kind and caring mean gentle and thoughtful.'],
+      ['easy','simple','hard','heavy','dark','Easy and simple mean not difficult.'],
+      ['gift','present','rock','road','cloud','A gift is the same as a present.'],
+      ['little','tiny','giant','loud','warm','Little and tiny both mean very small.'],
+      ['shut','close','open','jump','sing','To shut is to close something.'],
+      ['jump','leap','sit','sleep','talk','Jump and leap mean to spring up.'],
+      ['shout','yell','whisper','walk','read','Shout and yell mean to call out loudly.'],
+      ['neat','tidy','messy','dark','slow','Neat and tidy mean well organised.'],
+      ['rich','wealthy','poor','empty','tiny','Rich and wealthy mean having a lot.'],
+      ['idea','thought','wall','floor','stone','An idea is a thought in your mind.'],
+      ['help','assist','ignore','break','drop','Help and assist mean to support someone.'],
+      ['old','aged','new','fast','empty','Old and aged mean having lived a long time.']
     ]),
     ...makeVocabSet('vocab-es-everyday-family-easy', 'es', 'everyday', 'family', 'easy', [
       ['feliz','alegre','triste','cansado','enfadado','Feliz y alegre significan lo mismo.'],
@@ -5493,7 +5580,25 @@ const ORAWORDS_BANK = {
       ['inteligente','listo','tonto','lento','débil','Inteligente y listo significan que aprende rápido.'],
       ['fuerte','robusto','débil','suave','lento','Fuerte y robusto indican mucha fuerza.'],
       ['comenzar','empezar','terminar','parar','seguir','Comenzar y empezar significan iniciar.'],
-      ['difícil','complicado','fácil','simple','claro','Difícil y complicado significan que cuesta.']
+      ['difícil','complicado','fácil','simple','claro','Difícil y complicado significan que cuesta.'],
+      ['pequeño','chico','grande','lento','frío','Pequeño y chico significan de poco tamaño.'],
+      ['frío','helado','caliente','feliz','rápido','Frío y helado indican baja temperatura.'],
+      ['silencioso','callado','ruidoso','rápido','claro','Silencioso y callado hacen poco ruido.'],
+      ['cansado','agotado','despierto','fuerte','feliz','Cansado y agotado indican falta de energía.'],
+      ['divertido','gracioso','aburrido','triste','lento','Divertido y gracioso hacen reír.'],
+      ['amable','cariñoso','cruel','vago','ruidoso','Amable y cariñoso indican buen trato.'],
+      ['fácil','sencillo','difícil','pesado','oscuro','Fácil y sencillo significan poco complicado.'],
+      ['regalo','obsequio','piedra','calle','nube','Regalo y obsequio significan lo mismo.'],
+      ['camino','sendero','muro','techo','nube','Camino y sendero indican una vía para pasar.'],
+      ['valiente','audaz','cobarde','lento','triste','Valiente y audaz significan sin miedo.'],
+      ['saltar','brincar','sentarse','dormir','hablar','Saltar y brincar significan dar saltos.'],
+      ['gritar','chillar','susurrar','caminar','leer','Gritar y chillar significan dar voces.'],
+      ['limpio','aseado','sucio','oscuro','lento','Limpio y aseado indican sin suciedad.'],
+      ['idea','ocurrencia','pared','suelo','piedra','Una idea es una ocurrencia de la mente.'],
+      ['ayudar','auxiliar','ignorar','romper','soltar','Ayudar y auxiliar significan dar apoyo.'],
+      ['viejo','antiguo','nuevo','rápido','vacío','Viejo y antiguo significan de mucha edad.'],
+      ['triste','apenado','feliz','rápido','fuerte','Triste y apenado indican pena.'],
+      ['mojado','húmedo','seco','duro','claro','Mojado y húmedo indican con agua.']
     ]),
     ...makeVocabSet('vocab-fr-everyday-family-easy', 'fr', 'everyday', 'family', 'easy', [
       ['content','satisfait','triste','fatigué','fâché','Content et satisfait veulent dire la même chose.'],
@@ -5507,7 +5612,25 @@ const ORAWORDS_BANK = {
       ['fort','robuste','faible','doux','lent','Fort et robuste indiquent beaucoup de force.'],
       ['commencer','débuter','finir','arrêter','continuer','Commencer et débuter veulent dire démarrer.'],
       ['difficile','compliqué','facile','simple','clair','Difficile et compliqué veulent dire ardu.'],
-      ['heureux','ravi','triste','vide','lent','Heureux et ravi indiquent une grande joie.']
+      ['heureux','ravi','triste','vide','lent','Heureux et ravi indiquent une grande joie.'],
+      ['petit','minuscule','grand','lent','froid','Petit et minuscule veulent dire très petit.'],
+      ['froid','glacé','chaud','content','rapide','Froid et glacé indiquent une basse température.'],
+      ['calme','tranquille','bruyant','rapide','dur','Calme et tranquille veulent dire paisible.'],
+      ['fatigué','épuisé','éveillé','fort','content','Fatigué et épuisé veulent dire sans énergie.'],
+      ['drôle','amusant','ennuyeux','triste','lent','Drôle et amusant font rire.'],
+      ['gentil','aimable','cruel','paresseux','bruyant','Gentil et aimable veulent dire bienveillant.'],
+      ['facile','simple','difficile','lourd','sombre','Facile et simple veulent dire peu compliqué.'],
+      ['cadeau','présent','pierre','rue','nuage','Cadeau et présent veulent dire la même chose.'],
+      ['chemin','sentier','mur','toit','nuage','Chemin et sentier indiquent une voie.'],
+      ['courageux','brave','peureux','lent','triste','Courageux et brave veulent dire sans peur.'],
+      ['sauter','bondir','tomber','dormir','parler','Sauter et bondir veulent dire faire des sauts.'],
+      ['crier','hurler','chuchoter','marcher','lire','Crier et hurler veulent dire parler très fort.'],
+      ['propre','net','sale','sombre','lent','Propre et net veulent dire sans saleté.'],
+      ['idée','pensée','mur','sol','pierre','Une idée est une pensée de l’esprit.'],
+      ['aider','assister','ignorer','casser','lâcher','Aider et assister veulent dire soutenir.'],
+      ['vieux','ancien','neuf','rapide','vide','Vieux et ancien veulent dire d’un grand âge.'],
+      ['triste','malheureux','heureux','rapide','fort','Triste et malheureux indiquent du chagrin.'],
+      ['mouillé','humide','sec','dur','clair','Mouillé et humide veulent dire avec de l’eau.']
     ])
   ],
   'letter-rush': [],
@@ -5525,7 +5648,25 @@ const ORAWORDS_BANK = {
       ['ORANGE','A round citrus fruit'],
       ['SCHOOL','You go there to learn'],
       ['FLOWER','It blooms in spring'],
-      ['BRIDGE','It crosses a river']
+      ['BRIDGE','It crosses a river'],
+      ['APPLE','A fruit that can be red or green'],
+      ['TABLE','You eat your meals on it'],
+      ['CHAIR','You sit on it'],
+      ['MONKEY','An animal that loves bananas'],
+      ['PENCIL','You write with it'],
+      ['WINDOW','You look outside through it'],
+      ['ANIMAL','A living creature, like a dog or cat'],
+      ['SUMMER','The warmest season'],
+      ['WINTER','The coldest season'],
+      ['ISLAND','Land surrounded by water'],
+      ['CASTLE','A big stone home for a king or queen'],
+      ['RABBIT','An animal with long ears'],
+      ['YELLOW','The colour of the sun'],
+      ['PURPLE','A colour mixing red and blue'],
+      ['MARKET','A place to buy fruit and food'],
+      ['ROCKET','It flies into space'],
+      ['JUNGLE','A thick tropical forest'],
+      ['CAMERA','You take photos with it']
     ]),
     ...makeAnagramSet('anagram-es-everyday-family-easy', 'es', 'everyday', 'family', 'easy', [
       ['CASA','Lugar donde vivimos'],
@@ -5539,7 +5680,25 @@ const ORAWORDS_BANK = {
       ['ESCUELA','Vas a aprender allí'],
       ['FLOR','Brota en primavera'],
       ['PUENTE','Cruza un río'],
-      ['MANZANA','Una fruta redonda']
+      ['MANZANA','Una fruta redonda'],
+      ['GATO','Mascota que maúlla'],
+      ['MESA','Comemos sobre ella'],
+      ['SILLA','Te sientas en ella'],
+      ['VENTANA','Miras afuera por ella'],
+      ['ARBOL','Tiene tronco y hojas'],
+      ['LECHE','Bebida blanca de la vaca'],
+      ['PELOTA','Juegas con ella y rebota'],
+      ['CABALLO','Animal que puedes montar'],
+      ['CONEJO','Animal de orejas largas'],
+      ['VERANO','La estación más calurosa'],
+      ['INVIERNO','La estación más fría'],
+      ['MARIPOSA','Insecto de alas de colores'],
+      ['CIUDAD','Lugar grande con muchas casas'],
+      ['NARANJA','Fruta redonda de color naranja'],
+      ['CAMINO','Sendero para pasar'],
+      ['BOSQUE','Lugar lleno de árboles'],
+      ['COCINA','Donde preparamos la comida'],
+      ['ZAPATO','Lo usas en el pie']
     ]),
     ...makeAnagramSet('anagram-fr-everyday-family-easy', 'fr', 'everyday', 'family', 'easy', [
       ['CHAT','Un animal qui ronronne'],
@@ -5553,7 +5712,25 @@ const ORAWORDS_BANK = {
       ['ECOLE','Tu y vas pour apprendre'],
       ['FLEUR','Elle pousse au printemps'],
       ['PONT','Il traverse une rivière'],
-      ['POMME','Un fruit rond']
+      ['POMME','Un fruit rond'],
+      ['CHIEN','Un animal qui aboie'],
+      ['TABLE','On y mange ses repas'],
+      ['CHAISE','On s’assoit dessus'],
+      ['FENETRE','On regarde dehors par elle'],
+      ['ARBRE','Il a un tronc et des feuilles'],
+      ['OISEAU','Un animal qui vole'],
+      ['POISSON','Il nage dans l’eau'],
+      ['VOITURE','On roule avec elle'],
+      ['LAPIN','Un animal aux longues oreilles'],
+      ['CHEVAL','Un animal qu’on peut monter'],
+      ['MONTAGNE','Un relief très haut'],
+      ['RIVIERE','De l’eau qui coule'],
+      ['ORANGE','Un fruit rond et orange'],
+      ['BANANE','Un fruit jaune et long'],
+      ['CUISINE','On y prépare les repas'],
+      ['VILLE','Un grand lieu avec des maisons'],
+      ['NUAGE','Il flotte dans le ciel'],
+      ['PAPILLON','Un insecte aux ailes colorées']
     ])
   ],
   'word-search': [],
@@ -6376,6 +6553,109 @@ function viewWords() {
   </div>`;
 }
 
+/* -------- OraWords setup selection (OraQuest-style cards, real banks only) --------
+   Reusable across future Ora Universe word games. Options are derived straight
+   from ORAWORDS_BANK; a combo is offered only if its bank has at least
+   ORAWORDS_ROUND_SIZE active+reviewed items, so we never show a combination
+   without data. Selection cascades age -> category -> difficulty. */
+function getAvailableOraWordsCombos(mode, lang) {
+  const counts = {};
+  (ORAWORDS_BANK[mode] || []).forEach(it => {
+    if (it.active === false || it.reviewed === false || it.language !== lang) return;
+    const key = it.ageGroup + '|' + it.category + '|' + it.difficulty;
+    (counts[key] || (counts[key] = { ageGroup:it.ageGroup, category:it.category, difficulty:it.difficulty, count:0 })).count++;
+  });
+  return Object.keys(counts).map(k => counts[k]).filter(c => c.count >= ORAWORDS_ROUND_SIZE);
+}
+function getAvailableAgeGroups(mode, lang) {
+  const combos = getAvailableOraWordsCombos(mode, lang);
+  return AGE_GROUPS.map(a => a.id).filter(id => combos.some(c => c.ageGroup === id));
+}
+function getAvailableCategories(mode, lang, age) {
+  const combos = getAvailableOraWordsCombos(mode, lang).filter(c => c.ageGroup === age);
+  return ORAWORDS_CATEGORIES.map(c => c.id).filter(id => combos.some(c => c.category === id));
+}
+function getAvailableDifficulties(mode, lang, age, category) {
+  const combos = getAvailableOraWordsCombos(mode, lang).filter(c => c.ageGroup === age && c.category === category);
+  return ['easy', 'medium', 'hard'].filter(d => combos.some(c => c.difficulty === d));
+}
+// Coerce a (possibly stale/partial) selection into a fully valid combo, cascading
+// age -> category -> difficulty and picking the first valid option at each level.
+function resolveValidOraWordsCombo(mode, lang, sel) {
+  sel = sel || {};
+  const ages = getAvailableAgeGroups(mode, lang);
+  if (!ages.length) return null;
+  const ageGroup = ages.indexOf(sel.ageGroup) !== -1 ? sel.ageGroup : ages[0];
+  const cats = getAvailableCategories(mode, lang, ageGroup);
+  const category = cats.indexOf(sel.category) !== -1 ? sel.category : cats[0];
+  const diffs = getAvailableDifficulties(mode, lang, ageGroup, category);
+  const difficulty = diffs.indexOf(sel.difficulty) !== -1 ? sel.difficulty : diffs[0];
+  return { language:lang, gameMode:mode, ageGroup, category, difficulty };
+}
+// The combo a mode plays now: the player's stored selection coerced to a valid
+// combo, falling back to `fallback` if a mode has no playable bank at all.
+function resolveWordsCombo(mode, fallback) {
+  const lang = state.lang;
+  const stored = state.wordsSel && state.wordsSel[mode + ':' + lang];
+  const resolved = resolveValidOraWordsCombo(mode, lang, stored || { ageGroup:fallback.ageGroup, category:fallback.category, difficulty:fallback.difficulty });
+  return resolved || { language:lang, gameMode:mode, ageGroup:fallback.ageGroup, category:fallback.category, difficulty:fallback.difficulty };
+}
+// Update one dimension of the selection, then re-resolve so dependent dimensions
+// stay valid (cascade). Re-renders the setup screen.
+function setWordsSel(mode, field, value) {
+  const lang = state.lang;
+  if (!state.wordsSel) state.wordsSel = {};
+  const k = mode + ':' + lang;
+  const cur = state.wordsSel[k] || resolveValidOraWordsCombo(mode, lang, {});
+  if (!cur) return;
+  const next = { ageGroup:cur.ageGroup, category:cur.category, difficulty:cur.difficulty };
+  next[field] = value;
+  state.wordsSel[k] = resolveValidOraWordsCombo(mode, lang, next);
+  render();
+}
+// Reusable OraQuest-style choice cards. items: [{ value, label, emoji }].
+function renderChoiceCardGroup(headerLabel, items, currentValue, mode, field, cols) {
+  return `
+          <div>
+            <h2 class="font-semibold mb-3 text-left">${headerLabel}</h2>
+            <div class="grid ${cols || 'grid-cols-2 sm:grid-cols-3'} gap-2">
+              ${items.map(it => `
+                <button onclick="setWordsSel('${mode}','${field}','${it.value}')" class="select-cell p-3 text-center ${it.value === currentValue ? 'is-selected border-brand-violet bg-violet-50' : 'border-slate-200'} focus-ring">
+                  ${it.emoji ? `<div class="text-2xl">${it.emoji}</div>` : ''}
+                  <div class="text-sm font-semibold ${it.emoji ? 'mt-1' : ''}">${it.label}</div>
+                </button>`).join('')}
+            </div>
+          </div>`;
+}
+// OraWords setup panel: OraQuest-style cards when more than one bank exists,
+// honest non-interactive "Current challenge" when only one does.
+function oraWordsSetupPanel(mode, combo) {
+  const lang = state.lang;
+  const combos = getAvailableOraWordsCombos(mode, lang);
+  const diffLabel = d => t('difficulty' + d.charAt(0).toUpperCase() + d.slice(1));
+  const ageLabel = a => ageName(AGE_GROUPS.find(g => g.id === a) || AGE_GROUPS[5]);
+  const ageEmoji = a => (AGE_GROUPS.find(g => g.id === a) || {}).emoji || '';
+  const cur = combos.find(c => c.ageGroup === combo.ageGroup && c.category === combo.category && c.difficulty === combo.difficulty);
+  const smallNote = (cur && cur.count < 30) ? `<p class="mt-4 text-xs text-amber-600 text-center">${t('metaSmallBank')}</p>` : '';
+  if (combos.length <= 1) {
+    return `
+          <div class="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-5">
+            <p class="text-[11px] uppercase tracking-wide text-slate-400">${t('currentChallenge')}</p>
+            <p class="mt-1 font-display text-lg font-bold text-slate-900">${wordCatName(combo.category)} · ${ageLabel(combo.ageGroup)} · ${diffLabel(combo.difficulty)}</p>
+            <p class="mt-2 text-xs text-slate-400">${t('metaMoreSoon')}</p>
+          </div>${smallNote}`;
+  }
+  const ages = getAvailableAgeGroups(mode, lang).map(a => ({ value:a, label:ageLabel(a), emoji:ageEmoji(a) }));
+  const cats = getAvailableCategories(mode, lang, combo.ageGroup).map(c => ({ value:c, label:wordCatName(c) }));
+  const diffs = getAvailableDifficulties(mode, lang, combo.ageGroup, combo.category).map(d => ({ value:d, label:diffLabel(d) }));
+  return `
+          <div class="mt-6 card p-5 md:p-6 space-y-6 text-left">
+            ${renderChoiceCardGroup(t('metaAge'), ages, combo.ageGroup, mode, 'ageGroup', 'grid-cols-2 sm:grid-cols-4')}
+            ${renderChoiceCardGroup(t('metaCategory'), cats, combo.category, mode, 'category', 'grid-cols-2 sm:grid-cols-4')}
+            ${renderChoiceCardGroup(t('metaDifficulty'), diffs, combo.difficulty, mode, 'difficulty', 'grid-cols-3')}
+            <p class="text-xs text-slate-400">${t('onlyAvailableBanks')}</p>
+          </div>${smallNote}`;
+}
 function defaultSpellingCombo() {
   const byLang = {
     en: { gameMode:'spelling-sprint', category:'everyday', ageGroup:'family', difficulty:'easy' },
@@ -6387,7 +6667,7 @@ function defaultSpellingCombo() {
   return { language: state.lang, ...(byLang[state.lang] || byLang.en) };
 }
 function startSpellingSprint() {
-  const combo = defaultSpellingCombo();
+  const combo = resolveWordsCombo('spelling-sprint', defaultSpellingCombo());
   const items = selectRandomWordItems({ ...combo, count: ORAWORDS_ROUND_SIZE });
   if (items.length < ORAWORDS_ROUND_SIZE) {
     toast(pick({
@@ -6433,7 +6713,7 @@ function resetSpellingSprint() {
 }
 function viewSpellingSprint() {
   const s = state.wordsSession;
-  const combo = defaultSpellingCombo();
+  const combo = resolveWordsCombo('spelling-sprint', defaultSpellingCombo());
   const available = getOraWordsPool(combo).length >= ORAWORDS_ROUND_SIZE;
   if (!s || !state.params.play) {
     return `
@@ -6444,11 +6724,7 @@ function viewSpellingSprint() {
           <span class="chip bg-emerald-100 text-emerald-800">✍️ ${wordModeName('spelling-sprint')}</span>
           <h1 class="mt-4 font-display text-3xl md:text-4xl font-bold">${wordModeName('spelling-sprint')}</h1>
           <p class="mt-3 text-slate-600">${pick({en:'Choose the correctly spelled word. Questions and options are shuffled every round.', es:'Elige la palabra escrita correctamente. Las preguntas y opciones se mezclan en cada ronda.', fr:'Choisis le mot correctement orthographié. Les questions et options sont mélangées à chaque manche.'})}</p>
-          <div class="mt-6 grid sm:grid-cols-3 gap-3 text-sm">
-            <div class="ui-cell p-4"><strong>${wordCatName(combo.category)}</strong><div class="text-slate-500 mt-1">${t('pickCat')}</div></div>
-            <div class="ui-cell p-4"><strong>${ageName(AGE_GROUPS.find(a => a.id === combo.ageGroup) || AGE_GROUPS[5])}</strong><div class="text-slate-500 mt-1">${t('pickAge')}</div></div>
-            <div class="ui-cell p-4"><strong>${t('difficulty'+combo.difficulty.charAt(0).toUpperCase()+combo.difficulty.slice(1))}</strong><div class="text-slate-500 mt-1">${t('pickDiff')}</div></div>
-          </div>
+          ${oraWordsSetupPanel('spelling-sprint', combo)}
           ${available
             ? `<button onclick="startSpellingSprint()" class="mt-7 btn-primary">▶ ${t('startQuiz')}</button>`
             : `<div class="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">${pick({en:'Not enough word challenges yet. Try another category or difficulty.', es:'Todavía no hay suficientes retos de palabras. Prueba otra categoría o dificultad.', fr:'Il n’y a pas encore assez de défis de mots. Essaie une autre catégorie ou difficulté.'})}</div>`}
@@ -6564,7 +6840,7 @@ function saveWordQuizScore(s) {
 }
 
 function startVocabQuest() {
-  const combo = defaultVocabCombo();
+  const combo = resolveWordsCombo('vocabulary-quest', defaultVocabCombo());
   const items = selectRandomWordItems({ ...combo, count: ORAWORDS_ROUND_SIZE });
   if (items.length < ORAWORDS_ROUND_SIZE) {
     toast(pick({
@@ -6596,7 +6872,7 @@ function resetVocabQuest() {
 }
 function viewVocabQuest() {
   const s = state.wordsSession;
-  const combo = defaultVocabCombo();
+  const combo = resolveWordsCombo('vocabulary-quest', defaultVocabCombo());
   const available = getOraWordsPool(combo).length >= ORAWORDS_ROUND_SIZE;
   if (!s || !state.params.play) {
     return `
@@ -6607,11 +6883,7 @@ function viewVocabQuest() {
           <span class="chip bg-emerald-100 text-emerald-800">📖 ${wordModeName('vocabulary-quest')}</span>
           <h1 class="mt-4 font-display text-3xl md:text-4xl font-bold">${wordModeName('vocabulary-quest')}</h1>
           <p class="mt-3 text-slate-600">${pick({en:'Choose the word closest in meaning. Questions and options are shuffled every round.', es:'Elige la palabra de significado más cercano. Las preguntas y opciones se mezclan en cada ronda.', fr:'Choisis le mot au sens le plus proche. Les questions et options sont mélangées à chaque manche.'})}</p>
-          <div class="mt-6 grid sm:grid-cols-3 gap-3 text-sm">
-            <div class="ui-cell p-4"><strong>${wordCatName(combo.category)}</strong><div class="text-slate-500 mt-1">${t('pickCat')}</div></div>
-            <div class="ui-cell p-4"><strong>${ageName(AGE_GROUPS.find(a => a.id === combo.ageGroup) || AGE_GROUPS[5])}</strong><div class="text-slate-500 mt-1">${t('pickAge')}</div></div>
-            <div class="ui-cell p-4"><strong>${t('difficulty'+combo.difficulty.charAt(0).toUpperCase()+combo.difficulty.slice(1))}</strong><div class="text-slate-500 mt-1">${t('pickDiff')}</div></div>
-          </div>
+          ${oraWordsSetupPanel('vocabulary-quest', combo)}
           ${available
             ? `<button onclick="startVocabQuest()" class="mt-7 btn-primary">▶ ${t('startQuiz')}</button>`
             : `<div class="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">${pick({en:'Not enough word challenges yet. Try another category or difficulty.', es:'Todavía no hay suficientes retos de palabras. Prueba otra categoría o dificultad.', fr:'Il n’y a pas encore assez de défis de mots. Essaie une autre catégorie ou difficulté.'})}</div>`}
@@ -6852,7 +7124,7 @@ function defaultAnagramCombo() {
   return Object.assign({ language: state.lang }, { gameMode:'anagram-challenge', category:'everyday', ageGroup:'family', difficulty:'easy' });
 }
 function startAnagramChallenge() {
-  const combo = defaultAnagramCombo();
+  const combo = resolveWordsCombo('anagram-challenge', defaultAnagramCombo());
   const items = selectRandomWordItems({ ...combo, count: ORAWORDS_ROUND_SIZE });
   if (items.length < ORAWORDS_ROUND_SIZE) {
     toast(pick({
@@ -6931,7 +7203,7 @@ function nextAnagramItem() {
 }
 function viewAnagramChallenge() {
   const s = state.anagramSession;
-  const combo = defaultAnagramCombo();
+  const combo = resolveWordsCombo('anagram-challenge', defaultAnagramCombo());
   const available = getOraWordsPool(combo).length >= ORAWORDS_ROUND_SIZE;
   if (!s || !state.params.play) {
     return `
@@ -6942,11 +7214,7 @@ function viewAnagramChallenge() {
           <span class="chip bg-emerald-100 text-emerald-800">🔀 ${wordModeName('anagram-challenge')}</span>
           <h1 class="mt-4 font-display text-3xl md:text-4xl font-bold">${wordModeName('anagram-challenge')}</h1>
           <p class="mt-3 text-slate-600">${pick({en:'Unscramble the letters to find the word. You get three tries, with a hint after a miss.', es:'Ordena las letras para encontrar la palabra. Tienes tres intentos, con una pista tras fallar.', fr:'Remets les lettres dans l’ordre pour trouver le mot. Tu as trois essais, avec un indice après une erreur.'})}</p>
-          <div class="mt-6 grid sm:grid-cols-3 gap-3 text-sm">
-            <div class="ui-cell p-4"><strong>${wordCatName(combo.category)}</strong><div class="text-slate-500 mt-1">${t('pickCat')}</div></div>
-            <div class="ui-cell p-4"><strong>${ageName(AGE_GROUPS.find(a => a.id === combo.ageGroup) || AGE_GROUPS[5])}</strong><div class="text-slate-500 mt-1">${t('pickAge')}</div></div>
-            <div class="ui-cell p-4"><strong>${t('difficulty'+combo.difficulty.charAt(0).toUpperCase()+combo.difficulty.slice(1))}</strong><div class="text-slate-500 mt-1">${t('pickDiff')}</div></div>
-          </div>
+          ${oraWordsSetupPanel('anagram-challenge', combo)}
           ${available
             ? `<button onclick="startAnagramChallenge()" class="mt-7 btn-primary">▶ ${t('startQuiz')}</button>`
             : `<div class="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">${pick({en:'Not enough anagrams yet. Try another category or difficulty.', es:'Todavía no hay suficientes anagramas. Prueba otra categoría o dificultad.', fr:'Il n’y a pas encore assez d’anagrammes. Essaie une autre catégorie ou difficulté.'})}</div>`}
