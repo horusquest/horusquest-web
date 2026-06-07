@@ -530,6 +530,9 @@ const I18N = {
     eduTraits: 'Traits',
     eduRole: 'Role',
     eduLearnedTitle: 'What you learned',
+    guessNiceWork: 'Great job! +{pts} points',
+    guessKeyClueLabel: 'Key clue',
+    guessKeptGoing: 'No worries — every animal teaches you something new!',
     tryAnother: 'Try another animal',
     dailyDone: "You've already played today's Daily Quest. Come back tomorrow to keep your streak!",
     streakDays: 'day streak',
@@ -800,6 +803,9 @@ const I18N = {
     eduTraits: 'Rasgos',
     eduRole: 'Rol',
     eduLearnedTitle: 'Lo que aprendiste',
+    guessNiceWork: '¡Muy bien! +{pts} puntos',
+    guessKeyClueLabel: 'Pista clave',
+    guessKeptGoing: 'No pasa nada: ¡cada animal te enseña algo nuevo!',
     tryAnother: 'Probar otro animal',
     dailyDone: 'Ya jugaste el reto de hoy. ¡Vuelve mañana para mantener tu racha!',
     streakDays: 'días de racha',
@@ -1070,6 +1076,9 @@ const I18N = {
     eduTraits: 'Caractéristiques',
     eduRole: 'Rôle',
     eduLearnedTitle: 'Ce que tu as appris',
+    guessNiceWork: 'Bravo ! +{pts} points',
+    guessKeyClueLabel: 'Indice clé',
+    guessKeptGoing: 'Pas de souci : chaque animal t\'apprend quelque chose !',
     tryAnother: 'Essayer un autre animal',
     dailyDone: 'Tu as déjà joué le défi quotidien. Reviens demain pour garder ta série !',
     streakDays: 'jours de série',
@@ -8195,6 +8204,7 @@ function viewGuess() {
             <div class="text-5xl">${a.emoji}</div>
             <div class="mt-3 font-display text-2xl font-bold text-emerald-800">${t('correct')}</div>
             <div class="text-emerald-700 mt-1">${t('itWas')} <strong>${escapeHtml(name)}</strong></div>
+            <div class="mt-1 text-sm font-semibold text-emerald-600">${t('guessNiceWork').replace('{pts}', guessRoundPoints(gs.revealed))}</div>
             ${GuessEduCard(a)}
             <button onclick="nextAnimal()" class="mt-4 btn-primary w-full">${nextLabel}</button>
           </div>
@@ -8202,6 +8212,11 @@ function viewGuess() {
           <div class="mt-6 bg-amber-50 border border-amber-200 rounded-2xl p-6 text-center slide-up">
             <div class="text-5xl">${a.emoji}</div>
             <div class="mt-3 font-display text-2xl font-bold text-amber-800">${t('itWas')} <strong>${escapeHtml(name)}</strong></div>
+            <div class="mt-1 text-sm text-amber-700">${t('guessKeptGoing')}</div>
+            <div class="mt-3 text-left ui-cell p-3 bg-amber-100 border-amber-200">
+              <div class="text-[11px] font-semibold uppercase tracking-wide text-amber-700">🔑 ${t('guessKeyClueLabel')}</div>
+              <div class="text-sm text-amber-900 mt-0.5">${escapeHtml(animalKeyClue(a, state.lang))}</div>
+            </div>
             ${GuessEduCard(a)}
             <button onclick="nextAnimal()" class="mt-4 btn-primary w-full">${nextLabel}</button>
           </div>
@@ -9152,7 +9167,7 @@ function submitGuess() {
     gs.correct++;
     gs.streak++;
     if (gs.streak > gs.bestStreak) gs.bestStreak = gs.streak;
-    gs.score += Math.max(50, 300 - gs.revealed*50);
+    gs.score += guessRoundPoints(gs.revealed);
     render();
     trackEvent('guess_completed', { correct:true, cluesUsed:gs.revealed });
   } else {
@@ -9348,6 +9363,15 @@ function animalEduCard(a, lang) {
 // The education card shows whenever the round is resolved (won or revealed).
 function eduCardVisible(gs) {
   return !!(gs && (gs.guessed || gs.shownAnswer));
+}
+// The most discriminant clue (the free starter clue) — surfaced on a failed
+// round so the player learns why the answer fit, not just what it was.
+function animalKeyClue(a, lang) {
+  return (a.starterClue && (a.starterClue[lang] || a.starterClue.en)) || '';
+}
+// Points awarded for solving the current round (starter-only = full 300).
+function guessRoundPoints(revealed) {
+  return Math.max(50, 300 - (revealed || 0) * 50);
 }
 /* __GUESSENGINE_END__ (sentinel for tests/guess-engine.test.js — keep) */
 /* -------------------- LEADERBOARD ALIAS -------------------- */
