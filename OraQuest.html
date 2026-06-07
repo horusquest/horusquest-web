@@ -508,6 +508,7 @@ const I18N = {
     attemptsLeft: 'Attempts left',
     guessGameOver: 'Game Over',
     gameOverMsg: 'You have used your 3 attempts. The game is over.',
+    guessRoundOut: 'Out of tries for this animal — here it is! On to the next round.',
     guessTitle: 'Guess the Animal',
     guessIntro: 'I am thinking of an animal. Use the clues to guess before they all appear!',
     revealClue: 'Reveal next clue',
@@ -515,8 +516,10 @@ const I18N = {
     guessPlaceholder: 'Type your guess…',
     guessEmpty: 'Type your guess first.',
     guessWrong: 'Not quite! Try again or reveal another clue.',
-    showMe: "Show me the answer",
+    showMe: "I give up",
     clueN: 'Clue',
+    starterClueLabel: 'Starter clue',
+    extraCluesLabel: 'Extra clues',
     factsTitle: 'Fun facts',
     tryAnother: 'Try another animal',
     dailyDone: "You've already played today's Daily Quest. Come back tomorrow to keep your streak!",
@@ -766,6 +769,7 @@ const I18N = {
     attemptsLeft: 'Intentos restantes',
     guessGameOver: 'Fin de la partida',
     gameOverMsg: 'Has usado tus 3 intentos. La partida ha terminado.',
+    guessRoundOut: 'Sin intentos para este animal: ¡aquí está! Vamos a la siguiente ronda.',
     guessTitle: 'Adivina el animal',
     guessIntro: 'Estoy pensando en un animal. ¡Usa las pistas para adivinar antes de que aparezcan todas!',
     revealClue: 'Revelar siguiente pista',
@@ -773,8 +777,10 @@ const I18N = {
     guessPlaceholder: 'Escribe tu respuesta…',
     guessEmpty: 'Escribe tu respuesta primero.',
     guessWrong: '¡Casi! Inténtalo de nuevo o revela otra pista.',
-    showMe: 'Muéstrame la respuesta',
+    showMe: 'Me rindo',
     clueN: 'Pista',
+    starterClueLabel: 'Pista inicial',
+    extraCluesLabel: 'Pistas extra',
     factsTitle: 'Datos curiosos',
     tryAnother: 'Probar otro animal',
     dailyDone: 'Ya jugaste el reto de hoy. ¡Vuelve mañana para mantener tu racha!',
@@ -1024,6 +1030,7 @@ const I18N = {
     attemptsLeft: 'Essais restants',
     guessGameOver: 'Partie terminée',
     gameOverMsg: 'Tu as utilisé tes 3 essais. La partie est terminée.',
+    guessRoundOut: 'Plus d\'essais pour cet animal — le voici ! On passe à la ronde suivante.',
     guessTitle: 'Devine l\'animal',
     guessIntro: 'Je pense à un animal. Utilise les indices pour deviner avant qu\'ils ne soient tous révélés !',
     revealClue: 'Révéler le prochain indice',
@@ -1031,8 +1038,10 @@ const I18N = {
     guessPlaceholder: 'Écris ta réponse…',
     guessEmpty: 'Écris d\'abord ta réponse.',
     guessWrong: 'Presque ! Réessaie ou révèle un autre indice.',
-    showMe: 'Montre-moi la réponse',
+    showMe: 'J\'abandonne',
     clueN: 'Indice',
+    starterClueLabel: 'Indice de départ',
+    extraCluesLabel: 'Indices supplémentaires',
     factsTitle: 'Anecdotes',
     tryAnother: 'Essayer un autre animal',
     dailyDone: 'Tu as déjà joué le défi quotidien. Reviens demain pour garder ta série !',
@@ -4435,15 +4444,15 @@ const MAX_ALIAS_LENGTH = 4;
 /* Guess game animals - 100 curated, family-friendly entries.
    Each: name (3 langs), emoji, category, difficulty, 3 clues, 2 facts. */
 const ANIMALS = [
-  { name:{en:'Lion', es:'León', fr:'Lion'}, emoji:'🦁', category:'wild', difficulty:'easy', clues:[
-    {en:'I am a big cat.', es:'Soy un gran felino.', fr:'Je suis un grand félin.'},
+  { name:{en:'Lion', es:'León', fr:'Lion'}, emoji:'🦁', category:'wild', difficulty:'easy', starterClue:{en:'I am a large wild cat that lives in Africa.', es:'Soy un gran felino salvaje que vive en África.', fr:'Je suis un grand félin sauvage qui vit en Afrique.'}, clues:[
+    {en:'I am a big cat that lives in family groups on the African savanna.', es:'Soy un gran felino que vive en grupos familiares en la sabana africana.', fr:'Je suis un grand félin qui vit en groupes familiaux dans la savane africaine.'},
     {en:'I live in groups called prides.', es:'Vivo en grupos llamados manadas.', fr:'Je vis en groupes appelés des troupes.'},
     {en:'Male members often have a mane.', es:'Los machos suelen tener melena.', fr:'Les mâles ont souvent une crinière.'}
   ], facts:[
     {en:'Lions are the only cats that live in social groups.', es:'Los leones son los únicos felinos que viven en grupos sociales.', fr:'Les lions sont les seuls félins à vivre en groupes sociaux.'},
     {en:'A lion\'s roar can be heard from 8 kilometers away.', es:'El rugido de un león se oye a 8 kilómetros de distancia.', fr:'Le rugissement d\'un lion s\'entend à 8 kilomètres.'}
   ]},
-  { name:{en:'Elephant', es:'Elefante', fr:'Éléphant'}, emoji:'🐘', category:'wild', difficulty:'easy', clues:[
+  { name:{en:'Elephant', es:'Elefante', fr:'Éléphant'}, emoji:'🐘', category:'wild', difficulty:'easy', starterClue:{en:'I am a huge grey animal with big ears.', es:'Soy un animal enorme y gris con orejas grandes.', fr:'Je suis un énorme animal gris aux grandes oreilles.'}, clues:[
     {en:'I am the largest land animal.', es:'Soy el animal terrestre más grande.', fr:'Je suis le plus grand animal terrestre.'},
     {en:'I have a long trunk.', es:'Tengo una trompa larga.', fr:'J\'ai une longue trompe.'},
     {en:'I never forget a friend.', es:'Nunca olvido a un amigo.', fr:'Je n\'oublie jamais un ami.'}
@@ -4451,7 +4460,7 @@ const ANIMALS = [
     {en:'Elephants can recognize themselves in a mirror.', es:'Los elefantes pueden reconocerse en un espejo.', fr:'Les éléphants peuvent se reconnaître dans un miroir.'},
     {en:'They communicate using sounds too low for humans to hear.', es:'Se comunican con sonidos demasiado graves para el oído humano.', fr:'Ils communiquent grâce à des sons trop graves pour l\'oreille humaine.'}
   ]},
-  { name:{en:'Penguin', es:'Pingüino', fr:'Manchot'}, emoji:'🐧', category:'bird', difficulty:'easy', clues:[
+  { name:{en:'Penguin', es:'Pingüino', fr:'Manchot'}, emoji:'🐧', category:'bird', difficulty:'easy', starterClue:{en:'I am a black-and-white bird from cold places.', es:'Soy un ave blanca y negra de lugares fríos.', fr:'Je suis un oiseau noir et blanc des régions froides.'}, clues:[
     {en:'I am a bird but I cannot fly.', es:'Soy un ave pero no vuelo.', fr:'Je suis un oiseau mais je ne vole pas.'},
     {en:'I love to swim in cold oceans.', es:'Me encanta nadar en océanos fríos.', fr:'J\'adore nager dans les océans froids.'},
     {en:'I often live in Antarctica.', es:'Suelo vivir en la Antártida.', fr:'Je vis souvent en Antarctique.'}
@@ -4459,7 +4468,7 @@ const ANIMALS = [
     {en:'Emperor penguins can dive deeper than 500 meters.', es:'Los pingüinos emperador pueden bucear a más de 500 metros.', fr:'Les manchots empereurs peuvent plonger à plus de 500 mètres.'},
     {en:'They mate for life.', es:'Se emparejan de por vida.', fr:'Ils s\'accouplent pour la vie.'}
   ]},
-  { name:{en:'Giraffe', es:'Jirafa', fr:'Girafe'}, emoji:'🦒', category:'wild', difficulty:'easy', clues:[
+  { name:{en:'Giraffe', es:'Jirafa', fr:'Girafe'}, emoji:'🦒', category:'wild', difficulty:'easy', starterClue:{en:'I am a very tall African animal with spots.', es:'Soy un animal africano muy alto con manchas.', fr:'Je suis un animal africain très grand avec des taches.'}, clues:[
     {en:'I am the tallest land animal.', es:'Soy el animal terrestre más alto.', fr:'Je suis l\'animal terrestre le plus grand.'},
     {en:'I have a very long neck.', es:'Tengo un cuello muy largo.', fr:'J\'ai un cou très long.'},
     {en:'My tongue is dark purple.', es:'Mi lengua es morada oscura.', fr:'Ma langue est violet foncé.'}
@@ -4467,7 +4476,7 @@ const ANIMALS = [
     {en:'Giraffes only need about 30 minutes of sleep per day.', es:'Las jirafas solo necesitan unos 30 minutos de sueño al día.', fr:'Les girafes n\'ont besoin que d\'environ 30 minutes de sommeil par jour.'},
     {en:'They have the same number of neck bones as humans.', es:'Tienen el mismo número de vértebras cervicales que los humanos.', fr:'Elles ont le même nombre de vertèbres cervicales que les humains.'}
   ]},
-  { name:{en:'Dolphin', es:'Delfín', fr:'Dauphin'}, emoji:'🐬', category:'marine', difficulty:'medium', clues:[
+  { name:{en:'Dolphin', es:'Delfín', fr:'Dauphin'}, emoji:'🐬', category:'marine', difficulty:'medium', starterClue:{en:'I am a clever sea animal that breathes air.', es:'Soy un animal marino inteligente que respira aire.', fr:'Je suis un animal marin intelligent qui respire l\'air.'}, clues:[
     {en:'I live in the ocean but I breathe air.', es:'Vivo en el océano pero respiro aire.', fr:'Je vis dans l\'océan mais je respire de l\'air.'},
     {en:'I am very intelligent and playful.', es:'Soy muy inteligente y juguetón.', fr:'Je suis très intelligent et joueur.'},
     {en:'I use clicks and whistles to talk.', es:'Uso clics y silbidos para comunicarme.', fr:'J\'utilise des clics et des sifflements pour communiquer.'}
@@ -4475,7 +4484,7 @@ const ANIMALS = [
     {en:'Dolphins sleep with one eye open.', es:'Los delfines duermen con un ojo abierto.', fr:'Les dauphins dorment un œil ouvert.'},
     {en:'They use echolocation to "see" underwater.', es:'Usan la ecolocalización para "ver" bajo el agua.', fr:'Ils utilisent l\'écholocation pour « voir » sous l\'eau.'}
   ]},
-  { name:{en:'Octopus', es:'Pulpo', fr:'Pieuvre'}, emoji:'🐙', category:'marine', difficulty:'medium', clues:[
+  { name:{en:'Octopus', es:'Pulpo', fr:'Pieuvre'}, emoji:'🐙', category:'marine', difficulty:'medium', starterClue:{en:'I am a soft sea animal with many arms.', es:'Soy un animal marino blando con muchos brazos.', fr:'Je suis un animal marin mou avec plusieurs bras.'}, clues:[
     {en:'I live in the sea and I have eight arms.', es:'Vivo en el mar y tengo ocho brazos.', fr:'Je vis dans la mer et j\'ai huit bras.'},
     {en:'I have three hearts.', es:'Tengo tres corazones.', fr:'J\'ai trois cœurs.'},
     {en:'I can change color and texture.', es:'Puedo cambiar de color y textura.', fr:'Je peux changer de couleur et de texture.'}
@@ -4483,7 +4492,7 @@ const ANIMALS = [
     {en:'An octopus has blue blood.', es:'El pulpo tiene sangre azul.', fr:'La pieuvre a du sang bleu.'},
     {en:'Each arm has its own mini-brain.', es:'Cada brazo tiene su propio mini-cerebro.', fr:'Chaque bras possède son propre mini-cerveau.'}
   ]},
-  { name:{en:'Koala', es:'Koala', fr:'Koala'}, emoji:'🐨', category:'wild', difficulty:'medium', clues:[
+  { name:{en:'Koala', es:'Koala', fr:'Koala'}, emoji:'🐨', category:'wild', difficulty:'medium', starterClue:{en:'I am a small grey animal from Australia.', es:'Soy un pequeño animal gris de Australia.', fr:'Je suis un petit animal gris d\'Australie.'}, clues:[
     {en:'I live in Australia.', es:'Vivo en Australia.', fr:'Je vis en Australie.'},
     {en:'I eat eucalyptus leaves.', es:'Como hojas de eucalipto.', fr:'Je mange des feuilles d\'eucalyptus.'},
     {en:'I sleep up to 22 hours a day.', es:'Duermo hasta 22 horas al día.', fr:'Je dors jusqu\'à 22 heures par jour.'}
@@ -4491,7 +4500,7 @@ const ANIMALS = [
     {en:'Koalas have fingerprints almost identical to humans.', es:'Los koalas tienen huellas casi idénticas a las humanas.', fr:'Les koalas ont des empreintes digitales presque identiques à celles des humains.'},
     {en:'They are marsupials, not bears.', es:'Son marsupiales, no osos.', fr:'Ce sont des marsupiaux, pas des ours.'}
   ]},
-  { name:{en:'Panda', es:'Panda', fr:'Panda'}, emoji:'🐼', category:'wild', difficulty:'easy', clues:[
+  { name:{en:'Panda', es:'Panda', fr:'Panda'}, emoji:'🐼', category:'wild', difficulty:'easy', starterClue:{en:'I am a black-and-white animal from China.', es:'Soy un animal blanco y negro de China.', fr:'Je suis un animal noir et blanc de Chine.'}, clues:[
     {en:'I am black and white.', es:'Soy blanco y negro.', fr:'Je suis noir et blanc.'},
     {en:'I eat bamboo almost all day.', es:'Como bambú casi todo el día.', fr:'Je mange du bambou presque toute la journée.'},
     {en:'I live in China.', es:'Vivo en China.', fr:'Je vis en Chine.'}
@@ -4499,7 +4508,7 @@ const ANIMALS = [
     {en:'Pandas eat 12 to 38 kg of bamboo every day.', es:'Los pandas comen entre 12 y 38 kg de bambú al día.', fr:'Les pandas mangent de 12 à 38 kg de bambou par jour.'},
     {en:'A newborn panda is about the size of a stick of butter.', es:'Un panda recién nacido es del tamaño de una barra de mantequilla.', fr:'Un panda nouveau-né a à peu près la taille d\'une plaquette de beurre.'}
   ]},
-  { name:{en:'Kangaroo', es:'Canguro', fr:'Kangourou'}, emoji:'🦘', category:'wild', difficulty:'easy', clues:[
+  { name:{en:'Kangaroo', es:'Canguro', fr:'Kangourou'}, emoji:'🦘', category:'wild', difficulty:'easy', starterClue:{en:'I am an Australian animal that carries babies in a pouch.', es:'Soy un animal australiano que lleva a sus crías en una bolsa.', fr:'Je suis un animal australien qui porte ses petits dans une poche.'}, clues:[
     {en:'I hop on two strong legs.', es:'Salto sobre dos patas fuertes.', fr:'Je saute sur deux pattes puissantes.'},
     {en:'I carry my baby in a pouch.', es:'Llevo a mi cría en una bolsa.', fr:'Je porte mon petit dans une poche.'},
     {en:'I am from Australia.', es:'Soy de Australia.', fr:'Je viens d\'Australie.'}
@@ -4507,7 +4516,7 @@ const ANIMALS = [
     {en:'Kangaroos cannot walk backwards.', es:'Los canguros no pueden caminar hacia atrás.', fr:'Les kangourous ne peuvent pas marcher en arrière.'},
     {en:'They can jump over 8 meters in a single leap.', es:'Pueden saltar más de 8 metros de un solo salto.', fr:'Ils peuvent sauter plus de 8 mètres d\'un seul bond.'}
   ]},
-  { name:{en:'Owl', es:'Búho', fr:'Hibou'}, emoji:'🦉', category:'bird', difficulty:'easy', clues:[
+  { name:{en:'Owl', es:'Búho', fr:'Hibou'}, emoji:'🦉', category:'bird', difficulty:'easy', starterClue:{en:'I am a bird with big round eyes.', es:'Soy un ave de ojos grandes y redondos.', fr:'Je suis un oiseau aux grands yeux ronds.'}, clues:[
     {en:'I am a bird active at night.', es:'Soy un ave activa de noche.', fr:'Je suis un oiseau actif la nuit.'},
     {en:'I can turn my head almost all the way around.', es:'Puedo girar la cabeza casi por completo.', fr:'Je peux tourner la tête presque complètement.'},
     {en:'I hunt in silence.', es:'Cazo en silencio.', fr:'Je chasse en silence.'}
@@ -4515,7 +4524,7 @@ const ANIMALS = [
     {en:'Owls can rotate their heads up to 270 degrees.', es:'Los búhos pueden girar la cabeza hasta 270 grados.', fr:'Les hiboux peuvent tourner la tête jusqu\'à 270 degrés.'},
     {en:'They cannot move their eyes, so they turn their head.', es:'No pueden mover los ojos, así que giran la cabeza.', fr:'Ils ne peuvent pas bouger les yeux, alors ils tournent la tête.'}
   ]},
-  { name:{en:'Chameleon', es:'Camaleón', fr:'Caméléon'}, emoji:'🦎', category:'reptile', difficulty:'medium', clues:[
+  { name:{en:'Chameleon', es:'Camaleón', fr:'Caméléon'}, emoji:'🦎', category:'reptile', difficulty:'medium', starterClue:{en:'I am a slow reptile with a long tongue.', es:'Soy un reptil lento con una lengua larga.', fr:'Je suis un reptile lent à longue langue.'}, clues:[
     {en:'I am a reptile that changes color.', es:'Soy un reptil que cambia de color.', fr:'Je suis un reptile qui change de couleur.'},
     {en:'My eyes move independently.', es:'Mis ojos se mueven de forma independiente.', fr:'Mes yeux bougent indépendamment.'},
     {en:'I catch insects with a long sticky tongue.', es:'Atrapo insectos con una lengua larga y pegajosa.', fr:'J\'attrape les insectes avec une longue langue collante.'}
@@ -4523,7 +4532,7 @@ const ANIMALS = [
     {en:'Chameleons change color to communicate, not only to hide.', es:'Los camaleones cambian de color para comunicarse, no solo para esconderse.', fr:'Les caméléons changent de couleur pour communiquer, pas seulement pour se cacher.'},
     {en:'Their tongue can be twice as long as their body.', es:'Su lengua puede medir el doble que su cuerpo.', fr:'Leur langue peut être deux fois plus longue que leur corps.'}
   ]},
-  { name:{en:'Turtle', es:'Tortuga', fr:'Tortue'}, emoji:'🐢', category:'reptile', difficulty:'easy', clues:[
+  { name:{en:'Turtle', es:'Tortuga', fr:'Tortue'}, emoji:'🐢', category:'reptile', difficulty:'easy', starterClue:{en:'I am a slow reptile with a hard shell.', es:'Soy un reptil lento con un caparazón duro.', fr:'Je suis un reptile lent avec une carapace dure.'}, clues:[
     {en:'I carry my house on my back.', es:'Llevo mi casa a cuestas.', fr:'Je porte ma maison sur le dos.'},
     {en:'I move slowly on land.', es:'Me muevo despacio en tierra.', fr:'Je me déplace lentement sur la terre.'},
     {en:'I can live for more than a hundred years.', es:'Puedo vivir más de cien años.', fr:'Je peux vivre plus de cent ans.'}
@@ -4531,7 +4540,7 @@ const ANIMALS = [
     {en:'Sea turtles can navigate using Earth\'s magnetic field.', es:'Las tortugas marinas se orientan con el campo magnético terrestre.', fr:'Les tortues marines s\'orientent grâce au champ magnétique terrestre.'},
     {en:'Some turtles can breathe through their skin while hibernating.', es:'Algunas tortugas pueden respirar por la piel mientras hibernan.', fr:'Certaines tortues peuvent respirer par la peau pendant l\'hibernation.'}
   ]},
-  { name:{en:'Dog', es:'Perro', fr:'Chien'}, emoji:'🐕', category:'pet', difficulty:'easy', clues:[
+  { name:{en:'Dog', es:'Perro', fr:'Chien'}, emoji:'🐕', category:'pet', difficulty:'easy', starterClue:{en:'I am a friendly four-legged pet.', es:'Soy una mascota amistosa de cuatro patas.', fr:'Je suis un animal de compagnie amical à quatre pattes.'}, clues:[
     {en:'I am a loyal pet that loves to play fetch.', es:'Soy una mascota fiel que adora buscar la pelota.', fr:'Je suis un animal de compagnie fidèle qui adore rapporter la balle.'},
     {en:'I wag my tail when I am happy.', es:'Muevo la cola cuando estoy feliz.', fr:'Je remue la queue quand je suis content.'},
     {en:'I bark to talk to my human family.', es:'Ladro para hablar con mi familia humana.', fr:'J\'aboie pour parler à ma famille humaine.'}
@@ -4539,7 +4548,7 @@ const ANIMALS = [
     {en:'Dogs can learn more than 150 words.', es:'Los perros pueden aprender más de 150 palabras.', fr:'Les chiens peuvent apprendre plus de 150 mots.'},
     {en:'A dog\'s sense of smell is far stronger than a human\'s.', es:'El olfato de un perro es mucho más fuerte que el de una persona.', fr:'L\'odorat d\'un chien est bien plus puissant que celui d\'un humain.'}
   ]},
-  { name:{en:'Cat', es:'Gato', fr:'Chat'}, emoji:'🐈', category:'pet', difficulty:'easy', clues:[
+  { name:{en:'Cat', es:'Gato', fr:'Chat'}, emoji:'🐈', category:'pet', difficulty:'easy', starterClue:{en:'I am a furry pet that purrs.', es:'Soy una mascota peluda que ronronea.', fr:'Je suis un animal de compagnie poilu qui ronronne.'}, clues:[
     {en:'I am a soft pet that loves to nap.', es:'Soy una mascota suave que adora dormir la siesta.', fr:'Je suis un animal de compagnie tout doux qui adore faire la sieste.'},
     {en:'I purr when I feel happy.', es:'Ronroneo cuando estoy a gusto.', fr:'Je ronronne quand je suis content.'},
     {en:'I say meow to my owners.', es:'Digo miau a mis dueños.', fr:'Je dis miaou à mes maîtres.'}
@@ -4547,7 +4556,7 @@ const ANIMALS = [
     {en:'Cats sleep around 15 hours a day.', es:'Los gatos duermen unas 15 horas al día.', fr:'Les chats dorment environ 15 heures par jour.'},
     {en:'A cat can make over 100 different sounds.', es:'Un gato puede hacer más de 100 sonidos distintos.', fr:'Un chat peut produire plus de 100 sons différents.'}
   ]},
-  { name:{en:'Rabbit', es:'Conejo', fr:'Lapin'}, emoji:'🐇', category:'pet', difficulty:'easy', clues:[
+  { name:{en:'Rabbit', es:'Conejo', fr:'Lapin'}, emoji:'🐇', category:'pet', difficulty:'easy', starterClue:{en:'I am a small furry pet that hops.', es:'Soy una mascota pequeña y peluda que salta.', fr:'Je suis un petit animal de compagnie poilu qui saute.'}, clues:[
     {en:'I have long ears and a fluffy tail.', es:'Tengo orejas largas y una cola peludita.', fr:'J\'ai de longues oreilles et une petite queue touffue.'},
     {en:'I hop using my strong back legs.', es:'Salto con mis fuertes patas traseras.', fr:'Je saute grâce à mes pattes arrière puissantes.'},
     {en:'I love to nibble carrots and grass.', es:'Me encanta mordisquear zanahorias y hierba.', fr:'J\'adore grignoter des carottes et de l\'herbe.'}
@@ -4555,7 +4564,7 @@ const ANIMALS = [
     {en:'A rabbit\'s teeth never stop growing.', es:'Los dientes de un conejo no paran de crecer.', fr:'Les dents d\'un lapin ne cessent jamais de pousser.'},
     {en:'Rabbits can see almost all the way around their heads.', es:'Los conejos ven casi en todas las direcciones a la vez.', fr:'Les lapins voient presque tout autour de leur tête.'}
   ]},
-  { name:{en:'Hamster', es:'Hámster', fr:'Hamster'}, emoji:'🐹', category:'pet', difficulty:'easy', clues:[
+  { name:{en:'Hamster', es:'Hámster', fr:'Hamster'}, emoji:'🐹', category:'pet', difficulty:'easy', starterClue:{en:'I am a tiny furry pet.', es:'Soy una mascota diminuta y peluda.', fr:'Je suis un tout petit animal de compagnie poilu.'}, clues:[
     {en:'I am a tiny pet that fits in your hands.', es:'Soy una mascota diminuta que cabe en tus manos.', fr:'Je suis un tout petit animal qui tient dans tes mains.'},
     {en:'I stuff food in my cheek pouches.', es:'Guardo comida en las bolsas de mis mejillas.', fr:'Je stocke la nourriture dans mes joues.'},
     {en:'I love to run on a little wheel.', es:'Me encanta correr en una ruedita.', fr:'J\'adore courir dans une petite roue.'}
@@ -4563,7 +4572,7 @@ const ANIMALS = [
     {en:'Hamsters can carry food equal to half their weight in their cheeks.', es:'Los hámsteres pueden llevar en sus mejillas comida que pesa la mitad que ellos.', fr:'Les hamsters peuvent transporter dans leurs joues l\'équivalent de la moitié de leur poids.'},
     {en:'They are most active at night.', es:'Son más activos por la noche.', fr:'Ils sont surtout actifs la nuit.'}
   ]},
-  { name:{en:'Goldfish', es:'Pez dorado', fr:'Poisson rouge'}, emoji:'🐠', category:'pet', difficulty:'easy', clues:[
+  { name:{en:'Goldfish', es:'Pez dorado', fr:'Poisson rouge'}, emoji:'🐠', category:'pet', difficulty:'easy', starterClue:{en:'I am a small pet that lives in water.', es:'Soy una mascota pequeña que vive en el agua.', fr:'Je suis un petit animal de compagnie qui vit dans l\'eau.'}, clues:[
     {en:'I am a small orange pet that lives in water.', es:'Soy una mascota pequeña y naranja que vive en el agua.', fr:'Je suis un petit animal orange qui vit dans l\'eau.'},
     {en:'I swim in a bowl or a tank.', es:'Nado en una pecera o un acuario.', fr:'Je nage dans un bocal ou un aquarium.'},
     {en:'I breathe using my gills.', es:'Respiro con mis branquias.', fr:'Je respire grâce à mes branchies.'}
@@ -4571,7 +4580,7 @@ const ANIMALS = [
     {en:'Goldfish have a better memory than people think.', es:'Los peces dorados tienen mejor memoria de lo que se cree.', fr:'Le poisson rouge a une meilleure mémoire qu\'on ne le pense.'},
     {en:'Some goldfish can live for more than 20 years.', es:'Algunos peces dorados pueden vivir más de 20 años.', fr:'Certains poissons rouges peuvent vivre plus de 20 ans.'}
   ]},
-  { name:{en:'Parrot', es:'Loro', fr:'Perroquet'}, emoji:'🦜', category:'pet', difficulty:'medium', clues:[
+  { name:{en:'Parrot', es:'Loro', fr:'Perroquet'}, emoji:'🦜', category:'pet', difficulty:'medium', starterClue:{en:'I am a colorful pet bird.', es:'Soy un ave de compañía de colores.', fr:'Je suis un oiseau de compagnie coloré.'}, clues:[
     {en:'I am a colorful bird that can be a pet.', es:'Soy un ave colorida que puede ser mascota.', fr:'Je suis un oiseau coloré qui peut être un animal de compagnie.'},
     {en:'I can copy words that people say.', es:'Puedo repetir palabras que dicen las personas.', fr:'Je peux répéter les mots que disent les gens.'},
     {en:'I use my strong beak to crack seeds.', es:'Uso mi pico fuerte para abrir semillas.', fr:'J\'utilise mon bec puissant pour casser des graines.'}
@@ -4579,7 +4588,7 @@ const ANIMALS = [
     {en:'Some parrots can live for more than 50 years.', es:'Algunos loros pueden vivir más de 50 años.', fr:'Certains perroquets peuvent vivre plus de 50 ans.'},
     {en:'Parrots learn sounds by listening, like babies do.', es:'Los loros aprenden sonidos escuchando, como los bebés.', fr:'Les perroquets apprennent les sons en écoutant, comme les bébés.'}
   ]},
-  { name:{en:'Guinea pig', es:'Cobaya', fr:'Cochon d\'Inde'}, emoji:'🐹', category:'pet', difficulty:'medium', clues:[
+  { name:{en:'Guinea pig', es:'Cobaya', fr:'Cochon d\'Inde'}, emoji:'🐹', category:'pet', difficulty:'medium', aliases:['conejillo de indias'], starterClue:{en:'I am a small, round, furry pet.', es:'Soy una mascota pequeña, redonda y peluda.', fr:'Je suis un petit animal de compagnie rond et poilu.'}, clues:[
     {en:'I am a small, round pet with no tail.', es:'Soy una mascota pequeña y redondita sin cola.', fr:'Je suis un petit animal tout rond sans queue.'},
     {en:'I squeak and whistle when I am excited.', es:'Chillo y silbo cuando estoy emocionada.', fr:'Je couine et je siffle quand je suis content.'},
     {en:'I love to eat hay and fresh veggies.', es:'Me encanta comer heno y verduras frescas.', fr:'J\'adore manger du foin et des légumes frais.'}
@@ -4587,7 +4596,7 @@ const ANIMALS = [
     {en:'Guinea pigs are happiest when they live with a friend.', es:'Las cobayas son más felices cuando viven con una compañera.', fr:'Les cochons d\'Inde sont plus heureux à deux.'},
     {en:'They cannot make their own vitamin C, just like humans.', es:'No pueden fabricar su propia vitamina C, igual que las personas.', fr:'Ils ne fabriquent pas leur propre vitamine C, comme les humains.'}
   ]},
-  { name:{en:'Canary', es:'Canario', fr:'Canari'}, emoji:'🐤', category:'pet', difficulty:'medium', clues:[
+  { name:{en:'Canary', es:'Canario', fr:'Canari'}, emoji:'🐤', category:'pet', difficulty:'medium', starterClue:{en:'I am a tiny pet bird that sings.', es:'Soy una pequeña ave de compañía que canta.', fr:'Je suis un petit oiseau de compagnie qui chante.'}, clues:[
     {en:'I am a small yellow pet bird.', es:'Soy un pajarito amarillo de compañía.', fr:'Je suis un petit oiseau jaune de compagnie.'},
     {en:'I am famous for my beautiful singing.', es:'Soy famoso por mi precioso canto.', fr:'Je suis célèbre pour mon joli chant.'},
     {en:'I live in a cage and love to chirp.', es:'Vivo en una jaula y me encanta piar.', fr:'Je vis dans une cage et j\'adore gazouiller.'}
@@ -4595,7 +4604,7 @@ const ANIMALS = [
     {en:'Mostly male canaries sing.', es:'Sobre todo cantan los canarios machos.', fr:'Ce sont surtout les canaris mâles qui chantent.'},
     {en:'Canaries were once used to keep miners safe.', es:'Antiguamente, los canarios ayudaban a proteger a los mineros.', fr:'Autrefois, les canaris aidaient à protéger les mineurs.'}
   ]},
-  { name:{en:'Cow', es:'Vaca', fr:'Vache'}, emoji:'🐄', category:'farm', difficulty:'easy', clues:[
+  { name:{en:'Cow', es:'Vaca', fr:'Vache'}, emoji:'🐄', category:'farm', difficulty:'easy', starterClue:{en:'I am a big farm animal that says \'moo\'.', es:'Soy un gran animal de granja que hace \'mu\'.', fr:'Je suis un grand animal de ferme qui fait « meuh ».'}, clues:[
     {en:'I am a farm animal that gives milk.', es:'Soy un animal de granja que da leche.', fr:'Je suis un animal de la ferme qui donne du lait.'},
     {en:'I eat grass all day in the field.', es:'Como hierba todo el día en el campo.', fr:'Je broute de l\'herbe toute la journée dans le pré.'},
     {en:'I say moo.', es:'Hago muu.', fr:'Je fais meuh.'}
@@ -4603,7 +4612,7 @@ const ANIMALS = [
     {en:'Cows have best friends and feel calmer together.', es:'Las vacas tienen amigas preferidas y están más tranquilas juntas.', fr:'Les vaches ont des amies préférées et sont plus calmes ensemble.'},
     {en:'A cow has four parts in its stomach.', es:'Una vaca tiene cuatro compartimentos en el estómago.', fr:'Une vache a quatre compartiments dans l\'estomac.'}
   ]},
-  { name:{en:'Pig', es:'Cerdo', fr:'Cochon'}, emoji:'🐖', category:'farm', difficulty:'easy', clues:[
+  { name:{en:'Pig', es:'Cerdo', fr:'Cochon'}, emoji:'🐖', category:'farm', difficulty:'easy', starterClue:{en:'I am a pink farm animal.', es:'Soy un animal de granja rosado.', fr:'Je suis un animal de ferme rose.'}, clues:[
     {en:'I am a pink farm animal with a curly tail.', es:'Soy un animal de granja rosado con la cola enroscada.', fr:'Je suis un animal de ferme rose avec une queue en tire-bouchon.'},
     {en:'I like to roll in the mud to stay cool.', es:'Me gusta revolcarme en el barro para refrescarme.', fr:'J\'aime me rouler dans la boue pour me rafraîchir.'},
     {en:'I say oink.', es:'Hago oink.', fr:'Je fais groin.'}
@@ -4611,7 +4620,7 @@ const ANIMALS = [
     {en:'Pigs are very smart and can learn tricks.', es:'Los cerdos son muy listos y pueden aprender trucos.', fr:'Les cochons sont très intelligents et peuvent apprendre des tours.'},
     {en:'They roll in mud because they cannot sweat much.', es:'Se revuelcan en el barro porque casi no sudan.', fr:'Ils se roulent dans la boue car ils transpirent très peu.'}
   ]},
-  { name:{en:'Horse', es:'Caballo', fr:'Cheval'}, emoji:'🐎', category:'farm', difficulty:'easy', clues:[
+  { name:{en:'Horse', es:'Caballo', fr:'Cheval'}, emoji:'🐎', category:'farm', difficulty:'easy', starterClue:{en:'I am a farm animal people can ride.', es:'Soy un animal de granja que la gente puede montar.', fr:'Je suis un animal de ferme que l\'on peut monter.'}, clues:[
     {en:'I am a strong animal people can ride.', es:'Soy un animal fuerte que la gente puede montar.', fr:'Je suis un animal fort que les gens peuvent monter.'},
     {en:'I run fast on four hooves.', es:'Corro rápido sobre cuatro cascos.', fr:'Je cours vite sur quatre sabots.'},
     {en:'I say neigh.', es:'Hago iiih.', fr:'Je hennis.'}
@@ -4619,7 +4628,7 @@ const ANIMALS = [
     {en:'Horses can sleep both standing up and lying down.', es:'Los caballos pueden dormir de pie y tumbados.', fr:'Les chevaux peuvent dormir debout et couchés.'},
     {en:'They can see almost all the way around them.', es:'Pueden ver casi en todas las direcciones.', fr:'Ils voient presque tout autour d\'eux.'}
   ]},
-  { name:{en:'Sheep', es:'Oveja', fr:'Mouton'}, emoji:'🐑', category:'farm', difficulty:'easy', clues:[
+  { name:{en:'Sheep', es:'Oveja', fr:'Mouton'}, emoji:'🐑', category:'farm', difficulty:'easy', starterClue:{en:'I am a farm animal with woolly fur.', es:'Soy un animal de granja de lana.', fr:'Je suis un animal de ferme à la laine épaisse.'}, clues:[
     {en:'I am a farm animal covered in fluffy wool.', es:'Soy un animal de granja cubierto de lana esponjosa.', fr:'Je suis un animal de ferme couvert de laine toute douce.'},
     {en:'My wool is cut to make warm clothes.', es:'Cortan mi lana para hacer ropa de abrigo.', fr:'On tond ma laine pour faire des vêtements chauds.'},
     {en:'I say baa.', es:'Hago bee.', fr:'Je fais bêê.'}
@@ -4627,7 +4636,7 @@ const ANIMALS = [
     {en:'Sheep can recognize the faces of their friends.', es:'Las ovejas reconocen las caras de sus compañeras.', fr:'Les moutons reconnaissent le visage de leurs amis.'},
     {en:'A single sheep can give several kilos of wool each year.', es:'Una sola oveja puede dar varios kilos de lana al año.', fr:'Un seul mouton peut donner plusieurs kilos de laine par an.'}
   ]},
-  { name:{en:'Goat', es:'Cabra', fr:'Chèvre'}, emoji:'🐐', category:'farm', difficulty:'easy', clues:[
+  { name:{en:'Goat', es:'Cabra', fr:'Chèvre'}, emoji:'🐐', category:'farm', difficulty:'easy', starterClue:{en:'I am a farm animal with horns that likes to climb.', es:'Soy un animal de granja con cuernos al que le gusta trepar.', fr:'Je suis un animal de ferme à cornes qui aime grimper.'}, clues:[
     {en:'I am a farm animal that loves to climb.', es:'Soy un animal de granja al que le encanta trepar.', fr:'Je suis un animal de ferme qui adore grimper.'},
     {en:'I have horns and a little beard.', es:'Tengo cuernos y una barbita.', fr:'J\'ai des cornes et une petite barbe.'},
     {en:'I will nibble almost anything.', es:'Mordisqueo casi cualquier cosa.', fr:'Je grignote presque tout.'}
@@ -4635,7 +4644,7 @@ const ANIMALS = [
     {en:'Goats have rectangular pupils that help them see widely.', es:'Las cabras tienen pupilas rectangulares que las ayudan a ver muy ancho.', fr:'Les chèvres ont des pupilles rectangulaires qui élargissent leur vision.'},
     {en:'They are excellent climbers, even on steep rocks.', es:'Son excelentes trepadoras, incluso en rocas empinadas.', fr:'Ce sont d\'excellentes grimpeuses, même sur des rochers escarpés.'}
   ]},
-  { name:{en:'Chicken', es:'Gallina', fr:'Poule'}, emoji:'🐔', category:'farm', difficulty:'easy', clues:[
+  { name:{en:'Chicken', es:'Gallina', fr:'Poule'}, emoji:'🐔', category:'farm', difficulty:'easy', aliases:['hen','pollo'], starterClue:{en:'I am a small farm bird.', es:'Soy un ave de granja pequeña.', fr:'Je suis un petit oiseau de ferme.'}, clues:[
     {en:'I am a farm bird that lays eggs.', es:'Soy un ave de granja que pone huevos.', fr:'Je suis un oiseau de ferme qui pond des œufs.'},
     {en:'I peck at the ground for seeds.', es:'Picoteo el suelo en busca de semillas.', fr:'Je picore le sol pour trouver des graines.'},
     {en:'I say cluck.', es:'Hago cloc cloc.', fr:'Je fais cot cot.'}
@@ -4643,7 +4652,7 @@ const ANIMALS = [
     {en:'A hen can lay about 250 eggs a year.', es:'Una gallina puede poner unos 250 huevos al año.', fr:'Une poule peut pondre environ 250 œufs par an.'},
     {en:'Chickens can remember over 100 different faces.', es:'Las gallinas recuerdan más de 100 caras distintas.', fr:'Les poules reconnaissent plus de 100 visages différents.'}
   ]},
-  { name:{en:'Duck', es:'Pato', fr:'Canard'}, emoji:'🦆', category:'farm', difficulty:'easy', clues:[
+  { name:{en:'Duck', es:'Pato', fr:'Canard'}, emoji:'🦆', category:'farm', difficulty:'easy', starterClue:{en:'I am a farm bird that likes water.', es:'Soy un ave de granja a la que le gusta el agua.', fr:'Je suis un oiseau de ferme qui aime l\'eau.'}, clues:[
     {en:'I am a bird that swims in ponds.', es:'Soy un ave que nada en los estanques.', fr:'Je suis un oiseau qui nage dans les étangs.'},
     {en:'I have webbed feet for paddling.', es:'Tengo patas palmeadas para remar.', fr:'J\'ai des pattes palmées pour ramer.'},
     {en:'I say quack.', es:'Hago cua cua.', fr:'Je fais coin coin.'}
@@ -4651,7 +4660,7 @@ const ANIMALS = [
     {en:'A duck\'s feathers stay dry thanks to a special oil.', es:'Las plumas de un pato se mantienen secas gracias a un aceite especial.', fr:'Les plumes du canard restent sèches grâce à une huile spéciale.'},
     {en:'Ducklings can swim soon after they hatch.', es:'Los patitos pueden nadar poco después de nacer.', fr:'Les canetons savent nager peu après l\'éclosion.'}
   ]},
-  { name:{en:'Donkey', es:'Burro', fr:'Âne'}, emoji:'🫏', category:'farm', difficulty:'medium', clues:[
+  { name:{en:'Donkey', es:'Burro', fr:'Âne'}, emoji:'🫏', category:'farm', difficulty:'medium', starterClue:{en:'I am a farm animal that looks like a small horse.', es:'Soy un animal de granja parecido a un caballo pequeño.', fr:'Je suis un animal de ferme qui ressemble à un petit cheval.'}, clues:[
     {en:'I am a farm animal with long ears.', es:'Soy un animal de granja con orejas largas.', fr:'Je suis un animal de ferme aux longues oreilles.'},
     {en:'I can carry heavy loads on my back.', es:'Puedo cargar pesos pesados a la espalda.', fr:'Je peux porter de lourdes charges sur le dos.'},
     {en:'I make a sound called a bray.', es:'Hago un sonido llamado rebuzno.', fr:'Je pousse un cri appelé braiment.'}
@@ -4659,7 +4668,7 @@ const ANIMALS = [
     {en:'Donkeys have an excellent memory for places and faces.', es:'Los burros tienen una memoria excelente para lugares y caras.', fr:'Les ânes ont une excellente mémoire des lieux et des visages.'},
     {en:'They are calm and often guard other farm animals.', es:'Son tranquilos y a menudo protegen a otros animales de la granja.', fr:'Ils sont calmes et gardent souvent les autres animaux de la ferme.'}
   ]},
-  { name:{en:'Turkey', es:'Pavo', fr:'Dinde'}, emoji:'🦃', category:'farm', difficulty:'medium', clues:[
+  { name:{en:'Turkey', es:'Pavo', fr:'Dinde'}, emoji:'🦃', category:'farm', difficulty:'medium', starterClue:{en:'I am a big farm bird.', es:'Soy un ave de granja grande.', fr:'Je suis un gros oiseau de ferme.'}, clues:[
     {en:'I am a large farm bird that fans my tail.', es:'Soy un ave de granja grande que abre la cola en abanico.', fr:'Je suis un grand oiseau de ferme qui déploie sa queue en éventail.'},
     {en:'The males make a gobble sound.', es:'Los machos hacen un sonido de gluglú.', fr:'Les mâles font un son de glouglou.'},
     {en:'I have a red flap of skin on my neck.', es:'Tengo un colgajo rojo de piel en el cuello.', fr:'J\'ai un repli de peau rouge sur le cou.'}
@@ -4667,7 +4676,7 @@ const ANIMALS = [
     {en:'Wild turkeys can fly short distances and roost in trees.', es:'Los pavos salvajes pueden volar distancias cortas y dormir en los árboles.', fr:'Les dindons sauvages peuvent voler sur de courtes distances et dormir dans les arbres.'},
     {en:'They can run quite fast on the ground.', es:'Pueden correr bastante rápido por el suelo.', fr:'Ils courent assez vite au sol.'}
   ]},
-  { name:{en:'Rooster', es:'Gallo', fr:'Coq'}, emoji:'🐓', category:'farm', difficulty:'easy', clues:[
+  { name:{en:'Rooster', es:'Gallo', fr:'Coq'}, emoji:'🐓', category:'farm', difficulty:'easy', starterClue:{en:'I am a farm bird that wakes everyone at dawn.', es:'Soy un ave de granja que despierta a todos al amanecer.', fr:'Je suis un oiseau de ferme qui réveille tout le monde à l\'aube.'}, clues:[
     {en:'I am a farm bird with a red comb on my head.', es:'Soy un ave de granja con una cresta roja en la cabeza.', fr:'Je suis un oiseau de ferme avec une crête rouge sur la tête.'},
     {en:'I crow loudly in the morning.', es:'Canto muy fuerte por la mañana.', fr:'Je chante fort le matin.'},
     {en:'I am the male of the hen family.', es:'Soy el macho de la familia de las gallinas.', fr:'Je suis le mâle de la famille des poules.'}
@@ -4675,7 +4684,7 @@ const ANIMALS = [
     {en:'Roosters crow to mark their territory, not only at sunrise.', es:'Los gallos cantan para marcar su territorio, no solo al amanecer.', fr:'Les coqs chantent pour marquer leur territoire, pas seulement à l\'aube.'},
     {en:'They have a comb that helps them stay cool.', es:'Tienen una cresta que les ayuda a refrescarse.', fr:'Leur crête les aide à se rafraîchir.'}
   ]},
-  { name:{en:'Tiger', es:'Tigre', fr:'Tigre'}, emoji:'🐅', category:'wild', difficulty:'easy', clues:[
+  { name:{en:'Tiger', es:'Tigre', fr:'Tigre'}, emoji:'🐅', category:'wild', difficulty:'easy', starterClue:{en:'I am a large wild cat from Asia.', es:'Soy un gran felino salvaje de Asia.', fr:'Je suis un grand félin sauvage d\'Asie.'}, clues:[
     {en:'I am a big cat with orange fur and black stripes.', es:'Soy un gran felino de pelaje naranja con rayas negras.', fr:'Je suis un grand félin au pelage orange rayé de noir.'},
     {en:'I am a strong hunter in the jungle.', es:'Soy un cazador fuerte de la jungla.', fr:'Je suis un chasseur puissant de la jungle.'},
     {en:'I love to swim, unlike most cats.', es:'Me encanta nadar, a diferencia de casi todos los felinos.', fr:'J\'adore nager, contrairement à la plupart des félins.'}
@@ -4683,15 +4692,15 @@ const ANIMALS = [
     {en:'Every tiger has its own unique stripe pattern.', es:'Cada tigre tiene un patrón de rayas único.', fr:'Chaque tigre a un motif de rayures unique.'},
     {en:'Tigers are the largest cats in the world.', es:'Los tigres son los felinos más grandes del mundo.', fr:'Les tigres sont les plus grands félins du monde.'}
   ]},
-  { name:{en:'Bear', es:'Oso', fr:'Ours'}, emoji:'🐻', category:'wild', difficulty:'easy', clues:[
-    {en:'I am a large furry animal of the forest.', es:'Soy un animal grande y peludo del bosque.', fr:'Je suis un grand animal poilu de la forêt.'},
+  { name:{en:'Bear', es:'Oso', fr:'Ours'}, emoji:'🐻', category:'wild', difficulty:'easy', starterClue:{en:'I am a heavy forest animal with round ears.', es:'Soy un animal pesado del bosque con orejas redondas.', fr:'Je suis un lourd animal de la forêt aux oreilles rondes.'}, clues:[
+    {en:'I am a big, strong forest animal that can stand up on two legs.', es:'Soy un animal grande y fuerte del bosque que puede ponerse de pie sobre dos patas.', fr:'Je suis un grand animal fort de la forêt qui peut se dresser sur deux pattes.'},
     {en:'I love to eat berries and honey.', es:'Me encanta comer bayas y miel.', fr:'J\'adore manger des baies et du miel.'},
     {en:'I sleep for much of the winter.', es:'Duermo gran parte del invierno.', fr:'Je dors une grande partie de l\'hiver.'}
   ], facts:[
     {en:'Bears can smell food from kilometers away.', es:'Los osos pueden oler comida a kilómetros de distancia.', fr:'Les ours sentent la nourriture à des kilomètres.'},
     {en:'They rest deeply through winter to save energy.', es:'Descansan profundamente en invierno para ahorrar energía.', fr:'Ils se reposent profondément en hiver pour économiser leur énergie.'}
   ]},
-  { name:{en:'Wolf', es:'Lobo', fr:'Loup'}, emoji:'🐺', category:'wild', difficulty:'medium', clues:[
+  { name:{en:'Wolf', es:'Lobo', fr:'Loup'}, emoji:'🐺', category:'wild', difficulty:'medium', starterClue:{en:'I am a wild animal that looks like a big dog.', es:'Soy un animal salvaje parecido a un perro grande.', fr:'Je suis un animal sauvage qui ressemble à un grand chien.'}, clues:[
     {en:'I look like a wild dog and live in a pack.', es:'Parezco un perro salvaje y vivo en manada.', fr:'Je ressemble à un chien sauvage et je vis en meute.'},
     {en:'I howl to talk to my family.', es:'Aúllo para hablar con mi familia.', fr:'Je hurle pour parler à ma famille.'},
     {en:'I hunt together with my group.', es:'Cazo en grupo con los míos.', fr:'Je chasse en groupe avec les miens.'}
@@ -4699,15 +4708,15 @@ const ANIMALS = [
     {en:'Wolves howl to find each other across long distances.', es:'Los lobos aúllan para encontrarse a grandes distancias.', fr:'Les loups hurlent pour se retrouver sur de longues distances.'},
     {en:'A wolf pack works as a close family team.', es:'Una manada de lobos funciona como una familia muy unida.', fr:'Une meute de loups forme une famille très soudée.'}
   ]},
-  { name:{en:'Fox', es:'Zorro', fr:'Renard'}, emoji:'🦊', category:'wild', difficulty:'easy', clues:[
-    {en:'I am a clever animal with a bushy tail.', es:'Soy un animal astuto con una cola peluda.', fr:'Je suis un animal rusé avec une queue touffue.'},
+  { name:{en:'Fox', es:'Zorro', fr:'Renard'}, emoji:'🦊', category:'wild', difficulty:'easy', starterClue:{en:'I am a small wild animal with red-orange fur.', es:'Soy un pequeño animal salvaje de pelaje rojizo.', fr:'Je suis un petit animal sauvage au pelage roux.'}, clues:[
+    {en:'I am a clever wild animal with reddish fur, pointy ears and a bushy tail.', es:'Soy un animal salvaje y astuto de pelaje rojizo, orejas puntiagudas y cola peluda.', fr:'Je suis un animal sauvage et rusé au pelage roux, aux oreilles pointues et à la queue touffue.'},
     {en:'I have pointy ears and reddish fur.', es:'Tengo orejas puntiagudas y pelaje rojizo.', fr:'J\'ai des oreilles pointues et un pelage roux.'},
     {en:'I am related to dogs but live in the wild.', es:'Soy pariente de los perros pero vivo en libertad.', fr:'Je suis cousin du chien mais je vis dans la nature.'}
   ], facts:[
     {en:'Foxes use their tails for balance and warmth.', es:'Los zorros usan la cola para equilibrarse y abrigarse.', fr:'Les renards se servent de leur queue pour l\'équilibre et la chaleur.'},
     {en:'They have excellent hearing and can find prey underground.', es:'Tienen un oído excelente y detectan presas bajo tierra.', fr:'Ils ont une ouïe excellente et repèrent des proies sous terre.'}
   ]},
-  { name:{en:'Monkey', es:'Mono', fr:'Singe'}, emoji:'🐒', category:'wild', difficulty:'easy', clues:[
+  { name:{en:'Monkey', es:'Mono', fr:'Singe'}, emoji:'🐒', category:'wild', difficulty:'easy', starterClue:{en:'I am a clever animal that climbs trees.', es:'Soy un animal listo que trepa a los árboles.', fr:'Je suis un animal malin qui grimpe aux arbres.'}, clues:[
     {en:'I love to climb trees and swing on branches.', es:'Me encanta trepar a los árboles y columpiarme en las ramas.', fr:'J\'adore grimper aux arbres et me balancer aux branches.'},
     {en:'I have hands that can grab things.', es:'Tengo manos que pueden agarrar cosas.', fr:'J\'ai des mains qui peuvent attraper des objets.'},
     {en:'I often eat bananas and fruit.', es:'Suelo comer plátanos y fruta.', fr:'Je mange souvent des bananes et des fruits.'}
@@ -4715,7 +4724,7 @@ const ANIMALS = [
     {en:'Many monkeys use their tails like an extra hand.', es:'Muchos monos usan la cola como una mano extra.', fr:'Beaucoup de singes utilisent leur queue comme une main supplémentaire.'},
     {en:'Monkeys live in groups and care for each other.', es:'Los monos viven en grupos y se cuidan entre sí.', fr:'Les singes vivent en groupes et prennent soin les uns des autres.'}
   ]},
-  { name:{en:'Gorilla', es:'Gorila', fr:'Gorille'}, emoji:'🦍', category:'wild', difficulty:'medium', clues:[
+  { name:{en:'Gorilla', es:'Gorila', fr:'Gorille'}, emoji:'🦍', category:'wild', difficulty:'medium', starterClue:{en:'I am a large, strong ape.', es:'Soy un simio grande y fuerte.', fr:'Je suis un grand singe puissant.'}, clues:[
     {en:'I am the largest of the apes.', es:'Soy el más grande de los simios.', fr:'Je suis le plus grand des grands singes.'},
     {en:'I am very strong but gentle and calm.', es:'Soy muy fuerte pero tranquilo y amable.', fr:'Je suis très fort mais doux et calme.'},
     {en:'I live in family groups in the forest.', es:'Vivo en grupos familiares en el bosque.', fr:'Je vis en groupes familiaux dans la forêt.'}
@@ -4723,7 +4732,7 @@ const ANIMALS = [
     {en:'Gorillas share almost all of their genes with humans.', es:'Los gorilas comparten casi todos sus genes con los humanos.', fr:'Les gorilles partagent presque tous leurs gènes avec les humains.'},
     {en:'They build a fresh nest to sleep in every night.', es:'Cada noche construyen un nido nuevo para dormir.', fr:'Ils construisent un nouveau nid chaque nuit pour dormir.'}
   ]},
-  { name:{en:'Zebra', es:'Cebra', fr:'Zèbre'}, emoji:'🦓', category:'wild', difficulty:'easy', clues:[
+  { name:{en:'Zebra', es:'Cebra', fr:'Zèbre'}, emoji:'🦓', category:'wild', difficulty:'easy', starterClue:{en:'I am an African animal with stripes.', es:'Soy un animal africano con rayas.', fr:'Je suis un animal africain à rayures.'}, clues:[
     {en:'I look like a horse with black and white stripes.', es:'Parezco un caballo con rayas blancas y negras.', fr:'Je ressemble à un cheval avec des rayures noires et blanches.'},
     {en:'I live in herds on the grasslands of Africa.', es:'Vivo en manadas en las praderas de África.', fr:'Je vis en troupeaux dans les prairies d\'Afrique.'},
     {en:'I eat mostly grass.', es:'Como sobre todo hierba.', fr:'Je mange surtout de l\'herbe.'}
@@ -4731,7 +4740,7 @@ const ANIMALS = [
     {en:'No two zebras have exactly the same stripes.', es:'No hay dos cebras con las mismas rayas.', fr:'Il n\'existe pas deux zèbres aux rayures identiques.'},
     {en:'Their stripes may help confuse biting flies.', es:'Sus rayas podrían ayudar a confundir a las moscas que pican.', fr:'Leurs rayures pourraient désorienter les mouches piqueuses.'}
   ]},
-  { name:{en:'Hippopotamus', es:'Hipopótamo', fr:'Hippopotame'}, emoji:'🦛', category:'wild', difficulty:'medium', clues:[
+  { name:{en:'Hippopotamus', es:'Hipopótamo', fr:'Hippopotame'}, emoji:'🦛', category:'wild', difficulty:'medium', aliases:['hippo'], starterClue:{en:'I am a huge animal that loves rivers.', es:'Soy un animal enorme al que le encantan los ríos.', fr:'Je suis un énorme animal qui adore les rivières.'}, clues:[
     {en:'I am a huge animal that loves water.', es:'Soy un animal enorme al que le encanta el agua.', fr:'Je suis un animal énorme qui adore l\'eau.'},
     {en:'I spend the hot day in rivers and lakes.', es:'Paso el día caluroso en ríos y lagos.', fr:'Je passe les journées chaudes dans les rivières et les lacs.'},
     {en:'I have a very wide mouth.', es:'Tengo una boca muy ancha.', fr:'J\'ai une très grande bouche.'}
@@ -4739,7 +4748,7 @@ const ANIMALS = [
     {en:'Hippos can hold their breath underwater for several minutes.', es:'Los hipopótamos pueden aguantar la respiración bajo el agua varios minutos.', fr:'Les hippopotames peuvent retenir leur souffle sous l\'eau plusieurs minutes.'},
     {en:'Their skin makes a natural sunscreen.', es:'Su piel produce un protector solar natural.', fr:'Leur peau fabrique une crème solaire naturelle.'}
   ]},
-  { name:{en:'Rhinoceros', es:'Rinoceronte', fr:'Rhinocéros'}, emoji:'🦏', category:'wild', difficulty:'medium', clues:[
+  { name:{en:'Rhinoceros', es:'Rinoceronte', fr:'Rhinocéros'}, emoji:'🦏', category:'wild', difficulty:'medium', aliases:['rhino'], starterClue:{en:'I am a big, heavy African animal.', es:'Soy un gran animal africano y pesado.', fr:'Je suis un grand animal africain et lourd.'}, clues:[
     {en:'I am a big, heavy animal with thick skin.', es:'Soy un animal grande y pesado de piel gruesa.', fr:'Je suis un grand animal lourd à la peau épaisse.'},
     {en:'I have one or two horns on my nose.', es:'Tengo uno o dos cuernos en la nariz.', fr:'J\'ai une ou deux cornes sur le nez.'},
     {en:'I eat plants and live in Africa or Asia.', es:'Como plantas y vivo en África o Asia.', fr:'Je mange des plantes et je vis en Afrique ou en Asie.'}
@@ -4747,7 +4756,7 @@ const ANIMALS = [
     {en:'A rhino\'s horn is made of the same material as your hair and nails.', es:'El cuerno del rinoceronte está hecho del mismo material que tu pelo y tus uñas.', fr:'La corne du rhinocéros est faite de la même matière que tes cheveux et tes ongles.'},
     {en:'Despite their size, rhinos can run quite fast.', es:'A pesar de su tamaño, los rinocerontes corren bastante rápido.', fr:'Malgré leur taille, les rhinocéros courent assez vite.'}
   ]},
-  { name:{en:'Cheetah', es:'Guepardo', fr:'Guépard'}, emoji:'🐆', category:'wild', difficulty:'medium', clues:[
+  { name:{en:'Cheetah', es:'Guepardo', fr:'Guépard'}, emoji:'🐆', category:'wild', difficulty:'medium', starterClue:{en:'I am a spotted wild cat.', es:'Soy un felino salvaje con manchas.', fr:'Je suis un félin sauvage tacheté.'}, clues:[
     {en:'I am a spotted cat that runs very fast.', es:'Soy un felino con manchas que corre muy rápido.', fr:'Je suis un félin tacheté qui court très vite.'},
     {en:'I am the fastest animal on land.', es:'Soy el animal terrestre más veloz.', fr:'Je suis l\'animal terrestre le plus rapide.'},
     {en:'I live in the African grasslands.', es:'Vivo en las sabanas de África.', fr:'Je vis dans les savanes d\'Afrique.'}
@@ -4755,7 +4764,7 @@ const ANIMALS = [
     {en:'A cheetah can reach over 100 km/h in short bursts.', es:'Un guepardo puede superar los 100 km/h en carreras cortas.', fr:'Un guépard peut dépasser 100 km/h sur de courtes distances.'},
     {en:'Cheetahs purr but cannot roar.', es:'Los guepardos ronronean pero no pueden rugir.', fr:'Les guépards ronronnent mais ne peuvent pas rugir.'}
   ]},
-  { name:{en:'Deer', es:'Ciervo', fr:'Cerf'}, emoji:'🦌', category:'wild', difficulty:'easy', clues:[
+  { name:{en:'Deer', es:'Ciervo', fr:'Cerf'}, emoji:'🦌', category:'wild', difficulty:'easy', starterClue:{en:'I am a gentle forest animal with thin legs.', es:'Soy un animal apacible del bosque de patas finas.', fr:'Je suis un animal doux de la forêt aux pattes fines.'}, clues:[
     {en:'I am a gentle forest animal.', es:'Soy un animal tranquilo del bosque.', fr:'Je suis un animal doux de la forêt.'},
     {en:'The males grow branch-like antlers.', es:'Los machos tienen astas en forma de ramas.', fr:'Les mâles portent des bois en forme de branches.'},
     {en:'I run quickly to escape danger.', es:'Corro rápido para escapar del peligro.', fr:'Je cours vite pour échapper au danger.'}
@@ -4763,7 +4772,7 @@ const ANIMALS = [
     {en:'A deer\'s antlers fall off and grow back each year.', es:'Las astas de un ciervo se caen y vuelven a crecer cada año.', fr:'Les bois du cerf tombent et repoussent chaque année.'},
     {en:'Baby deer have spots that help them hide.', es:'Las crías de ciervo tienen manchas que las ayudan a esconderse.', fr:'Les faons ont des taches qui les aident à se cacher.'}
   ]},
-  { name:{en:'Camel', es:'Camello', fr:'Chameau'}, emoji:'🐫', category:'wild', difficulty:'medium', clues:[
+  { name:{en:'Camel', es:'Camello', fr:'Chameau'}, emoji:'🐫', category:'wild', difficulty:'medium', starterClue:{en:'I am a desert animal.', es:'Soy un animal del desierto.', fr:'Je suis un animal du désert.'}, clues:[
     {en:'I can travel far across hot deserts.', es:'Puedo viajar lejos por desiertos calurosos.', fr:'Je peux parcourir de longues distances dans les déserts chauds.'},
     {en:'I have one or two humps on my back.', es:'Tengo una o dos jorobas en la espalda.', fr:'J\'ai une ou deux bosses sur le dos.'},
     {en:'I can go a long time without drinking.', es:'Aguanto mucho tiempo sin beber.', fr:'Je peux rester longtemps sans boire.'}
@@ -4771,7 +4780,7 @@ const ANIMALS = [
     {en:'A camel\'s hump stores fat, not water.', es:'La joroba de un camello almacena grasa, no agua.', fr:'La bosse du chameau stocke de la graisse, pas de l\'eau.'},
     {en:'Camels can drink a huge amount of water very quickly.', es:'Los camellos pueden beber muchísima agua en muy poco tiempo.', fr:'Les chameaux peuvent boire énormément d\'eau très vite.'}
   ]},
-  { name:{en:'Sloth', es:'Perezoso', fr:'Paresseux'}, emoji:'🦥', category:'wild', difficulty:'medium', clues:[
+  { name:{en:'Sloth', es:'Perezoso', fr:'Paresseux'}, emoji:'🦥', category:'wild', difficulty:'medium', starterClue:{en:'I am one of the slowest animals on Earth.', es:'Soy uno de los animales más lentos de la Tierra.', fr:'Je suis l\'un des animaux les plus lents de la Terre.'}, clues:[
     {en:'I am a very slow animal that lives in trees.', es:'Soy un animal muy lento que vive en los árboles.', fr:'Je suis un animal très lent qui vit dans les arbres.'},
     {en:'I hang upside down from branches.', es:'Cuelgo boca abajo de las ramas.', fr:'Je me pends la tête en bas aux branches.'},
     {en:'I sleep most of the day.', es:'Duermo casi todo el día.', fr:'Je dors presque toute la journée.'}
@@ -4779,7 +4788,7 @@ const ANIMALS = [
     {en:'Sloths move so slowly that tiny plants can grow on their fur.', es:'Los perezosos se mueven tan despacio que en su pelaje pueden crecer plantitas.', fr:'Les paresseux bougent si lentement que de petites plantes poussent sur leur fourrure.'},
     {en:'They come down from their tree only about once a week.', es:'Bajan de su árbol solo una vez por semana, más o menos.', fr:'Ils ne descendent de leur arbre qu\'environ une fois par semaine.'}
   ]},
-  { name:{en:'Hedgehog', es:'Erizo', fr:'Hérisson'}, emoji:'🦔', category:'wild', difficulty:'medium', clues:[
+  { name:{en:'Hedgehog', es:'Erizo', fr:'Hérisson'}, emoji:'🦔', category:'wild', difficulty:'medium', starterClue:{en:'I am a small animal that can roll into a ball.', es:'Soy un pequeño animal que puede hacerse una bola.', fr:'Je suis un petit animal qui peut se rouler en boule.'}, clues:[
     {en:'I am a small animal covered in spines.', es:'Soy un animal pequeño cubierto de púas.', fr:'Je suis un petit animal couvert de piquants.'},
     {en:'I roll into a ball when I feel scared.', es:'Me hago una bola cuando tengo miedo.', fr:'Je me roule en boule quand j\'ai peur.'},
     {en:'I come out at night to find insects.', es:'Salgo de noche a buscar insectos.', fr:'Je sors la nuit pour chercher des insectes.'}
@@ -4787,7 +4796,7 @@ const ANIMALS = [
     {en:'A hedgehog can have thousands of spines on its back.', es:'Un erizo puede tener miles de púas en la espalda.', fr:'Un hérisson peut avoir des milliers de piquants sur le dos.'},
     {en:'They curl into a tight ball to protect themselves.', es:'Se enrollan en una bola apretada para protegerse.', fr:'Il se roule en boule serrée pour se protéger.'}
   ]},
-  { name:{en:'Squirrel', es:'Ardilla', fr:'Écureuil'}, emoji:'🐿️', category:'wild', difficulty:'easy', clues:[
+  { name:{en:'Squirrel', es:'Ardilla', fr:'Écureuil'}, emoji:'🐿️', category:'wild', difficulty:'easy', starterClue:{en:'I am a small animal that climbs trees.', es:'Soy un pequeño animal que trepa a los árboles.', fr:'Je suis un petit animal qui grimpe aux arbres.'}, clues:[
     {en:'I am a small animal with a big bushy tail.', es:'Soy un animal pequeño con una cola grande y peluda.', fr:'Je suis un petit animal avec une grande queue touffue.'},
     {en:'I climb trees and gather nuts.', es:'Trepo a los árboles y recojo frutos secos.', fr:'Je grimpe aux arbres et je ramasse des noix.'},
     {en:'I hide food to eat later.', es:'Escondo comida para comerla después.', fr:'Je cache de la nourriture pour plus tard.'}
@@ -4795,7 +4804,7 @@ const ANIMALS = [
     {en:'Squirrels sometimes forget where they buried their nuts, which helps new trees grow.', es:'A veces las ardillas olvidan dónde enterraron sus nueces, lo que ayuda a crecer nuevos árboles.', fr:'Les écureuils oublient parfois où ils ont enterré leurs noix, ce qui aide de nouveaux arbres à pousser.'},
     {en:'Their front teeth never stop growing.', es:'Sus dientes delanteros no paran de crecer.', fr:'Leurs dents de devant ne cessent jamais de pousser.'}
   ]},
-  { name:{en:'Bat', es:'Murciélago', fr:'Chauve-souris'}, emoji:'🦇', category:'wild', difficulty:'medium', clues:[
+  { name:{en:'Bat', es:'Murciélago', fr:'Chauve-souris'}, emoji:'🦇', category:'wild', difficulty:'medium', starterClue:{en:'I am a small animal that flies at night.', es:'Soy un pequeño animal que vuela de noche.', fr:'Je suis un petit animal qui vole la nuit.'}, clues:[
     {en:'I am the only mammal that can really fly.', es:'Soy el único mamífero que vuela de verdad.', fr:'Je suis le seul mammifère qui vole vraiment.'},
     {en:'I sleep upside down during the day.', es:'Duermo boca abajo durante el día.', fr:'Je dors la tête en bas pendant la journée.'},
     {en:'I come out at night.', es:'Salgo por la noche.', fr:'Je sors la nuit.'}
@@ -4803,7 +4812,7 @@ const ANIMALS = [
     {en:'Many bats find their way in the dark using sound.', es:'Muchos murciélagos se orientan en la oscuridad usando el sonido.', fr:'Beaucoup de chauves-souris se repèrent dans le noir grâce au son.'},
     {en:'Some bats eat thousands of insects in one night.', es:'Algunos murciélagos comen miles de insectos en una noche.', fr:'Certaines mangent des milliers d\'insectes en une nuit.'}
   ]},
-  { name:{en:'Raccoon', es:'Mapache', fr:'Raton laveur'}, emoji:'🦝', category:'wild', difficulty:'medium', clues:[
+  { name:{en:'Raccoon', es:'Mapache', fr:'Raton laveur'}, emoji:'🦝', category:'wild', difficulty:'medium', starterClue:{en:'I am a small animal with a striped tail.', es:'Soy un pequeño animal con la cola a rayas.', fr:'Je suis un petit animal à la queue rayée.'}, clues:[
     {en:'I have a black mask of fur around my eyes.', es:'Tengo un antifaz de pelo negro alrededor de los ojos.', fr:'J\'ai un masque de fourrure noire autour des yeux.'},
     {en:'I have a striped, fluffy tail.', es:'Tengo una cola peluda con anillos.', fr:'J\'ai une queue touffue à anneaux.'},
     {en:'I use my clever paws to open things.', es:'Uso mis hábiles patas para abrir cosas.', fr:'J\'utilise mes pattes habiles pour ouvrir des choses.'}
@@ -4811,7 +4820,7 @@ const ANIMALS = [
     {en:'Raccoons often dip their food in water before eating.', es:'Los mapaches suelen mojar su comida en agua antes de comer.', fr:'Les ratons laveurs trempent souvent leur nourriture dans l\'eau avant de manger.'},
     {en:'Their front paws are very sensitive and clever.', es:'Sus patas delanteras son muy sensibles y hábiles.', fr:'Leurs pattes avant sont très sensibles et habiles.'}
   ]},
-  { name:{en:'Beaver', es:'Castor', fr:'Castor'}, emoji:'🦫', category:'wild', difficulty:'medium', clues:[
+  { name:{en:'Beaver', es:'Castor', fr:'Castor'}, emoji:'🦫', category:'wild', difficulty:'medium', starterClue:{en:'I am a furry animal that lives near rivers.', es:'Soy un animal peludo que vive cerca de los ríos.', fr:'Je suis un animal poilu qui vit près des rivières.'}, clues:[
     {en:'I have large front teeth and a flat tail.', es:'Tengo grandes dientes delanteros y una cola plana.', fr:'J\'ai de grandes dents de devant et une queue plate.'},
     {en:'I build dams across rivers with branches.', es:'Construyo presas en los ríos con ramas.', fr:'Je construis des barrages sur les rivières avec des branches.'},
     {en:'I am an excellent swimmer.', es:'Soy un nadador excelente.', fr:'Je suis un excellent nageur.'}
@@ -4819,7 +4828,7 @@ const ANIMALS = [
     {en:'Beavers build dams to make safe ponds for their homes.', es:'Los castores construyen presas para crear estanques seguros donde vivir.', fr:'Les castors construisent des barrages pour créer des étangs sûrs où vivre.'},
     {en:'Their front teeth are orange and very strong.', es:'Sus dientes delanteros son naranjas y muy fuertes.', fr:'Leurs dents de devant sont oranges et très solides.'}
   ]},
-  { name:{en:'Otter', es:'Nutria', fr:'Loutre'}, emoji:'🦦', category:'wild', difficulty:'medium', clues:[
+  { name:{en:'Otter', es:'Nutria', fr:'Loutre'}, emoji:'🦦', category:'wild', difficulty:'medium', starterClue:{en:'I am a playful animal that swims in rivers.', es:'Soy un animal juguetón que nada en los ríos.', fr:'Je suis un animal joueur qui nage dans les rivières.'}, clues:[
     {en:'I am a playful animal that loves water.', es:'Soy un animal juguetón al que le encanta el agua.', fr:'Je suis un animal joueur qui adore l\'eau.'},
     {en:'I float on my back in rivers and the sea.', es:'Floto de espaldas en ríos y en el mar.', fr:'Je flotte sur le dos dans les rivières et la mer.'},
     {en:'I have soft, thick fur.', es:'Tengo un pelaje suave y espeso.', fr:'J\'ai une fourrure douce et épaisse.'}
@@ -4827,7 +4836,7 @@ const ANIMALS = [
     {en:'Sea otters hold hands while sleeping so they do not drift apart.', es:'Las nutrias marinas se dan la mano al dormir para no separarse.', fr:'Les loutres de mer se tiennent la main en dormant pour ne pas dériver.'},
     {en:'They use small rocks to open shells.', es:'Usan piedritas para abrir conchas.', fr:'Elles utilisent de petites pierres pour ouvrir les coquillages.'}
   ]},
-  { name:{en:'Mouse', es:'Ratón', fr:'Souris'}, emoji:'🐁', category:'wild', difficulty:'easy', clues:[
+  { name:{en:'Mouse', es:'Ratón', fr:'Souris'}, emoji:'🐁', category:'wild', difficulty:'easy', starterClue:{en:'I am a very small animal that likes cheese.', es:'Soy un animal muy pequeño al que le gusta el queso.', fr:'Je suis un tout petit animal qui aime le fromage.'}, clues:[
     {en:'I am a tiny animal with a long thin tail.', es:'Soy un animal diminuto con una cola larga y fina.', fr:'Je suis un tout petit animal avec une longue queue fine.'},
     {en:'I have big round ears and whiskers.', es:'Tengo orejas grandes y redondas y bigotes.', fr:'J\'ai de grandes oreilles rondes et des moustaches.'},
     {en:'I love to nibble seeds and cheese.', es:'Me encanta mordisquear semillas y queso.', fr:'J\'adore grignoter des graines et du fromage.'}
@@ -4835,7 +4844,7 @@ const ANIMALS = [
     {en:'Mice can squeeze through very tiny gaps.', es:'Los ratones pueden colarse por huecos diminutos.', fr:'Les souris peuvent se faufiler dans de tout petits trous.'},
     {en:'They use their whiskers to feel their way in the dark.', es:'Usan sus bigotes para guiarse en la oscuridad.', fr:'Elles utilisent leurs moustaches pour se guider dans le noir.'}
   ]},
-  { name:{en:'Bison', es:'Bisonte', fr:'Bison'}, emoji:'🦬', category:'wild', difficulty:'hard', clues:[
+  { name:{en:'Bison', es:'Bisonte', fr:'Bison'}, emoji:'🦬', category:'wild', difficulty:'hard', starterClue:{en:'I am a huge animal of the open plains.', es:'Soy un animal enorme de las llanuras.', fr:'Je suis un énorme animal des plaines.'}, clues:[
     {en:'I am a huge, shaggy animal of the plains.', es:'Soy un animal enorme y peludo de las llanuras.', fr:'Je suis un animal énorme et hirsute des plaines.'},
     {en:'I have a big hump on my shoulders.', es:'Tengo una gran joroba en los hombros.', fr:'J\'ai une grosse bosse sur les épaules.'},
     {en:'I live in large herds in North America.', es:'Vivo en grandes manadas en Norteamérica.', fr:'Je vis en grands troupeaux en Amérique du Nord.'}
@@ -4843,7 +4852,7 @@ const ANIMALS = [
     {en:'Bison can run faster than 50 km/h despite their size.', es:'Los bisontes pueden correr a más de 50 km/h a pesar de su tamaño.', fr:'Les bisons peuvent courir à plus de 50 km/h malgré leur taille.'},
     {en:'They were once the largest land animals in North America.', es:'En su día fueron los animales terrestres más grandes de Norteamérica.', fr:'Ils ont été les plus grands animaux terrestres d\'Amérique du Nord.'}
   ]},
-  { name:{en:'Polar bear', es:'Oso polar', fr:'Ours polaire'}, emoji:'🐻‍❄️', category:'wild', difficulty:'medium', clues:[
+  { name:{en:'Polar bear', es:'Oso polar', fr:'Ours polaire'}, emoji:'🐻‍❄️', category:'wild', difficulty:'medium', aliases:['bear','oso','ours'], starterClue:{en:'I am a large white animal from the Arctic.', es:'Soy un gran animal blanco del Ártico.', fr:'Je suis un grand animal blanc de l\'Arctique.'}, clues:[
     {en:'I am a large white bear of the frozen north.', es:'Soy un gran oso blanco del norte helado.', fr:'Je suis un grand ours blanc du grand Nord glacé.'},
     {en:'I am a strong swimmer in icy water.', es:'Soy un nadador fuerte en aguas heladas.', fr:'Je suis un nageur puissant dans l\'eau glacée.'},
     {en:'I hunt on the sea ice.', es:'Cazo sobre el hielo marino.', fr:'Je chasse sur la banquise.'}
@@ -4851,7 +4860,7 @@ const ANIMALS = [
     {en:'A polar bear\'s skin is actually black under its white fur.', es:'La piel de un oso polar en realidad es negra bajo su pelaje blanco.', fr:'La peau de l\'ours polaire est en fait noire sous sa fourrure blanche.'},
     {en:'They can smell prey from far away across the ice.', es:'Pueden oler presas a gran distancia sobre el hielo.', fr:'Il sent ses proies de très loin sur la glace.'}
   ]},
-  { name:{en:'Llama', es:'Llama', fr:'Lama'}, emoji:'🦙', category:'wild', difficulty:'medium', clues:[
+  { name:{en:'Llama', es:'Llama', fr:'Lama'}, emoji:'🦙', category:'wild', difficulty:'medium', starterClue:{en:'I am a fuzzy animal from South America.', es:'Soy un animal lanudo de Sudamérica.', fr:'Je suis un animal laineux d\'Amérique du Sud.'}, clues:[
     {en:'I am a fuzzy animal from the mountains of South America.', es:'Soy un animal lanudo de las montañas de Sudamérica.', fr:'Je suis un animal laineux des montagnes d\'Amérique du Sud.'},
     {en:'I have a long neck and soft wool.', es:'Tengo un cuello largo y lana suave.', fr:'J\'ai un long cou et une laine douce.'},
     {en:'People use me to carry loads.', es:'La gente me usa para llevar cargas.', fr:'Les gens m\'utilisent pour porter des charges.'}
@@ -4859,7 +4868,7 @@ const ANIMALS = [
     {en:'Llamas hum to communicate with each other.', es:'Las llamas tararean para comunicarse entre ellas.', fr:'Les lamas fredonnent pour communiquer entre eux.'},
     {en:'They can spit when they feel annoyed.', es:'Pueden escupir cuando se sienten molestas.', fr:'Ils peuvent cracher quand ils sont agacés.'}
   ]},
-  { name:{en:'Porcupine', es:'Puercoespín', fr:'Porc-épic'}, emoji:'🦔', category:'wild', difficulty:'medium', clues:[
+  { name:{en:'Porcupine', es:'Puercoespín', fr:'Porc-épic'}, emoji:'🦔', category:'wild', difficulty:'medium', starterClue:{en:'I am an animal covered in sharp quills.', es:'Soy un animal cubierto de púas afiladas.', fr:'Je suis un animal couvert de piquants pointus.'}, clues:[
     {en:'I am covered in long, sharp quills.', es:'Estoy cubierto de púas largas y afiladas.', fr:'Je suis couvert de longs piquants pointus.'},
     {en:'My quills protect me from danger.', es:'Mis púas me protegen del peligro.', fr:'Mes piquants me protègent du danger.'},
     {en:'I come out mostly at night to eat plants.', es:'Salgo sobre todo de noche a comer plantas.', fr:'Je sors surtout la nuit pour manger des plantes.'}
@@ -4867,7 +4876,7 @@ const ANIMALS = [
     {en:'A porcupine\'s quills come loose to defend it, then grow back.', es:'Las púas del puercoespín se sueltan para defenderlo y luego vuelven a crecer.', fr:'Les piquants du porc-épic se détachent pour le défendre, puis repoussent.'},
     {en:'Quills have tiny barbs that make them hard to remove.', es:'Las púas tienen ganchitos que las hacen difíciles de quitar.', fr:'Les piquants ont de petits crochets difficiles à retirer.'}
   ]},
-  { name:{en:'Wild boar', es:'Jabalí', fr:'Sanglier'}, emoji:'🐗', category:'wild', difficulty:'medium', clues:[
+  { name:{en:'Wild boar', es:'Jabalí', fr:'Sanglier'}, emoji:'🐗', category:'wild', difficulty:'medium', starterClue:{en:'I am a wild animal that looks like a hairy pig.', es:'Soy un animal salvaje parecido a un cerdo peludo.', fr:'Je suis un animal sauvage qui ressemble à un cochon poilu.'}, clues:[
     {en:'I am a wild relative of the farm pig.', es:'Soy un pariente salvaje del cerdo de granja.', fr:'Je suis un cousin sauvage du cochon de ferme.'},
     {en:'I have a strong snout for digging.', es:'Tengo un hocico fuerte para escarbar.', fr:'J\'ai un groin solide pour fouiller la terre.'},
     {en:'I live in forests and look for roots.', es:'Vivo en los bosques y busco raíces.', fr:'Je vis dans les forêts et cherche des racines.'}
@@ -4875,7 +4884,7 @@ const ANIMALS = [
     {en:'Wild boars use their snouts to dig up food underground.', es:'Los jabalíes usan el hocico para desenterrar comida.', fr:'Les sangliers utilisent leur groin pour déterrer de la nourriture.'},
     {en:'Baby boars have stripes that help them hide.', es:'Las crías de jabalí tienen rayas que las ayudan a esconderse.', fr:'Les marcassins ont des rayures qui les aident à se cacher.'}
   ]},
-  { name:{en:'Lynx', es:'Lince', fr:'Lynx'}, emoji:'🐈', category:'wild', difficulty:'hard', clues:[
+  { name:{en:'Lynx', es:'Lince', fr:'Lynx'}, emoji:'🐈', category:'wild', difficulty:'hard', starterClue:{en:'I am a wild cat with tufted ears.', es:'Soy un felino salvaje con orejas con mechones.', fr:'Je suis un chat sauvage aux oreilles à pinceaux.'}, clues:[
     {en:'I am a wild cat with tufts on my ears.', es:'Soy un felino salvaje con pinceles de pelo en las orejas.', fr:'Je suis un chat sauvage avec des touffes de poils sur les oreilles.'},
     {en:'I have a short tail and big paws.', es:'Tengo la cola corta y patas grandes.', fr:'J\'ai une queue courte et de grandes pattes.'},
     {en:'I live in cold forests and hunt quietly.', es:'Vivo en bosques fríos y cazo en silencio.', fr:'Je vis dans les forêts froides et chasse en silence.'}
@@ -4883,7 +4892,7 @@ const ANIMALS = [
     {en:'A lynx\'s big paws act like snowshoes on deep snow.', es:'Las grandes patas del lince funcionan como raquetas sobre la nieve profunda.', fr:'Les grandes pattes du lynx font office de raquettes sur la neige profonde.'},
     {en:'They have excellent eyesight and hearing.', es:'Tienen una vista y un oído excelentes.', fr:'Il a une vue et une ouïe excellentes.'}
   ]},
-  { name:{en:'Eagle', es:'Águila', fr:'Aigle'}, emoji:'🦅', category:'bird', difficulty:'medium', clues:[
+  { name:{en:'Eagle', es:'Águila', fr:'Aigle'}, emoji:'🦅', category:'bird', difficulty:'medium', starterClue:{en:'I am a large bird of prey.', es:'Soy una gran ave rapaz.', fr:'Je suis un grand oiseau de proie.'}, clues:[
     {en:'I am a large bird with powerful wings.', es:'Soy un ave grande con alas poderosas.', fr:'Je suis un grand oiseau aux ailes puissantes.'},
     {en:'I have very sharp eyesight.', es:'Tengo una vista muy aguda.', fr:'J\'ai une vue très perçante.'},
     {en:'I build my nest high up on cliffs or trees.', es:'Hago mi nido en lo alto de acantilados o árboles.', fr:'Je fais mon nid haut sur les falaises ou les arbres.'}
@@ -4891,7 +4900,7 @@ const ANIMALS = [
     {en:'Eagles can spot prey from more than 3 km away.', es:'Las águilas pueden ver presas a más de 3 km.', fr:'Les aigles repèrent leurs proies à plus de 3 km.'},
     {en:'Some eagles build huge nests they reuse for years.', es:'Algunas águilas construyen nidos enormes que reutilizan durante años.', fr:'Certains aigles construisent d\'énormes nids réutilisés pendant des années.'}
   ]},
-  { name:{en:'Flamingo', es:'Flamenco', fr:'Flamant'}, emoji:'🦩', category:'bird', difficulty:'medium', clues:[
+  { name:{en:'Flamingo', es:'Flamenco', fr:'Flamant'}, emoji:'🦩', category:'bird', difficulty:'medium', starterClue:{en:'I am a bird that stands on one leg.', es:'Soy un ave que se mantiene sobre una pata.', fr:'Je suis un oiseau qui se tient sur une patte.'}, clues:[
     {en:'I am a tall pink bird.', es:'Soy un ave alta y rosada.', fr:'Je suis un grand oiseau rose.'},
     {en:'I often stand on one leg.', es:'A menudo me sostengo sobre una pata.', fr:'Je me tiens souvent sur une seule patte.'},
     {en:'I live near lakes and find food in shallow water.', es:'Vivo cerca de lagos y busco comida en aguas poco profundas.', fr:'Je vis près des lacs et cherche ma nourriture en eau peu profonde.'}
@@ -4899,7 +4908,7 @@ const ANIMALS = [
     {en:'Flamingos get their pink color from the food they eat.', es:'Los flamencos obtienen su color rosa de lo que comen.', fr:'Les flamants doivent leur couleur rose à leur alimentation.'},
     {en:'A group of flamingos is called a flamboyance.', es:'A un grupo de flamencos se le llama una flamboyance.', fr:'Un groupe de flamants s\'appelle une flamboyance.'}
   ]},
-  { name:{en:'Swan', es:'Cisne', fr:'Cygne'}, emoji:'🦢', category:'bird', difficulty:'easy', clues:[
+  { name:{en:'Swan', es:'Cisne', fr:'Cygne'}, emoji:'🦢', category:'bird', difficulty:'easy', starterClue:{en:'I am an elegant white water bird.', es:'Soy una elegante ave acuática blanca.', fr:'Je suis un élégant oiseau d\'eau blanc.'}, clues:[
     {en:'I am a graceful white water bird.', es:'Soy un ave acuática blanca y elegante.', fr:'Je suis un gracieux oiseau d\'eau blanc.'},
     {en:'I have a long, curved neck.', es:'Tengo un cuello largo y curvado.', fr:'J\'ai un long cou recourbé.'},
     {en:'I glide gently across lakes.', es:'Me deslizo suavemente por los lagos.', fr:'Je glisse doucement sur les lacs.'}
@@ -4907,7 +4916,7 @@ const ANIMALS = [
     {en:'Swans often stay with the same partner for many years.', es:'Los cisnes suelen quedarse con la misma pareja durante muchos años.', fr:'Les cygnes restent souvent avec le même partenaire pendant des années.'},
     {en:'Baby swans are called cygnets.', es:'A las crías de cisne se les llama cisnecitos.', fr:'Les bébés cygnes s\'appellent des cygneaux.'}
   ]},
-  { name:{en:'Peacock', es:'Pavo real', fr:'Paon'}, emoji:'🦚', category:'bird', difficulty:'medium', clues:[
+  { name:{en:'Peacock', es:'Pavo real', fr:'Paon'}, emoji:'🦚', category:'bird', difficulty:'medium', starterClue:{en:'I am a bird with a beautiful tail.', es:'Soy un ave con una cola preciosa.', fr:'Je suis un oiseau à la magnifique queue.'}, clues:[
     {en:'I am a bird famous for my huge, colorful tail.', es:'Soy un ave famosa por mi enorme cola de colores.', fr:'Je suis un oiseau célèbre pour mon immense queue colorée.'},
     {en:'I spread my feathers in a beautiful fan.', es:'Despliego mis plumas en un abanico precioso.', fr:'Je déploie mes plumes en un magnifique éventail.'},
     {en:'The males are the most colorful.', es:'Los machos son los más coloridos.', fr:'Les mâles sont les plus colorés.'}
@@ -4915,7 +4924,7 @@ const ANIMALS = [
     {en:'A peacock\'s tail can have feathers with eye-like spots.', es:'La cola del pavo real puede tener plumas con manchas que parecen ojos.', fr:'La queue du paon peut avoir des plumes ornées de motifs en forme d\'yeux.'},
     {en:'They fan their feathers to show off and attract attention.', es:'Despliegan las plumas para lucirse y llamar la atención.', fr:'Ils déploient leurs plumes pour se montrer et attirer l\'attention.'}
   ]},
-  { name:{en:'Dove', es:'Paloma', fr:'Colombe'}, emoji:'🕊️', category:'bird', difficulty:'easy', clues:[
+  { name:{en:'Dove', es:'Paloma', fr:'Colombe'}, emoji:'🕊️', category:'bird', difficulty:'easy', starterClue:{en:'I am a small gentle bird, a symbol of peace.', es:'Soy una pequeña ave apacible, símbolo de la paz.', fr:'Je suis un petit oiseau doux, symbole de paix.'}, clues:[
     {en:'I am a gentle bird often colored white or grey.', es:'Soy un ave tranquila, a menudo blanca o gris.', fr:'Je suis un oiseau doux, souvent blanc ou gris.'},
     {en:'I am a symbol of peace.', es:'Soy un símbolo de paz.', fr:'Je suis un symbole de paix.'},
     {en:'I make a soft cooing sound.', es:'Hago un suave arrullo.', fr:'Je fais un doux roucoulement.'}
@@ -4923,7 +4932,7 @@ const ANIMALS = [
     {en:'Doves and pigeons can find their way home over long distances.', es:'Las palomas pueden encontrar el camino a casa a grandes distancias.', fr:'Les colombes et les pigeons retrouvent leur chemin sur de longues distances.'},
     {en:'They feed their babies a special "milk".', es:'Alimentan a sus crías con una "leche" especial.', fr:'Ils nourrissent leurs petits avec un « lait » spécial.'}
   ]},
-  { name:{en:'Ostrich', es:'Avestruz', fr:'Autruche'}, emoji:'🐦', category:'bird', difficulty:'medium', clues:[
+  { name:{en:'Ostrich', es:'Avestruz', fr:'Autruche'}, emoji:'🐦', category:'bird', difficulty:'medium', starterClue:{en:'I am a very big bird that cannot fly.', es:'Soy un ave muy grande que no puede volar.', fr:'Je suis un très grand oiseau qui ne peut pas voler.'}, clues:[
     {en:'I am the largest bird in the world.', es:'Soy el ave más grande del mundo.', fr:'Je suis le plus grand oiseau du monde.'},
     {en:'I cannot fly but I run very fast.', es:'No puedo volar pero corro muy rápido.', fr:'Je ne vole pas mais je cours très vite.'},
     {en:'I lay the biggest eggs of any bird.', es:'Pongo los huevos más grandes de todas las aves.', fr:'Je ponds les plus gros œufs de tous les oiseaux.'}
@@ -4931,7 +4940,7 @@ const ANIMALS = [
     {en:'An ostrich can run faster than a racehorse.', es:'Un avestruz puede correr más rápido que un caballo de carreras.', fr:'Une autruche peut courir plus vite qu\'un cheval de course.'},
     {en:'Its eye is bigger than its brain.', es:'Su ojo es más grande que su cerebro.', fr:'Son œil est plus gros que son cerveau.'}
   ]},
-  { name:{en:'Crow', es:'Cuervo', fr:'Corbeau'}, emoji:'🐦‍⬛', category:'bird', difficulty:'medium', clues:[
+  { name:{en:'Crow', es:'Cuervo', fr:'Corbeau'}, emoji:'🐦‍⬛', category:'bird', difficulty:'medium', starterClue:{en:'I am a black bird known for being smart.', es:'Soy un ave negra conocida por ser lista.', fr:'Je suis un oiseau noir réputé pour son intelligence.'}, clues:[
     {en:'I am a clever black bird.', es:'Soy un ave negra muy lista.', fr:'Je suis un oiseau noir très malin.'},
     {en:'I can use simple tools to get food.', es:'Puedo usar herramientas simples para conseguir comida.', fr:'Je peux utiliser des outils simples pour trouver de la nourriture.'},
     {en:'I have a loud cawing call.', es:'Tengo un graznido fuerte.', fr:'J\'ai un croassement puissant.'}
@@ -4939,7 +4948,7 @@ const ANIMALS = [
     {en:'Crows can remember human faces for years.', es:'Los cuervos recuerdan caras humanas durante años.', fr:'Les corbeaux se souviennent des visages humains pendant des années.'},
     {en:'They are among the smartest of all birds.', es:'Están entre las aves más inteligentes.', fr:'Ils comptent parmi les oiseaux les plus intelligents.'}
   ]},
-  { name:{en:'Seagull', es:'Gaviota', fr:'Mouette'}, emoji:'🐦', category:'bird', difficulty:'easy', clues:[
+  { name:{en:'Seagull', es:'Gaviota', fr:'Mouette'}, emoji:'🐦', category:'bird', difficulty:'easy', aliases:['gull'], starterClue:{en:'I am a bird that lives near the sea.', es:'Soy un ave que vive cerca del mar.', fr:'Je suis un oiseau qui vit près de la mer.'}, clues:[
     {en:'I am a white and grey bird that lives near the sea.', es:'Soy un ave blanca y gris que vive cerca del mar.', fr:'Je suis un oiseau blanc et gris qui vit près de la mer.'},
     {en:'I fly over beaches and harbors.', es:'Vuelo sobre playas y puertos.', fr:'Je vole au-dessus des plages et des ports.'},
     {en:'I love to eat fish.', es:'Me encanta comer pescado.', fr:'J\'adore manger du poisson.'}
@@ -4947,7 +4956,7 @@ const ANIMALS = [
     {en:'Seagulls can drink both fresh and salty water.', es:'Las gaviotas pueden beber agua dulce y salada.', fr:'Les mouettes peuvent boire de l\'eau douce et salée.'},
     {en:'They are clever and quickly learn where to find food.', es:'Son listas y aprenden rápido dónde encontrar comida.', fr:'Elles sont malines et apprennent vite où trouver de la nourriture.'}
   ]},
-  { name:{en:'Snake', es:'Serpiente', fr:'Serpent'}, emoji:'🐍', category:'reptile', difficulty:'easy', clues:[
+  { name:{en:'Snake', es:'Serpiente', fr:'Serpent'}, emoji:'🐍', category:'reptile', difficulty:'easy', starterClue:{en:'I am a long reptile with no legs.', es:'Soy un reptil largo sin patas.', fr:'Je suis un long reptile sans pattes.'}, clues:[
     {en:'I am a long animal with no legs.', es:'Soy un animal largo y sin patas.', fr:'Je suis un long animal sans pattes.'},
     {en:'I slither along the ground.', es:'Me deslizo por el suelo.', fr:'Je rampe sur le sol.'},
     {en:'I flick my tongue to smell the air.', es:'Saco la lengua para oler el aire.', fr:'Je tire la langue pour sentir l\'air.'}
@@ -4955,7 +4964,7 @@ const ANIMALS = [
     {en:'Snakes smell with their tongues.', es:'Las serpientes huelen con la lengua.', fr:'Les serpents sentent avec leur langue.'},
     {en:'They swallow their food whole.', es:'Tragan su comida entera.', fr:'Ils avalent leur nourriture en entier.'}
   ]},
-  { name:{en:'Crocodile', es:'Cocodrilo', fr:'Crocodile'}, emoji:'🐊', category:'reptile', difficulty:'medium', clues:[
+  { name:{en:'Crocodile', es:'Cocodrilo', fr:'Crocodile'}, emoji:'🐊', category:'reptile', difficulty:'medium', starterClue:{en:'I am a large reptile that lives in rivers.', es:'Soy un gran reptil que vive en los ríos.', fr:'Je suis un grand reptile qui vit dans les rivières.'}, clues:[
     {en:'I am a large reptile with strong jaws.', es:'Soy un reptil grande con mandíbulas fuertes.', fr:'Je suis un grand reptile aux mâchoires puissantes.'},
     {en:'I live in rivers and swamps.', es:'Vivo en ríos y pantanos.', fr:'Je vis dans les rivières et les marais.'},
     {en:'I float quietly with just my eyes above water.', es:'Floto en silencio con solo los ojos fuera del agua.', fr:'Je flotte sans bruit, seuls mes yeux dépassant de l\'eau.'}
@@ -4963,7 +4972,7 @@ const ANIMALS = [
     {en:'Crocodiles are among the oldest types of animals on Earth.', es:'Los cocodrilos están entre los tipos de animales más antiguos de la Tierra.', fr:'Les crocodiles font partie des plus anciens types d\'animaux sur Terre.'},
     {en:'A mother crocodile gently carries her babies in her mouth.', es:'La mamá cocodrilo lleva con cuidado a sus crías en la boca.', fr:'La maman crocodile transporte délicatement ses petits dans sa gueule.'}
   ]},
-  { name:{en:'Lizard', es:'Lagarto', fr:'Lézard'}, emoji:'🦎', category:'reptile', difficulty:'easy', clues:[
+  { name:{en:'Lizard', es:'Lagarto', fr:'Lézard'}, emoji:'🦎', category:'reptile', difficulty:'easy', starterClue:{en:'I am a small reptile with four legs.', es:'Soy un reptil pequeño de cuatro patas.', fr:'Je suis un petit reptile à quatre pattes.'}, clues:[
     {en:'I am a small reptile with four legs and a tail.', es:'Soy un reptil pequeño con cuatro patas y cola.', fr:'Je suis un petit reptile avec quatre pattes et une queue.'},
     {en:'I love to bask in the sun.', es:'Me encanta tomar el sol.', fr:'J\'adore me dorer au soleil.'},
     {en:'Some of us can drop our tail to escape.', es:'Algunos podemos soltar la cola para escapar.', fr:'Certains d\'entre nous peuvent lâcher leur queue pour s\'échapper.'}
@@ -4971,7 +4980,7 @@ const ANIMALS = [
     {en:'Many lizards can grow back a lost tail.', es:'Muchos lagartos pueden regenerar la cola perdida.', fr:'Beaucoup de lézards peuvent faire repousser leur queue perdue.'},
     {en:'They warm up in the sun because they are cold-blooded.', es:'Se calientan al sol porque son de sangre fría.', fr:'Ils se réchauffent au soleil car ils sont à sang froid.'}
   ]},
-  { name:{en:'Iguana', es:'Iguana', fr:'Iguane'}, emoji:'🦎', category:'reptile', difficulty:'medium', clues:[
+  { name:{en:'Iguana', es:'Iguana', fr:'Iguane'}, emoji:'🦎', category:'reptile', difficulty:'medium', starterClue:{en:'I am a large lizard.', es:'Soy un lagarto grande.', fr:'Je suis un grand lézard.'}, clues:[
     {en:'I am a large lizard with a row of spines on my back.', es:'Soy un lagarto grande con una hilera de púas en la espalda.', fr:'Je suis un grand lézard avec une rangée d\'épines sur le dos.'},
     {en:'I live in warm, sunny places.', es:'Vivo en lugares cálidos y soleados.', fr:'Je vis dans des endroits chauds et ensoleillés.'},
     {en:'I mostly eat leaves and fruit.', es:'Como sobre todo hojas y fruta.', fr:'Je mange surtout des feuilles et des fruits.'}
@@ -4979,7 +4988,7 @@ const ANIMALS = [
     {en:'Iguanas are great swimmers and can hold their breath underwater.', es:'Las iguanas nadan muy bien y pueden aguantar la respiración bajo el agua.', fr:'Les iguanes nagent très bien et peuvent retenir leur souffle sous l\'eau.'},
     {en:'They have a special "third eye" on top of their head that senses light.', es:'Tienen un "tercer ojo" en la cabeza que detecta la luz.', fr:'Ils ont un « troisième œil » sur la tête qui détecte la lumière.'}
   ]},
-  { name:{en:'Gecko', es:'Geco', fr:'Gecko'}, emoji:'🦎', category:'reptile', difficulty:'hard', clues:[
+  { name:{en:'Gecko', es:'Geco', fr:'Gecko'}, emoji:'🦎', category:'reptile', difficulty:'hard', starterClue:{en:'I am a small lizard with sticky feet.', es:'Soy un pequeño lagarto de patas pegajosas.', fr:'Je suis un petit lézard aux pattes collantes.'}, clues:[
     {en:'I am a small lizard that can climb walls.', es:'Soy un lagarto pequeño que puede trepar por las paredes.', fr:'Je suis un petit lézard qui peut grimper aux murs.'},
     {en:'I can stick to smooth surfaces with my toes.', es:'Me pego a superficies lisas con los dedos.', fr:'Je m\'accroche aux surfaces lisses avec mes doigts.'},
     {en:'Many of us are active at night.', es:'Muchos somos activos de noche.', fr:'Beaucoup d\'entre nous sont actifs la nuit.'}
@@ -4987,7 +4996,7 @@ const ANIMALS = [
     {en:'Geckos can walk up glass thanks to tiny hairs on their feet.', es:'Los gecos pueden subir por el cristal gracias a pelitos diminutos en sus patas.', fr:'Les geckos grimpent sur le verre grâce à de minuscules poils sur leurs pattes.'},
     {en:'Some geckos can make chirping sounds.', es:'Algunos gecos pueden emitir chasquidos.', fr:'Certains geckos émettent des petits cris.'}
   ]},
-  { name:{en:'Whale', es:'Ballena', fr:'Baleine'}, emoji:'🐋', category:'marine', difficulty:'easy', clues:[
+  { name:{en:'Whale', es:'Ballena', fr:'Baleine'}, emoji:'🐋', category:'marine', difficulty:'easy', starterClue:{en:'I am a giant animal that lives in the ocean.', es:'Soy un animal gigante que vive en el océano.', fr:'Je suis un animal géant qui vit dans l\'océan.'}, clues:[
     {en:'I am the largest animal in the ocean.', es:'Soy el animal más grande del océano.', fr:'Je suis le plus grand animal de l\'océan.'},
     {en:'I breathe air through a hole on my back.', es:'Respiro aire por un orificio en el lomo.', fr:'Je respire l\'air par un trou sur mon dos.'},
     {en:'I sing songs underwater.', es:'Canto canciones bajo el agua.', fr:'Je chante des chansons sous l\'eau.'}
@@ -4995,7 +5004,7 @@ const ANIMALS = [
     {en:'The blue whale is the biggest animal that has ever lived.', es:'La ballena azul es el animal más grande que ha existido.', fr:'La baleine bleue est le plus grand animal ayant jamais existé.'},
     {en:'Whales must come to the surface to breathe air.', es:'Las ballenas deben subir a la superficie para respirar.', fr:'Les baleines doivent remonter à la surface pour respirer.'}
   ]},
-  { name:{en:'Shark', es:'Tiburón', fr:'Requin'}, emoji:'🦈', category:'marine', difficulty:'medium', clues:[
+  { name:{en:'Shark', es:'Tiburón', fr:'Requin'}, emoji:'🦈', category:'marine', difficulty:'medium', starterClue:{en:'I am a fish with sharp teeth.', es:'Soy un pez con dientes afilados.', fr:'Je suis un poisson aux dents acérées.'}, clues:[
     {en:'I am a fish with many sharp teeth.', es:'Soy un pez con muchos dientes afilados.', fr:'Je suis un poisson avec de nombreuses dents pointues.'},
     {en:'I have a tall fin on my back.', es:'Tengo una aleta alta en el lomo.', fr:'J\'ai une grande nageoire sur le dos.'},
     {en:'I am a strong swimmer in the ocean.', es:'Soy un nadador fuerte en el océano.', fr:'Je suis un nageur puissant dans l\'océan.'}
@@ -5003,7 +5012,7 @@ const ANIMALS = [
     {en:'Sharks can grow new teeth all their lives.', es:'Los tiburones pueden generar nuevos dientes toda su vida.', fr:'Les requins peuvent fabriquer de nouvelles dents toute leur vie.'},
     {en:'They have lived in the oceans for millions of years.', es:'Llevan millones de años viviendo en los océanos.', fr:'Ils vivent dans les océans depuis des millions d\'années.'}
   ]},
-  { name:{en:'Crab', es:'Cangrejo', fr:'Crabe'}, emoji:'🦀', category:'marine', difficulty:'easy', clues:[
+  { name:{en:'Crab', es:'Cangrejo', fr:'Crabe'}, emoji:'🦀', category:'marine', difficulty:'easy', starterClue:{en:'I am a sea animal with a hard shell.', es:'Soy un animal marino con un caparazón duro.', fr:'Je suis un animal marin à carapace dure.'}, clues:[
     {en:'I have a hard shell and walk sideways.', es:'Tengo un caparazón duro y camino de lado.', fr:'J\'ai une carapace dure et je marche de côté.'},
     {en:'I have two strong claws.', es:'Tengo dos pinzas fuertes.', fr:'J\'ai deux pinces puissantes.'},
     {en:'I live on beaches and in the sea.', es:'Vivo en las playas y en el mar.', fr:'Je vis sur les plages et dans la mer.'}
@@ -5011,7 +5020,7 @@ const ANIMALS = [
     {en:'Crabs walk sideways because of the way their legs bend.', es:'Los cangrejos caminan de lado por la forma en que se doblan sus patas.', fr:'Les crabes marchent de côté à cause de la façon dont leurs pattes se plient.'},
     {en:'They can grow back a lost claw.', es:'Pueden regenerar una pinza perdida.', fr:'Ils peuvent faire repousser une pince perdue.'}
   ]},
-  { name:{en:'Lobster', es:'Langosta', fr:'Homard'}, emoji:'🦞', category:'marine', difficulty:'medium', clues:[
+  { name:{en:'Lobster', es:'Langosta', fr:'Homard'}, emoji:'🦞', category:'marine', difficulty:'medium', starterClue:{en:'I am a sea animal with big claws.', es:'Soy un animal marino con pinzas grandes.', fr:'Je suis un animal marin aux grosses pinces.'}, clues:[
     {en:'I am a sea animal with a hard shell and big claws.', es:'Soy un animal marino con caparazón duro y pinzas grandes.', fr:'Je suis un animal marin avec une carapace dure et de grandes pinces.'},
     {en:'I live on the ocean floor.', es:'Vivo en el fondo del mar.', fr:'Je vis au fond de l\'océan.'},
     {en:'I turn bright red when cooked.', es:'Me vuelvo rojo brillante al cocinarme.', fr:'Je deviens rouge vif à la cuisson.'}
@@ -5019,7 +5028,7 @@ const ANIMALS = [
     {en:'Lobsters can live for many decades.', es:'Las langostas pueden vivir muchas décadas.', fr:'Les homards peuvent vivre de nombreuses décennies.'},
     {en:'They taste their food using tiny hairs on their legs.', es:'Saborean la comida con pelitos en las patas.', fr:'Ils goûtent leur nourriture grâce à de petits poils sur leurs pattes.'}
   ]},
-  { name:{en:'Shrimp', es:'Camarón', fr:'Crevette'}, emoji:'🦐', category:'marine', difficulty:'medium', clues:[
+  { name:{en:'Shrimp', es:'Camarón', fr:'Crevette'}, emoji:'🦐', category:'marine', difficulty:'medium', starterClue:{en:'I am a tiny sea creature.', es:'Soy una diminuta criatura marina.', fr:'Je suis une toute petite créature marine.'}, clues:[
     {en:'I am a small sea creature with a curved body.', es:'Soy una criatura marina pequeña con el cuerpo curvado.', fr:'Je suis une petite créature marine au corps recourbé.'},
     {en:'I have lots of little legs.', es:'Tengo muchas patitas.', fr:'J\'ai beaucoup de petites pattes.'},
     {en:'I live in oceans and rivers.', es:'Vivo en océanos y ríos.', fr:'Je vis dans les océans et les rivières.'}
@@ -5027,7 +5036,7 @@ const ANIMALS = [
     {en:'Some shrimp can clean other sea animals.', es:'Algunos camarones limpian a otros animales marinos.', fr:'Certaines crevettes nettoient d\'autres animaux marins.'},
     {en:'Shrimp can swim backwards by flicking their tails.', es:'Los camarones pueden nadar hacia atrás dando coletazos.', fr:'Les crevettes peuvent nager en arrière d\'un coup de queue.'}
   ]},
-  { name:{en:'Squid', es:'Calamar', fr:'Calmar'}, emoji:'🦑', category:'marine', difficulty:'medium', clues:[
+  { name:{en:'Squid', es:'Calamar', fr:'Calmar'}, emoji:'🦑', category:'marine', difficulty:'medium', starterClue:{en:'I am a soft sea animal with long arms.', es:'Soy un animal marino blando de brazos largos.', fr:'Je suis un animal marin mou aux longs bras.'}, clues:[
     {en:'I am a sea animal with ten arms.', es:'Soy un animal marino con diez brazos.', fr:'Je suis un animal marin à dix bras.'},
     {en:'I can squirt ink to hide.', es:'Puedo lanzar tinta para esconderme.', fr:'Je peux projeter de l\'encre pour me cacher.'},
     {en:'I move by pushing water behind me.', es:'Me muevo empujando agua hacia atrás.', fr:'Je me déplace en poussant l\'eau derrière moi.'}
@@ -5035,7 +5044,7 @@ const ANIMALS = [
     {en:'The giant squid has the largest eyes of any animal.', es:'El calamar gigante tiene los ojos más grandes de cualquier animal.', fr:'Le calmar géant a les plus grands yeux du règne animal.'},
     {en:'Squid can change the color of their skin.', es:'Los calamares pueden cambiar el color de su piel.', fr:'Les calmars peuvent changer la couleur de leur peau.'}
   ]},
-  { name:{en:'Seal', es:'Foca', fr:'Phoque'}, emoji:'🦭', category:'marine', difficulty:'medium', clues:[
+  { name:{en:'Seal', es:'Foca', fr:'Phoque'}, emoji:'🦭', category:'marine', difficulty:'medium', starterClue:{en:'I am a smooth animal that swims in the sea and rests on rocks.', es:'Soy un animal liso que nada en el mar y descansa en las rocas.', fr:'Je suis un animal lisse qui nage dans la mer et se repose sur les rochers.'}, clues:[
     {en:'I am a smooth animal that lives in the cold sea.', es:'Soy un animal liso que vive en el mar frío.', fr:'Je suis un animal lisse qui vit dans la mer froide.'},
     {en:'I have flippers and love to swim.', es:'Tengo aletas y me encanta nadar.', fr:'J\'ai des nageoires et j\'adore nager.'},
     {en:'I rest on rocks and beaches.', es:'Descanso en rocas y playas.', fr:'Je me repose sur les rochers et les plages.'}
@@ -5043,7 +5052,7 @@ const ANIMALS = [
     {en:'Seals can hold their breath for a long time underwater.', es:'Las focas pueden aguantar mucho la respiración bajo el agua.', fr:'Les phoques peuvent retenir leur souffle longtemps sous l\'eau.'},
     {en:'Baby seals are often born with soft white fur.', es:'Las crías de foca suelen nacer con un suave pelaje blanco.', fr:'Les bébés phoques naissent souvent avec une douce fourrure blanche.'}
   ]},
-  { name:{en:'Jellyfish', es:'Medusa', fr:'Méduse'}, emoji:'🪼', category:'marine', difficulty:'medium', clues:[
+  { name:{en:'Jellyfish', es:'Medusa', fr:'Méduse'}, emoji:'🪼', category:'marine', difficulty:'medium', starterClue:{en:'I am a see-through sea animal.', es:'Soy un animal marino transparente.', fr:'Je suis un animal marin transparent.'}, clues:[
     {en:'I am a see-through sea animal with no bones.', es:'Soy un animal marino transparente y sin huesos.', fr:'Je suis un animal marin transparent et sans os.'},
     {en:'I have long, trailing tentacles.', es:'Tengo tentáculos largos que cuelgan.', fr:'J\'ai de longs tentacules qui pendent.'},
     {en:'I drift along with the ocean currents.', es:'Me dejo llevar por las corrientes del océano.', fr:'Je me laisse porter par les courants de l\'océan.'}
@@ -5051,7 +5060,7 @@ const ANIMALS = [
     {en:'Jellyfish have been in the oceans longer than dinosaurs existed.', es:'Las medusas existen en los océanos desde antes que los dinosaurios.', fr:'Les méduses peuplent les océans depuis bien avant les dinosaures.'},
     {en:'They are made mostly of water.', es:'Están hechas casi por completo de agua.', fr:'Elles sont composées presque entièrement d\'eau.'}
   ]},
-  { name:{en:'Pufferfish', es:'Pez globo', fr:'Poisson-globe'}, emoji:'🐡', category:'marine', difficulty:'medium', clues:[
+  { name:{en:'Pufferfish', es:'Pez globo', fr:'Poisson-globe'}, emoji:'🐡', category:'marine', difficulty:'medium', aliases:['puffer','blowfish'], starterClue:{en:'I am a fish that can puff up.', es:'Soy un pez que puede hincharse.', fr:'Je suis un poisson qui peut se gonfler.'}, clues:[
     {en:'I am a fish that can blow up like a balloon.', es:'Soy un pez que puede hincharse como un globo.', fr:'Je suis un poisson qui peut se gonfler comme un ballon.'},
     {en:'I puff up when I feel scared.', es:'Me inflo cuando tengo miedo.', fr:'Je me gonfle quand j\'ai peur.'},
     {en:'I live in warm ocean waters.', es:'Vivo en aguas cálidas del océano.', fr:'Je vis dans les eaux chaudes de l\'océan.'}
@@ -5059,7 +5068,7 @@ const ANIMALS = [
     {en:'A pufferfish gulps water to puff up and look bigger.', es:'El pez globo traga agua para inflarse y parecer más grande.', fr:'Le poisson-globe avale de l\'eau pour se gonfler et paraître plus gros.'},
     {en:'Some pufferfish make patterns in the sand.', es:'Algunos peces globo dibujan patrones en la arena.', fr:'Certains poissons-globes dessinent des motifs dans le sable.'}
   ]},
-  { name:{en:'Seahorse', es:'Caballito de mar', fr:'Hippocampe'}, emoji:'🐠', category:'marine', difficulty:'medium', clues:[
+  { name:{en:'Seahorse', es:'Caballito de mar', fr:'Hippocampe'}, emoji:'🐠', category:'marine', difficulty:'medium', starterClue:{en:'I am a tiny, slow fish with a curly tail.', es:'Soy un pez diminuto y lento de cola enroscada.', fr:'Je suis un tout petit poisson lent à la queue enroulée.'}, clues:[
     {en:'I am a tiny fish shaped like a horse\'s head.', es:'Soy un pez diminuto con forma de cabeza de caballo.', fr:'Je suis un tout petit poisson en forme de tête de cheval.'},
     {en:'I swim upright and very slowly.', es:'Nado en posición vertical y muy despacio.', fr:'Je nage à la verticale et très lentement.'},
     {en:'I hold onto seaweed with my tail.', es:'Me agarro a las algas con la cola.', fr:'Je m\'accroche aux algues avec ma queue.'}
@@ -5067,7 +5076,7 @@ const ANIMALS = [
     {en:'In seahorses, it is the father who carries the babies.', es:'En los caballitos de mar, es el padre quien lleva a las crías.', fr:'Chez les hippocampes, c\'est le père qui porte les bébés.'},
     {en:'They wrap their tails around plants to stay still.', es:'Enroscan la cola en las plantas para no moverse.', fr:'Ils enroulent leur queue autour des plantes pour rester immobiles.'}
   ]},
-  { name:{en:'Orca', es:'Orca', fr:'Orque'}, emoji:'🐋', category:'marine', difficulty:'medium', clues:[
+  { name:{en:'Orca', es:'Orca', fr:'Orque'}, emoji:'🐋', category:'marine', difficulty:'medium', aliases:['killer whale'], starterClue:{en:'I am a big black-and-white ocean animal.', es:'Soy un gran animal marino blanco y negro.', fr:'Je suis un grand animal marin noir et blanc.'}, clues:[
     {en:'I am a black and white ocean animal.', es:'Soy un animal del océano blanco y negro.', fr:'Je suis un animal de l\'océan noir et blanc.'},
     {en:'People also call me a killer whale.', es:'También me llaman ballena asesina.', fr:'On m\'appelle aussi épaulard.'},
     {en:'I hunt in family groups called pods.', es:'Cazo en grupos familiares llamados vainas.', fr:'Je chasse en groupes familiaux appelés bancs.'}
@@ -5075,7 +5084,7 @@ const ANIMALS = [
     {en:'Orcas are actually the largest members of the dolphin family.', es:'Las orcas son en realidad los miembros más grandes de la familia de los delfines.', fr:'Les orques sont en fait les plus grands membres de la famille des dauphins.'},
     {en:'They are very smart and work together to find food.', es:'Son muy listas y colaboran para encontrar comida.', fr:'Elles sont très intelligentes et coopèrent pour trouver de la nourriture.'}
   ]},
-  { name:{en:'Oyster', es:'Ostra', fr:'Huître'}, emoji:'🦪', category:'marine', difficulty:'medium', clues:[
+  { name:{en:'Oyster', es:'Ostra', fr:'Huître'}, emoji:'🦪', category:'marine', difficulty:'medium', starterClue:{en:'I am a sea animal that lives in a shell.', es:'Soy un animal marino que vive en una concha.', fr:'Je suis un animal marin qui vit dans une coquille.'}, clues:[
     {en:'I am a sea animal that lives inside two shells.', es:'Soy un animal marino que vive entre dos conchas.', fr:'Je suis un animal marin qui vit entre deux coquilles.'},
     {en:'I stay attached to rocks underwater.', es:'Permanezco pegado a las rocas bajo el agua.', fr:'Je reste accroché aux rochers sous l\'eau.'},
     {en:'I filter the water to find food.', es:'Filtro el agua para encontrar comida.', fr:'Je filtre l\'eau pour trouver ma nourriture.'}
@@ -5083,7 +5092,7 @@ const ANIMALS = [
     {en:'Some oysters can make a pearl inside their shell.', es:'Algunas ostras pueden formar una perla dentro de su concha.', fr:'Certaines huîtres peuvent former une perle dans leur coquille.'},
     {en:'Oysters help clean the water by filtering it.', es:'Las ostras ayudan a limpiar el agua al filtrarla.', fr:'Les huîtres aident à nettoyer l\'eau en la filtrant.'}
   ]},
-  { name:{en:'Bee', es:'Abeja', fr:'Abeille'}, emoji:'🐝', category:'insect', difficulty:'easy', clues:[
+  { name:{en:'Bee', es:'Abeja', fr:'Abeille'}, emoji:'🐝', category:'insect', difficulty:'easy', starterClue:{en:'I am a small insect that makes honey.', es:'Soy un pequeño insecto que hace miel.', fr:'Je suis un petit insecte qui fait du miel.'}, clues:[
     {en:'I am a small striped insect that buzzes.', es:'Soy un insecto pequeño y rayado que zumba.', fr:'Je suis un petit insecte rayé qui bourdonne.'},
     {en:'I collect nectar from flowers.', es:'Recojo néctar de las flores.', fr:'Je récolte le nectar des fleurs.'},
     {en:'I help make honey.', es:'Ayudo a hacer miel.', fr:'J\'aide à fabriquer du miel.'}
@@ -5091,7 +5100,7 @@ const ANIMALS = [
     {en:'Bees help plants grow by carrying pollen between flowers.', es:'Las abejas ayudan a las plantas a crecer al llevar polen entre flores.', fr:'Les abeilles aident les plantes à pousser en transportant le pollen entre les fleurs.'},
     {en:'A hive can have tens of thousands of bees.', es:'Una colmena puede tener decenas de miles de abejas.', fr:'Une ruche peut compter des dizaines de milliers d\'abeilles.'}
   ]},
-  { name:{en:'Butterfly', es:'Mariposa', fr:'Papillon'}, emoji:'🦋', category:'insect', difficulty:'easy', clues:[
+  { name:{en:'Butterfly', es:'Mariposa', fr:'Papillon'}, emoji:'🦋', category:'insect', difficulty:'easy', starterClue:{en:'I am an insect with colorful wings.', es:'Soy un insecto de alas coloridas.', fr:'Je suis un insecte aux ailes colorées.'}, clues:[
     {en:'I am an insect with large colorful wings.', es:'Soy un insecto con alas grandes y coloridas.', fr:'Je suis un insecte aux grandes ailes colorées.'},
     {en:'I started life as a caterpillar.', es:'Empecé mi vida como oruga.', fr:'J\'ai commencé ma vie en tant que chenille.'},
     {en:'I drink nectar from flowers.', es:'Bebo néctar de las flores.', fr:'Je bois le nectar des fleurs.'}
@@ -5099,7 +5108,7 @@ const ANIMALS = [
     {en:'Butterflies taste with their feet.', es:'Las mariposas saborean con las patas.', fr:'Les papillons goûtent avec leurs pattes.'},
     {en:'They transform from a caterpillar inside a chrysalis.', es:'Se transforman desde una oruga dentro de una crisálida.', fr:'Ils se transforment à partir d\'une chenille dans une chrysalide.'}
   ]},
-  { name:{en:'Ant', es:'Hormiga', fr:'Fourmi'}, emoji:'🐜', category:'insect', difficulty:'easy', clues:[
+  { name:{en:'Ant', es:'Hormiga', fr:'Fourmi'}, emoji:'🐜', category:'insect', difficulty:'easy', starterClue:{en:'I am a tiny insect that works in a team.', es:'Soy un diminuto insecto que trabaja en equipo.', fr:'Je suis un tout petit insecte qui travaille en équipe.'}, clues:[
     {en:'I am a tiny insect that lives in big colonies.', es:'Soy un insecto diminuto que vive en grandes colonias.', fr:'Je suis un tout petit insecte qui vit en grandes colonies.'},
     {en:'I can carry things heavier than myself.', es:'Puedo cargar cosas más pesadas que yo.', fr:'Je peux porter des objets plus lourds que moi.'},
     {en:'I work together with thousands of others.', es:'Trabajo junto a miles más.', fr:'Je travaille avec des milliers d\'autres.'}
@@ -5107,7 +5116,7 @@ const ANIMALS = [
     {en:'Ants can lift many times their own body weight.', es:'Las hormigas pueden levantar muchas veces su propio peso.', fr:'Les fourmis peuvent soulever plusieurs fois leur poids.'},
     {en:'A colony works together like one big team.', es:'Una colonia trabaja unida como un gran equipo.', fr:'Une colonie travaille ensemble comme une grande équipe.'}
   ]},
-  { name:{en:'Ladybug', es:'Mariquita', fr:'Coccinelle'}, emoji:'🐞', category:'insect', difficulty:'easy', clues:[
+  { name:{en:'Ladybug', es:'Mariquita', fr:'Coccinelle'}, emoji:'🐞', category:'insect', difficulty:'easy', starterClue:{en:'I am a small red insect with black dots.', es:'Soy un pequeño insecto rojo con puntos negros.', fr:'Je suis un petit insecte rouge à points noirs.'}, clues:[
     {en:'I am a small round red insect.', es:'Soy un insecto pequeño, redondo y rojo.', fr:'Je suis un petit insecte rond et rouge.'},
     {en:'I have black spots on my back.', es:'Tengo manchas negras en la espalda.', fr:'J\'ai des points noirs sur le dos.'},
     {en:'I help gardens by eating tiny pests.', es:'Ayudo a los jardines comiendo plagas diminutas.', fr:'J\'aide les jardins en mangeant de minuscules nuisibles.'}
@@ -5115,15 +5124,15 @@ const ANIMALS = [
     {en:'Ladybugs eat insects that harm plants, so gardeners love them.', es:'Las mariquitas comen insectos que dañan las plantas, por eso gustan a los jardineros.', fr:'Les coccinelles mangent les insectes nuisibles aux plantes, ce qui plaît aux jardiniers.'},
     {en:'Their bright color warns birds to stay away.', es:'Su color vivo avisa a los pájaros para que se alejen.', fr:'Leur couleur vive prévient les oiseaux de rester à distance.'}
   ]},
-  { name:{en:'Spider', es:'Araña', fr:'Araignée'}, emoji:'🕷️', category:'insect', difficulty:'medium', clues:[
-    {en:'I have eight legs.', es:'Tengo ocho patas.', fr:'J\'ai huit pattes.'},
+  { name:{en:'Spider', es:'Araña', fr:'Araignée'}, emoji:'🕷️', category:'insect', difficulty:'medium', starterClue:{en:'I am a small animal with eight legs.', es:'Soy un pequeño animal con ocho patas.', fr:'Je suis un petit animal à huit pattes.'}, clues:[
+    {en:'I have eight legs and spin silk webs to catch food.', es:'Tengo ocho patas y tejo telas de seda para atrapar comida.', fr:'J\'ai huit pattes et je tisse des toiles de soie pour attraper ma nourriture.'},
     {en:'I spin webs to catch my food.', es:'Tejo telas para atrapar mi comida.', fr:'Je tisse des toiles pour attraper ma nourriture.'},
     {en:'I am not an insect but an arachnid.', es:'No soy un insecto, sino un arácnido.', fr:'Je ne suis pas un insecte mais un arachnide.'}
   ], facts:[
     {en:'Spider silk is incredibly strong for its size.', es:'La seda de araña es increíblemente fuerte para su tamaño.', fr:'La soie d\'araignée est incroyablement résistante pour sa taille.'},
     {en:'Most spiders help us by eating insects.', es:'La mayoría de las arañas nos ayudan comiendo insectos.', fr:'La plupart des araignées nous aident en mangeant des insectes.'}
   ]},
-  { name:{en:'Grasshopper', es:'Saltamontes', fr:'Sauterelle'}, emoji:'🦗', category:'insect', difficulty:'medium', clues:[
+  { name:{en:'Grasshopper', es:'Saltamontes', fr:'Sauterelle'}, emoji:'🦗', category:'insect', difficulty:'medium', starterClue:{en:'I am a green insect that jumps.', es:'Soy un insecto verde que salta.', fr:'Je suis un insecte vert qui saute.'}, clues:[
     {en:'I am a green insect that jumps very far.', es:'Soy un insecto verde que salta muy lejos.', fr:'Je suis un insecte vert qui saute très loin.'},
     {en:'I have strong back legs for leaping.', es:'Tengo patas traseras fuertes para brincar.', fr:'J\'ai des pattes arrière puissantes pour bondir.'},
     {en:'I make sounds by rubbing my legs.', es:'Hago sonidos frotando las patas.', fr:'Je fais du bruit en frottant mes pattes.'}
@@ -5131,7 +5140,7 @@ const ANIMALS = [
     {en:'A grasshopper can jump many times its own body length.', es:'Un saltamontes puede saltar muchas veces la longitud de su cuerpo.', fr:'Une sauterelle peut sauter plusieurs fois la longueur de son corps.'},
     {en:'They make their chirping sound by rubbing body parts together.', es:'Producen su canto frotando partes del cuerpo.', fr:'Elles produisent leur chant en frottant des parties de leur corps.'}
   ]},
-  { name:{en:'Mosquito', es:'Mosquito', fr:'Moustique'}, emoji:'🦟', category:'insect', difficulty:'medium', clues:[
+  { name:{en:'Mosquito', es:'Mosquito', fr:'Moustique'}, emoji:'🦟', category:'insect', difficulty:'medium', starterClue:{en:'I am a tiny insect that bites.', es:'Soy un diminuto insecto que pica.', fr:'Je suis un tout petit insecte qui pique.'}, clues:[
     {en:'I am a tiny flying insect.', es:'Soy un insecto volador diminuto.', fr:'Je suis un tout petit insecte volant.'},
     {en:'I make a high buzzing sound near your ear.', es:'Hago un zumbido agudo cerca de tu oído.', fr:'Je fais un bourdonnement aigu près de ton oreille.'},
     {en:'Only the females bite.', es:'Solo las hembras pican.', fr:'Seules les femelles piquent.'}
@@ -5139,7 +5148,7 @@ const ANIMALS = [
     {en:'Only female mosquitoes bite, and males feed on flower nectar.', es:'Solo pican las hembras; los machos se alimentan del néctar de las flores.', fr:'Seules les femelles piquent ; les mâles se nourrissent du nectar des fleurs.'},
     {en:'Mosquitoes are attracted to warmth and the air we breathe out.', es:'A los mosquitos les atrae el calor y el aire que exhalamos.', fr:'Les moustiques sont attirés par la chaleur et l\'air que nous expirons.'}
   ]},
-  { name:{en:'Beetle', es:'Escarabajo', fr:'Scarabée'}, emoji:'🪲', category:'insect', difficulty:'medium', clues:[
+  { name:{en:'Beetle', es:'Escarabajo', fr:'Scarabée'}, emoji:'🪲', category:'insect', difficulty:'medium', starterClue:{en:'I am a small insect with a shiny, hard back.', es:'Soy un pequeño insecto de espalda dura y brillante.', fr:'Je suis un petit insecte au dos dur et brillant.'}, clues:[
     {en:'I am an insect with a hard shell on my back.', es:'Soy un insecto con un caparazón duro en la espalda.', fr:'Je suis un insecte avec une carapace dure sur le dos.'},
     {en:'There are more kinds of me than any other animal.', es:'Hay más tipos de mí que de cualquier otro animal.', fr:'Il existe plus d\'espèces de moi que de tout autre animal.'},
     {en:'I have wings hidden under my shell.', es:'Tengo alas escondidas bajo el caparazón.', fr:'J\'ai des ailes cachées sous ma carapace.'}
@@ -5147,7 +5156,7 @@ const ANIMALS = [
     {en:'Beetles are the largest group of animals on Earth.', es:'Los escarabajos son el grupo de animales más numeroso de la Tierra.', fr:'Les coléoptères forment le plus grand groupe d\'animaux sur Terre.'},
     {en:'Their hard front wings protect the soft flying wings underneath.', es:'Sus alas delanteras duras protegen las alas blandas de volar que hay debajo.', fr:'Leurs ailes avant dures protègent les ailes souples de vol situées dessous.'}
   ]},
-  { name:{en:'Caterpillar', es:'Oruga', fr:'Chenille'}, emoji:'🐛', category:'insect', difficulty:'easy', clues:[
+  { name:{en:'Caterpillar', es:'Oruga', fr:'Chenille'}, emoji:'🐛', category:'insect', difficulty:'easy', starterClue:{en:'I am a small creature that turns into a butterfly.', es:'Soy una pequeña criatura que se convierte en mariposa.', fr:'Je suis une petite créature qui se transforme en papillon.'}, clues:[
     {en:'I am a long, soft creature with many tiny legs.', es:'Soy una criatura larga y blanda con muchas patitas.', fr:'Je suis une créature longue et molle avec beaucoup de petites pattes.'},
     {en:'I eat lots of leaves to grow.', es:'Como muchas hojas para crecer.', fr:'Je mange beaucoup de feuilles pour grandir.'},
     {en:'I will turn into a butterfly or moth.', es:'Me convertiré en mariposa o polilla.', fr:'Je deviendrai un papillon.'}
@@ -5155,7 +5164,7 @@ const ANIMALS = [
     {en:'A caterpillar can eat many times its own weight in leaves.', es:'Una oruga puede comer muchas veces su peso en hojas.', fr:'Une chenille peut manger plusieurs fois son poids en feuilles.'},
     {en:'It forms a chrysalis before becoming a butterfly.', es:'Forma una crisálida antes de convertirse en mariposa.', fr:'Elle forme une chrysalide avant de devenir un papillon.'}
   ]},
-  { name:{en:'Snail', es:'Caracol', fr:'Escargot'}, emoji:'🐌', category:'insect', difficulty:'easy', clues:[
+  { name:{en:'Snail', es:'Caracol', fr:'Escargot'}, emoji:'🐌', category:'insect', difficulty:'easy', starterClue:{en:'I am a slow creature that carries a shell.', es:'Soy una criatura lenta que lleva una concha.', fr:'Je suis une créature lente qui porte une coquille.'}, clues:[
     {en:'I move very slowly and carry my home on my back.', es:'Me muevo muy despacio y llevo mi casa a cuestas.', fr:'Je me déplace très lentement et porte ma maison sur le dos.'},
     {en:'I leave a shiny trail behind me.', es:'Dejo un rastro brillante a mi paso.', fr:'Je laisse une trace brillante derrière moi.'},
     {en:'I hide inside my shell when scared.', es:'Me escondo en mi concha cuando tengo miedo.', fr:'Je me cache dans ma coquille quand j\'ai peur.'}
@@ -5163,7 +5172,7 @@ const ANIMALS = [
     {en:'A snail carries its spiral shell wherever it goes.', es:'El caracol lleva su concha en espiral a todas partes.', fr:'L\'escargot emporte sa coquille en spirale partout.'},
     {en:'Snails glide along on a trail of slime they make.', es:'Los caracoles se deslizan sobre un rastro de baba que producen.', fr:'Les escargots glissent sur une traînée de bave qu\'ils fabriquent.'}
   ]},
-  { name:{en:'Fly', es:'Mosca', fr:'Mouche'}, emoji:'🪰', category:'insect', difficulty:'easy', clues:[
+  { name:{en:'Fly', es:'Mosca', fr:'Mouche'}, emoji:'🪰', category:'insect', difficulty:'easy', starterClue:{en:'I am a small insect with wings that buzzes.', es:'Soy un pequeño insecto con alas que zumba.', fr:'Je suis un petit insecte ailé qui bourdonne.'}, clues:[
     {en:'I am a small insect that buzzes around.', es:'Soy un insecto pequeño que zumba alrededor.', fr:'Je suis un petit insecte qui bourdonne.'},
     {en:'I have two wings and big eyes.', es:'Tengo dos alas y ojos grandes.', fr:'J\'ai deux ailes et de grands yeux.'},
     {en:'I can walk on ceilings.', es:'Puedo caminar por los techos.', fr:'Je peux marcher au plafond.'}
@@ -5171,15 +5180,15 @@ const ANIMALS = [
     {en:'Flies taste food with their feet.', es:'Las moscas saborean la comida con las patas.', fr:'Les mouches goûtent la nourriture avec leurs pattes.'},
     {en:'Their huge eyes can see in almost every direction at once.', es:'Sus enormes ojos ven casi en todas las direcciones a la vez.', fr:'Leurs énormes yeux voient presque dans toutes les directions à la fois.'}
   ]},
-  { name:{en:'Worm', es:'Gusano', fr:'Ver de terre'}, emoji:'🪱', category:'insect', difficulty:'easy', clues:[
-    {en:'I am a long, soft creature with no legs.', es:'Soy una criatura larga y blanda sin patas.', fr:'Je suis une créature longue et molle sans pattes.'},
+  { name:{en:'Worm', es:'Gusano', fr:'Ver de terre'}, emoji:'🪱', category:'insect', difficulty:'easy', starterClue:{en:'I am a long, soft, wriggly creature.', es:'Soy una criatura larga, blanda y que se retuerce.', fr:'Je suis une créature longue, molle et qui se tortille.'}, clues:[
+    {en:'I am a long, soft creature with no legs that lives in the soil.', es:'Soy una criatura larga y blanda sin patas que vive en la tierra.', fr:'Je suis une créature longue et molle sans pattes qui vit dans la terre.'},
     {en:'I live in the soil underground.', es:'Vivo en la tierra, bajo el suelo.', fr:'Je vis dans la terre, sous le sol.'},
     {en:'I help plants by making the soil healthy.', es:'Ayudo a las plantas haciendo que la tierra sea sana.', fr:'J\'aide les plantes en rendant la terre saine.'}
   ], facts:[
     {en:'Earthworms help plants by mixing and enriching the soil.', es:'Las lombrices ayudan a las plantas mezclando y enriqueciendo la tierra.', fr:'Les vers de terre aident les plantes en mélangeant et enrichissant le sol.'},
     {en:'They breathe through their skin.', es:'Respiran a través de la piel.', fr:'Ils respirent par la peau.'}
   ]},
-  { name:{en:'Scorpion', es:'Escorpión', fr:'Scorpion'}, emoji:'🦂', category:'insect', difficulty:'medium', clues:[
+  { name:{en:'Scorpion', es:'Escorpión', fr:'Scorpion'}, emoji:'🦂', category:'insect', difficulty:'medium', starterClue:{en:'I am a small animal with claws and a curved tail.', es:'Soy un pequeño animal con pinzas y una cola curva.', fr:'Je suis un petit animal avec des pinces et une queue recourbée.'}, clues:[
     {en:'I have a curved tail and two claws.', es:'Tengo una cola curvada y dos pinzas.', fr:'J\'ai une queue recourbée et deux pinces.'},
     {en:'I live in warm, dry places.', es:'Vivo en lugares cálidos y secos.', fr:'Je vis dans des endroits chauds et secs.'},
     {en:'I am related to spiders.', es:'Soy pariente de las arañas.', fr:'Je suis cousin des araignées.'}
@@ -5187,7 +5196,7 @@ const ANIMALS = [
     {en:'Scorpions glow under special ultraviolet light.', es:'Los escorpiones brillan bajo una luz ultravioleta especial.', fr:'Les scorpions brillent sous une lumière ultraviolette spéciale.'},
     {en:'They can survive a long time without food.', es:'Pueden sobrevivir mucho tiempo sin comer.', fr:'Ils peuvent survivre longtemps sans manger.'}
   ]},
-  { name:{en:'Dragonfly', es:'Libélula', fr:'Libellule'}, emoji:'🦟', category:'insect', difficulty:'medium', clues:[
+  { name:{en:'Dragonfly', es:'Libélula', fr:'Libellule'}, emoji:'🦟', category:'insect', difficulty:'medium', starterClue:{en:'I am an insect with long, thin wings.', es:'Soy un insecto de alas largas y finas.', fr:'Je suis un insecte aux ailes longues et fines.'}, clues:[
     {en:'I am an insect with long thin wings.', es:'Soy un insecto con alas largas y finas.', fr:'Je suis un insecte aux longues ailes fines.'},
     {en:'I can hover and fly backwards.', es:'Puedo quedarme suspendido y volar hacia atrás.', fr:'Je peux faire du surplace et voler en arrière.'},
     {en:'I live near ponds and rivers.', es:'Vivo cerca de estanques y ríos.', fr:'Je vis près des étangs et des rivières.'}
@@ -5195,7 +5204,7 @@ const ANIMALS = [
     {en:'Dragonflies are some of the fastest flying insects.', es:'Las libélulas son de los insectos voladores más rápidos.', fr:'Les libellules comptent parmi les insectes volants les plus rapides.'},
     {en:'They can move each of their four wings on their own.', es:'Pueden mover cada una de sus cuatro alas por separado.', fr:'Elles peuvent bouger chacune de leurs quatre ailes séparément.'}
   ]},
-  { name:{en:'Frog', es:'Rana', fr:'Grenouille'}, emoji:'🐸', category:'amphibian', difficulty:'easy', clues:[
+  { name:{en:'Frog', es:'Rana', fr:'Grenouille'}, emoji:'🐸', category:'amphibian', difficulty:'easy', starterClue:{en:'I am a small green amphibian.', es:'Soy un pequeño anfibio verde.', fr:'Je suis un petit amphibien vert.'}, clues:[
     {en:'I am a small green animal that hops.', es:'Soy un animal pequeño y verde que salta.', fr:'Je suis un petit animal vert qui saute.'},
     {en:'I live near ponds and water.', es:'Vivo cerca de estanques y agua.', fr:'Je vis près des étangs et de l\'eau.'},
     {en:'I catch insects with my long sticky tongue.', es:'Atrapo insectos con mi lengua larga y pegajosa.', fr:'J\'attrape des insectes avec ma longue langue collante.'}
@@ -5203,7 +5212,7 @@ const ANIMALS = [
     {en:'Frogs begin life as tadpoles in the water.', es:'Las ranas empiezan su vida como renacuajos en el agua.', fr:'Les grenouilles commencent leur vie sous forme de têtards dans l\'eau.'},
     {en:'They can breathe partly through their skin.', es:'Pueden respirar en parte a través de la piel.', fr:'Elles peuvent respirer en partie par la peau.'}
   ]},
-  { name:{en:'Toad', es:'Sapo', fr:'Crapaud'}, emoji:'🐸', category:'amphibian', difficulty:'easy', clues:[
+  { name:{en:'Toad', es:'Sapo', fr:'Crapaud'}, emoji:'🐸', category:'amphibian', difficulty:'easy', starterClue:{en:'I am an amphibian with bumpy skin.', es:'Soy un anfibio de piel rugosa.', fr:'Je suis un amphibien à la peau rugueuse.'}, clues:[
     {en:'I look like a frog but have drier, bumpy skin.', es:'Parezco una rana pero tengo la piel más seca y con bultos.', fr:'Je ressemble à une grenouille mais j\'ai une peau plus sèche et bosselée.'},
     {en:'I spend more time on land than in water.', es:'Paso más tiempo en tierra que en el agua.', fr:'Je passe plus de temps sur terre que dans l\'eau.'},
     {en:'I hop slowly and eat insects.', es:'Salto despacio y como insectos.', fr:'Je saute lentement et je mange des insectes.'}
@@ -5211,15 +5220,15 @@ const ANIMALS = [
     {en:'Toads have drier, bumpier skin than frogs.', es:'Los sapos tienen la piel más seca y con más bultos que las ranas.', fr:'Les crapauds ont une peau plus sèche et plus bosselée que les grenouilles.'},
     {en:'They help gardens by eating insects.', es:'Ayudan a los jardines comiendo insectos.', fr:'Ils aident les jardins en mangeant des insectes.'}
   ]},
-  { name:{en:'Newt', es:'Tritón', fr:'Triton'}, emoji:'🦎', category:'amphibian', difficulty:'hard', clues:[
-    {en:'I am a small amphibian with a long tail.', es:'Soy un anfibio pequeño con una cola larga.', fr:'Je suis un petit amphibien à longue queue.'},
+  { name:{en:'Newt', es:'Tritón', fr:'Triton'}, emoji:'🦎', category:'amphibian', difficulty:'hard', starterClue:{en:'I am a small amphibian with a tail.', es:'Soy un pequeño anfibio con cola.', fr:'Je suis un petit amphibien à queue.'}, clues:[
+    {en:'I am a small amphibian with a long tail that spends much of my life in ponds.', es:'Soy un anfibio pequeño de cola larga que pasa gran parte de su vida en estanques.', fr:'Je suis un petit amphibien à longue queue qui passe une grande partie de sa vie dans les mares.'},
     {en:'I live both in water and on land.', es:'Vivo tanto en el agua como en tierra.', fr:'Je vis à la fois dans l\'eau et sur terre.'},
     {en:'I look a bit like a tiny lizard.', es:'Me parezco un poco a un lagarto diminuto.', fr:'Je ressemble un peu à un minuscule lézard.'}
   ], facts:[
     {en:'Newts can grow back lost body parts, like a leg or tail.', es:'Los tritones pueden regenerar partes del cuerpo perdidas, como una pata o la cola.', fr:'Les tritons peuvent faire repousser des parties perdues, comme une patte ou la queue.'},
     {en:'They return to water to lay their eggs.', es:'Vuelven al agua para poner sus huevos.', fr:'Ils retournent dans l\'eau pour pondre leurs œufs.'}
   ]},
-  { name:{en:'Axolotl', es:'Ajolote', fr:'Axolotl'}, emoji:'🦎', category:'amphibian', difficulty:'hard', clues:[
+  { name:{en:'Axolotl', es:'Ajolote', fr:'Axolotl'}, emoji:'🦎', category:'amphibian', difficulty:'hard', starterClue:{en:'I am an unusual amphibian that lives in water.', es:'Soy un anfibio peculiar que vive en el agua.', fr:'Je suis un amphibien étonnant qui vit dans l\'eau.'}, clues:[
     {en:'I am an amphibian that keeps my feathery gills my whole life.', es:'Soy un anfibio que conserva sus branquias plumosas toda la vida.', fr:'Je suis un amphibien qui garde ses branchies plumeuses toute sa vie.'},
     {en:'I live in water and rarely leave it.', es:'Vivo en el agua y casi nunca salgo.', fr:'Je vis dans l\'eau et n\'en sors presque jamais.'},
     {en:'I have a wide, smiling-looking face.', es:'Tengo una cara ancha que parece sonreír.', fr:'J\'ai un large visage qui semble sourire.'}
@@ -5227,8 +5236,8 @@ const ANIMALS = [
     {en:'Axolotls can regrow legs, tail, and even parts of organs.', es:'Los ajolotes pueden regenerar patas, cola e incluso partes de órganos.', fr:'Les axolotls peuvent régénérer pattes, queue et même certains organes.'},
     {en:'They keep their baby gills their whole life.', es:'Conservan sus branquias de cría toda la vida.', fr:'Ils gardent leurs branchies de bébé toute leur vie.'}
   ]},
-  { name:{en:'Salamander', es:'Salamandra', fr:'Salamandre'}, emoji:'🦎', category:'amphibian', difficulty:'medium', clues:[
-    {en:'I am an amphibian with a long body and tail.', es:'Soy un anfibio con el cuerpo y la cola largos.', fr:'Je suis un amphibien au corps et à la queue longs.'},
+  { name:{en:'Salamander', es:'Salamandra', fr:'Salamandre'}, emoji:'🦎', category:'amphibian', difficulty:'medium', starterClue:{en:'I am an amphibian with a long body and tail.', es:'Soy un anfibio de cuerpo y cola largos.', fr:'Je suis un amphibien au corps et à la queue longs.'}, clues:[
+    {en:'I am an amphibian with a long body that hides under damp logs and can regrow a lost tail.', es:'Soy un anfibio de cuerpo largo que se esconde bajo troncos húmedos y puede regenerar la cola.', fr:'Je suis un amphibien au corps long qui se cache sous des troncs humides et peut faire repousser sa queue.'},
     {en:'I have smooth, moist skin.', es:'Tengo la piel lisa y húmeda.', fr:'J\'ai une peau lisse et humide.'},
     {en:'I like cool, damp places under logs.', es:'Me gustan los lugares frescos y húmedos bajo los troncos.', fr:'J\'aime les endroits frais et humides sous les troncs.'}
   ], facts:[
@@ -8078,7 +8087,7 @@ function viewGuess() {
   const attemptsLeft = MAX_FAILED_ATTEMPTS - gs.failed;
   const hearts = '❤️'.repeat(attemptsLeft) + '🖤'.repeat(gs.failed);
   const lastRound = gs.idx + 1 >= gs.animals.length;
-  const nextLabel = (lastRound || gs.endOnNext) ? `${t('seeResults')} →` : `${t('nextRound')} →`;
+  const nextLabel = lastRound ? `${t('seeResults')} →` : `${t('nextRound')} →`;
   return `
   <div class="min-h-screen bg-slate-50">
     ${Header()}
@@ -8094,10 +8103,19 @@ function viewGuess() {
           <span class="font-bold text-brand-violet">${gs.score} pts</span>
         </div>
         <div class="flex items-center justify-between mb-4 text-sm">
-          <span class="text-slate-500">${t('clueN')} ${gs.revealed} / ${a.clues.length}</span>
+          <span class="text-slate-500">${t('extraCluesLabel')} ${gs.revealed} / ${a.clues.length}</span>
           <span class="text-slate-600" title="${t('attemptsLeft')}">${hearts}</span>
         </div>
         <div class="progress-track mb-5"><div class="progress-fill" style="width:${(gs.revealed/a.clues.length)*100}%"></div></div>
+        <div class="ui-cell p-4 bg-amber-50 border-amber-200 mb-3">
+          <div class="flex items-center gap-3">
+            <span class="text-lg">⭐</span>
+            <div>
+              <div class="text-[11px] font-semibold uppercase tracking-wide text-amber-700">${t('starterClueLabel')}</div>
+              <div class="font-medium text-amber-900">${escapeHtml(pick(a.starterClue))}</div>
+            </div>
+          </div>
+        </div>
         <div class="space-y-2">
           ${a.clues.map((c,i)=>{
             const text = pick(c);
@@ -8990,6 +9008,7 @@ function startDaily(cat, diff) {
   LS.set('ora.lastDaily', todayKey());
   trackEvent('daily_started', { category:cat });
 }
+/* __GUESSENGINE_START__ (sentinel for tests/guess-engine.test.js — keep) */
 function getRandomAnimalsForGame(n, { category=null, difficulty=null } = {}) {
   let pool = ANIMALS.slice();
   if (category) pool = pool.filter(a => a.category === category);
@@ -9009,6 +9028,55 @@ function normalizeGuess(s) {
     .normalize('NFD').replace(/[̀-ͯ]/g,'')
     .replace(/[^a-z0-9\s]/g,'').replace(/\s+/g,' ');
 }
+// Singular/plural variants of a normalized guess (en/es/fr regular plurals).
+function guessVariants(g) {
+  const v = new Set([g]);
+  if (g.length > 3) {
+    if (g.endsWith('ies')) v.add(g.slice(0, -3) + 'y'); // butterflies -> butterfly
+    if (g.endsWith('es'))  v.add(g.slice(0, -2));        // foxes -> fox, leones -> leon
+    if (g.endsWith('s'))   v.add(g.slice(0, -1));        // lions -> lion, gatos -> gato
+    if (g.endsWith('x'))   v.add(g.slice(0, -1));        // chevaux-ish trailing x
+  }
+  return Array.from(v).filter(Boolean);
+}
+// True iff the Levenshtein distance between a and b is at most 1.
+// Used only on words of length >= 5 so close short names (cat/bat/rat) never collide.
+function guessOneEdit(a, b) {
+  if (a === b) return true;
+  const n = a.length, m = b.length;
+  if (Math.abs(n - m) > 1) return false;
+  let i = 0, j = 0, edits = 0;
+  while (i < n && j < m) {
+    if (a[i] === b[j]) { i++; j++; continue; }
+    if (edits === 1) return false;
+    edits++;
+    if (n > m) i++; else if (m > n) j++; else { i++; j++; }
+  }
+  if (i < n || j < m) edits++;
+  return edits <= 1;
+}
+// All accepted answers for an animal: its 3 language names plus optional aliases.
+function guessAcceptedNames(animal) {
+  const set = Object.values(animal.name || {}).map(normalizeGuess);
+  if (Array.isArray(animal.aliases)) animal.aliases.forEach(x => set.push(normalizeGuess(x)));
+  return set.filter(Boolean);
+}
+// Tolerant match: exact name/alias (any language), simple plurals, accents and
+// case (already handled by normalizeGuess), plus a single-typo allowance on
+// longer words. Vague one-off words won't match unless they ARE a name/alias.
+function guessMatches(raw, animal) {
+  const accepted = guessAcceptedNames(animal);
+  const variants = guessVariants(normalizeGuess(raw));
+  for (const v of variants) {
+    if (accepted.includes(v)) return true;
+    if (v.length >= 5) {
+      for (const acc of accepted) {
+        if (acc.length >= 5 && guessOneEdit(v, acc)) return true;
+      }
+    }
+  }
+  return false;
+}
 function finishGuessGame(reason) {
   const gs = state.guessSession;
   if (!gs || gs.over) return;
@@ -9027,8 +9095,7 @@ function submitGuess() {
   const guess = normalizeGuess(raw);
   if (!guess) { toast(t('guessEmpty')); if (input) input.focus(); return; }
   const a = gs.animals[gs.idx];
-  const accepted = Object.values(a.name).map(normalizeGuess);
-  if (accepted.includes(guess)) {
+  if (guessMatches(raw, a)) {
     gs.guessed = true;
     gs.correct++;
     gs.streak++;
@@ -9041,10 +9108,11 @@ function submitGuess() {
     gs.streak = 0;
     trackEvent('guess_attempt', { correct:false, cluesUsed:gs.revealed });
     if (gs.failed >= MAX_FAILED_ATTEMPTS) {
-      // Out of attempts: reveal the correct answer, then end the game on "next"
+      // Out of attempts for THIS round: reveal the answer (with its facts) and
+      // let the player move on. Attempts are per-round, so one tough animal
+      // never ends the whole game — see nextAnimal(), which resets them.
       gs.shownAnswer = true;
-      gs.endOnNext = true;
-      toast(t('gameOverMsg'));
+      toast(t('guessRoundOut'));
       render();
       return;
     }
@@ -9061,18 +9129,19 @@ function showGuessAnswer() {
 function nextAnimal() {
   const gs = state.guessSession;
   if (!gs || gs.over) return;
-  if (gs.endOnNext) { finishGuessGame('failed'); return; }
   if (gs.idx + 1 >= gs.animals.length) { finishGuessGame('completed'); return; }
   gs.idx++;
   gs.revealed = 0;
   gs.guessed = false;
   gs.shownAnswer = false;
+  gs.failed = 0; // attempts are per-round: refill the hearts for the next animal
   render();
 }
 function playAgainGuess() {
   state.guessSession = null;
   go('guess');
 }
+/* __GUESSENGINE_END__ (sentinel for tests/guess-engine.test.js — keep) */
 /* -------------------- LEADERBOARD ALIAS -------------------- */
 function normalizeAlias(alias) {
   return (alias||'').toString().trim().toUpperCase()

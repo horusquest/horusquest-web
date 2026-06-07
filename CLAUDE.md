@@ -30,10 +30,39 @@ Note: `tools/` is **gitignored** (generators do not deploy) — they are local d
 helpers only. `ads.txt` is a placeholder comment until the real AdSense publisher
 ID exists; do not invent a `pub-XXXX` id.
 
+## OraGuess (guess game) — fairness notes (Fase 2e tanda 1 — done)
+
+The guess game lives in `OraQuest.html`: `ANIMALS` bank (100 entries, en/es/fr,
+each with `emoji`, `category`, `difficulty`, a free `starterClue`, 3 extra
+`clues`, 2 `facts`, optional `aliases`) + engine wrapped in
+`__GUESSENGINE_START__/END__` sentinels.
+
+**Clue flow:** every round opens with the `starterClue` shown free (it does NOT
+count toward score). The 3 `clues` are the "extra clues" revealed on demand via
+`revealClue()` (`gs.revealed` 0→3). Score = `max(50, 300 - revealed*50)`, so a
+starter-only correct guess earns the full 300. `nextAnimal()` resets
+`gs.revealed` to 0 (starter visible, extra clues 0/3). The 100 starterClues were
+inserted with the one-shot `tools/_add-starter-clues.js` (gitignored).
+
+Fixed the "tigre → oso" unfairness (generic clues + harsh scoring):
+- **Per-round attempts.** `MAX_FAILED_ATTEMPTS` (3) is per *animal*, not per game.
+  `nextAnimal()` resets `gs.failed`; running out reveals the answer + facts and
+  advances. The game only ends after the last round.
+- **Tolerant matching** via `guessMatches()`: exact name/alias in any language,
+  regular plurals (s/es/ies/x), accents+case (`normalizeGuess`), and a single-edit
+  (Levenshtein ≤1) allowance only on words ≥5 chars (so cat/bat/rat never collide).
+  Scoring unchanged.
+- **Discriminant first clues** for confusable animals (bear, lion, fox, spider,
+  worm, newt, salamander). Keep the first clue specific enough to point at ~1 answer.
+
+Pending (approved plan, NOT yet done): taxonomy fixes (spider/scorpion=arachnid,
+snail=mollusk, worm=annelid), structured edu data (habitat/diet/region),
+difficulty/category selector, more animals (leopard/jaguar/puma), broader tests.
+
 ## Validation
 - `npm run lint` — lints the inline `<script>` block
-- `npm test` — full suite (architecture, leaderboard, quiz, orawords, letter-rush,
-  vocab, anagram, daily + data/migration checks)
+- `npm test` — full suite (architecture, leaderboard, quiz, guess, orawords,
+  letter-rush, vocab, anagram, daily + data/migration checks)
 - `npm run build` — `lint && test`
 - `check-migration.js` rejects any literal `file://` in `OraQuest.html` — use
   "local file protocol" in comments, never `file://`.
