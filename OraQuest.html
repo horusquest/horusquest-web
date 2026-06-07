@@ -1405,6 +1405,8 @@ const LEGAL_HTML = {
       <p>The games save a small amount of data in your browser's local storage, on your own device: your game progress and best scores, your language choice, your daily-streak count, and whether you accepted or rejected non-essential cookies. This information stays on your device — there is currently no HorusQuest account server that it is sent to.</p>
       <h2 class="${LEGAL_H}">Leaderboard display names</h2>
       <p>If you choose to save a score to a leaderboard, we store a short display alias (for example "ORA7") together with that score. The alias is not your real name: it is limited to a few letters and numbers and is meant to keep players anonymous.</p>
+      <h2 class="${LEGAL_H}">Word checks and external dictionary</h2>
+      <p>Some OraWords modes can check whether a word you type is real using a free external dictionary service (Datamuse). Only the single word you submit is sent, and only when you press submit — never as you type. We do not send your name, email, alias, scores or any profile, and the lookup is not linked to your identity. If the service is unavailable, the game falls back to its built-in word list and keeps working offline.</p>
       <h2 class="${LEGAL_H}">Children's privacy</h2>
       <p>HorusQuest is designed to be family-friendly. We do not ask children for real names, exact dates of birth, addresses or phone numbers. Children under 13 (or the minimum age in their country) should use HorusQuest together with a parent, guardian or teacher, especially when saving scores or joining a team.</p>
       <h2 class="${LEGAL_H}">Advertising and third parties</h2>
@@ -1421,6 +1423,8 @@ const LEGAL_HTML = {
       <p>Los juegos guardan una pequeña cantidad de datos en el almacenamiento local de tu navegador, en tu propio dispositivo: tu progreso y mejores puntuaciones, tu idioma, tu racha diaria y si aceptaste o rechazaste las cookies no esenciales. Esta información permanece en tu dispositivo: actualmente no hay un servidor de cuentas de HorusQuest al que se envíe.</p>
       <h2 class="${LEGAL_H}">Nombres en las clasificaciones</h2>
       <p>Si decides guardar una puntuación en una clasificación, almacenamos un alias corto (por ejemplo "ORA7") junto con esa puntuación. El alias no es tu nombre real: se limita a unas pocas letras y números y sirve para mantener el anonimato.</p>
+      <h2 class="${LEGAL_H}">Comprobación de palabras y diccionario externo</h2>
+      <p>Algunos modos de OraWords pueden comprobar si una palabra que escribes es real usando un servicio de diccionario externo gratuito (Datamuse). Solo se envía la palabra que envías, y únicamente al pulsar enviar, nunca mientras escribes. No enviamos tu nombre, correo, alias, puntuaciones ni ningún perfil, y la consulta no se vincula a tu identidad. Si el servicio no está disponible, el juego usa su lista de palabras integrada y sigue funcionando sin conexión.</p>
       <h2 class="${LEGAL_H}">Privacidad de los menores</h2>
       <p>HorusQuest está pensado para toda la familia. No pedimos a los menores nombres reales, fechas exactas de nacimiento, direcciones ni teléfonos. Los menores de 13 años (o la edad mínima de su país) deben usar HorusQuest junto a un padre, tutor o docente, especialmente al guardar puntuaciones o unirse a un equipo.</p>
       <h2 class="${LEGAL_H}">Publicidad y terceros</h2>
@@ -1437,6 +1441,8 @@ const LEGAL_HTML = {
       <p>Les jeux enregistrent une petite quantité de données dans le stockage local de ton navigateur, sur ton propre appareil : ta progression et tes meilleurs scores, ta langue, ta série quotidienne et le fait d'avoir accepté ou refusé les cookies non essentiels. Ces informations restent sur ton appareil : il n'existe pour l'instant aucun serveur de comptes HorusQuest auquel elles seraient envoyées.</p>
       <h2 class="${LEGAL_H}">Pseudonymes des classements</h2>
       <p>Si tu choisis d'enregistrer un score dans un classement, nous stockons un pseudo court (par exemple « ORA7 ») avec ce score. Le pseudo n'est pas ton vrai nom : il se limite à quelques lettres et chiffres et sert à préserver l'anonymat.</p>
+      <h2 class="${LEGAL_H}">Vérification des mots et dictionnaire externe</h2>
+      <p>Certains modes d'OraWords peuvent vérifier si un mot que tu tapes est réel à l'aide d'un service de dictionnaire externe gratuit (Datamuse). Seul le mot que tu valides est envoyé, et uniquement au moment où tu appuies sur valider, jamais pendant que tu écris. Nous n'envoyons ni ton nom, ni e-mail, ni pseudo, ni scores, ni aucun profil, et la requête n'est pas liée à ton identité. Si le service est indisponible, le jeu utilise sa liste de mots intégrée et continue de fonctionner hors ligne.</p>
       <h2 class="${LEGAL_H}">Vie privée des enfants</h2>
       <p>HorusQuest est pensé pour toute la famille. Nous ne demandons pas aux enfants de vrais noms, de date de naissance exacte, d'adresse ni de téléphone. Les enfants de moins de 13 ans (ou l'âge minimum de leur pays) doivent utiliser HorusQuest avec un parent, tuteur ou enseignant, surtout pour enregistrer des scores ou rejoindre une équipe.</p>
       <h2 class="${LEGAL_H}">Publicité et tiers</h2>
@@ -6347,6 +6353,11 @@ function viewWords() {
       <div class="mt-8 grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
         ${modeCards}
       </div>
+      <p class="mt-8 text-xs text-slate-500 leading-relaxed max-w-3xl">${pick({
+        en:'Note: some word games check whether a word is real using a free external dictionary (Datamuse). Only the word you submit is sent, and only when you press submit — never as you type. No names, emails, aliases, scores or profiles are sent. If the service is unavailable, the game uses its built-in word list and keeps working offline.',
+        es:'Nota: algunos juegos de palabras comprueban si una palabra es real usando un diccionario externo gratuito (Datamuse). Solo se envía la palabra que envías, y únicamente al pulsar enviar, nunca mientras escribes. No se envían nombres, correos, alias, puntuaciones ni perfiles. Si el servicio no está disponible, el juego usa su lista de palabras integrada y sigue funcionando sin conexión.',
+        fr:'Note : certains jeux de mots vérifient si un mot est réel via un dictionnaire externe gratuit (Datamuse). Seul le mot que tu valides est envoyé, et uniquement au moment de valider, jamais pendant que tu écris. Aucun nom, e-mail, pseudo, score ou profil n’est envoyé. Si le service est indisponible, le jeu utilise sa liste de mots intégrée et fonctionne hors ligne.'
+      })}</p>
     </main>
     ${Footer()}
   </div>`;
