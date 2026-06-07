@@ -466,6 +466,8 @@ const I18N = {
     pickAge: 'Pick your age group',
     pickCat: 'Pick a category',
     pickDiff: 'Pick difficulty',
+    metaCategory: 'Category', metaAge: 'Age group', metaDifficulty: 'Difficulty',
+    metaMoreSoon: 'More categories and difficulty options will be added as the word banks grow.',
     pickTimer: 'Timer (optional)',
     timerOn: 'On (15s per question)',
     timerOff: 'Off — take your time',
@@ -719,6 +721,8 @@ const I18N = {
     pickAge: 'Elige tu grupo de edad',
     pickCat: 'Elige una categoría',
     pickDiff: 'Elige dificultad',
+    metaCategory: 'Categoría', metaAge: 'Grupo de edad', metaDifficulty: 'Dificultad',
+    metaMoreSoon: 'Añadiremos más categorías y niveles cuando los bancos de palabras crezcan.',
     pickTimer: 'Temporizador (opcional)',
     timerOn: 'Activado (15s por pregunta)',
     timerOff: 'Desactivado — tómate tu tiempo',
@@ -972,6 +976,8 @@ const I18N = {
     pickAge: 'Choisis ta tranche d\'âge',
     pickCat: 'Choisis une catégorie',
     pickDiff: 'Choisis la difficulté',
+    metaCategory: 'Catégorie', metaAge: 'Groupe d’âge', metaDifficulty: 'Difficulté',
+    metaMoreSoon: 'D’autres catégories et niveaux seront ajoutés à mesure que les banques de mots s’enrichissent.',
     pickTimer: 'Minuteur (facultatif)',
     timerOn: 'Activé (15 s par question)',
     timerOff: 'Désactivé — prends ton temps',
@@ -6607,10 +6613,11 @@ function viewSpellingSprint() {
           <h1 class="mt-4 font-display text-3xl md:text-4xl font-bold">${wordModeName('spelling-sprint')}</h1>
           <p class="mt-3 text-slate-600">${pick({en:'Choose the correctly spelled word. Questions and options are shuffled every round.', es:'Elige la palabra escrita correctamente. Las preguntas y opciones se mezclan en cada ronda.', fr:'Choisis le mot correctement orthographié. Les questions et options sont mélangées à chaque manche.'})}</p>
           <div class="mt-6 grid sm:grid-cols-3 gap-3 text-sm">
-            <div class="ui-cell p-4"><strong>${wordCatName(combo.category)}</strong><div class="text-slate-500 mt-1">${t('pickCat')}</div></div>
-            <div class="ui-cell p-4"><strong>${ageName(AGE_GROUPS.find(a => a.id === combo.ageGroup) || AGE_GROUPS[5])}</strong><div class="text-slate-500 mt-1">${t('pickAge')}</div></div>
-            <div class="ui-cell p-4"><strong>${t('difficulty'+combo.difficulty.charAt(0).toUpperCase()+combo.difficulty.slice(1))}</strong><div class="text-slate-500 mt-1">${t('pickDiff')}</div></div>
+            <div class="ui-cell p-4"><div class="text-[11px] uppercase tracking-wide text-slate-400">${t('metaCategory')}</div><strong class="block mt-1">${wordCatName(combo.category)}</strong></div>
+            <div class="ui-cell p-4"><div class="text-[11px] uppercase tracking-wide text-slate-400">${t('metaAge')}</div><strong class="block mt-1">${ageName(AGE_GROUPS.find(a => a.id === combo.ageGroup) || AGE_GROUPS[5])}</strong></div>
+            <div class="ui-cell p-4"><div class="text-[11px] uppercase tracking-wide text-slate-400">${t('metaDifficulty')}</div><strong class="block mt-1">${t('difficulty'+combo.difficulty.charAt(0).toUpperCase()+combo.difficulty.slice(1))}</strong></div>
           </div>
+          <p class="mt-3 text-xs text-slate-400">${t('metaMoreSoon')}</p>
           ${available
             ? `<button onclick="startSpellingSprint()" class="mt-7 btn-primary">▶ ${t('startQuiz')}</button>`
             : `<div class="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">${pick({en:'Not enough word challenges yet. Try another category or difficulty.', es:'Todavía no hay suficientes retos de palabras. Prueba otra categoría o dificultad.', fr:'Il n’y a pas encore assez de défis de mots. Essaie une autre catégorie ou difficulté.'})}</div>`}
@@ -6770,10 +6777,11 @@ function viewVocabQuest() {
           <h1 class="mt-4 font-display text-3xl md:text-4xl font-bold">${wordModeName('vocabulary-quest')}</h1>
           <p class="mt-3 text-slate-600">${pick({en:'Choose the word closest in meaning. Questions and options are shuffled every round.', es:'Elige la palabra de significado más cercano. Las preguntas y opciones se mezclan en cada ronda.', fr:'Choisis le mot au sens le plus proche. Les questions et options sont mélangées à chaque manche.'})}</p>
           <div class="mt-6 grid sm:grid-cols-3 gap-3 text-sm">
-            <div class="ui-cell p-4"><strong>${wordCatName(combo.category)}</strong><div class="text-slate-500 mt-1">${t('pickCat')}</div></div>
-            <div class="ui-cell p-4"><strong>${ageName(AGE_GROUPS.find(a => a.id === combo.ageGroup) || AGE_GROUPS[5])}</strong><div class="text-slate-500 mt-1">${t('pickAge')}</div></div>
-            <div class="ui-cell p-4"><strong>${t('difficulty'+combo.difficulty.charAt(0).toUpperCase()+combo.difficulty.slice(1))}</strong><div class="text-slate-500 mt-1">${t('pickDiff')}</div></div>
+            <div class="ui-cell p-4"><div class="text-[11px] uppercase tracking-wide text-slate-400">${t('metaCategory')}</div><strong class="block mt-1">${wordCatName(combo.category)}</strong></div>
+            <div class="ui-cell p-4"><div class="text-[11px] uppercase tracking-wide text-slate-400">${t('metaAge')}</div><strong class="block mt-1">${ageName(AGE_GROUPS.find(a => a.id === combo.ageGroup) || AGE_GROUPS[5])}</strong></div>
+            <div class="ui-cell p-4"><div class="text-[11px] uppercase tracking-wide text-slate-400">${t('metaDifficulty')}</div><strong class="block mt-1">${t('difficulty'+combo.difficulty.charAt(0).toUpperCase()+combo.difficulty.slice(1))}</strong></div>
           </div>
+          <p class="mt-3 text-xs text-slate-400">${t('metaMoreSoon')}</p>
           ${available
             ? `<button onclick="startVocabQuest()" class="mt-7 btn-primary">▶ ${t('startQuiz')}</button>`
             : `<div class="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">${pick({en:'Not enough word challenges yet. Try another category or difficulty.', es:'Todavía no hay suficientes retos de palabras. Prueba otra categoría o dificultad.', fr:'Il n’y a pas encore assez de défis de mots. Essaie une autre catégorie ou difficulté.'})}</div>`}
@@ -7105,10 +7113,11 @@ function viewAnagramChallenge() {
           <h1 class="mt-4 font-display text-3xl md:text-4xl font-bold">${wordModeName('anagram-challenge')}</h1>
           <p class="mt-3 text-slate-600">${pick({en:'Unscramble the letters to find the word. You get three tries, with a hint after a miss.', es:'Ordena las letras para encontrar la palabra. Tienes tres intentos, con una pista tras fallar.', fr:'Remets les lettres dans l’ordre pour trouver le mot. Tu as trois essais, avec un indice après une erreur.'})}</p>
           <div class="mt-6 grid sm:grid-cols-3 gap-3 text-sm">
-            <div class="ui-cell p-4"><strong>${wordCatName(combo.category)}</strong><div class="text-slate-500 mt-1">${t('pickCat')}</div></div>
-            <div class="ui-cell p-4"><strong>${ageName(AGE_GROUPS.find(a => a.id === combo.ageGroup) || AGE_GROUPS[5])}</strong><div class="text-slate-500 mt-1">${t('pickAge')}</div></div>
-            <div class="ui-cell p-4"><strong>${t('difficulty'+combo.difficulty.charAt(0).toUpperCase()+combo.difficulty.slice(1))}</strong><div class="text-slate-500 mt-1">${t('pickDiff')}</div></div>
+            <div class="ui-cell p-4"><div class="text-[11px] uppercase tracking-wide text-slate-400">${t('metaCategory')}</div><strong class="block mt-1">${wordCatName(combo.category)}</strong></div>
+            <div class="ui-cell p-4"><div class="text-[11px] uppercase tracking-wide text-slate-400">${t('metaAge')}</div><strong class="block mt-1">${ageName(AGE_GROUPS.find(a => a.id === combo.ageGroup) || AGE_GROUPS[5])}</strong></div>
+            <div class="ui-cell p-4"><div class="text-[11px] uppercase tracking-wide text-slate-400">${t('metaDifficulty')}</div><strong class="block mt-1">${t('difficulty'+combo.difficulty.charAt(0).toUpperCase()+combo.difficulty.slice(1))}</strong></div>
           </div>
+          <p class="mt-3 text-xs text-slate-400">${t('metaMoreSoon')}</p>
           ${available
             ? `<button onclick="startAnagramChallenge()" class="mt-7 btn-primary">▶ ${t('startQuiz')}</button>`
             : `<div class="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">${pick({en:'Not enough anagrams yet. Try another category or difficulty.', es:'Todavía no hay suficientes anagramas. Prueba otra categoría o dificultad.', fr:'Il n’y a pas encore assez d’anagrammes. Essaie une autre catégorie ou difficulté.'})}</div>`}
