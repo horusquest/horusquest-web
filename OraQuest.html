@@ -481,6 +481,7 @@ const I18N = {
     timeLeft: 'Time left',
     correct: 'Correct!',
     wrong: 'Not quite.',
+    timesUp: "Time's up!",
     explanation: 'Why?',
     funFact: 'Did you know?',
     next: 'Next',
@@ -760,6 +761,7 @@ const I18N = {
     timeLeft: 'Tiempo',
     correct: '¡Correcto!',
     wrong: 'No del todo.',
+    timesUp: '¡Se acabó el tiempo!',
     explanation: '¿Por qué?',
     funFact: '¿Sabías que...?',
     next: 'Siguiente',
@@ -1039,6 +1041,7 @@ const I18N = {
     timeLeft: 'Temps restant',
     correct: 'Bravo !',
     wrong: 'Pas tout à fait.',
+    timesUp: 'Temps écoulé !',
     explanation: 'Pourquoi ?',
     funFact: 'Le savais-tu ?',
     next: 'Suivant',
@@ -8052,11 +8055,11 @@ function viewQuizPlay() {
         </div>
       </div>
       ${s.answered !== null ? `
-      <div class="card mt-5 p-5 slide-up border-l-4 ${s.answeredOptionId===correctOptionId?'border-emerald-500':'border-rose-500'}">
+      <div class="card mt-5 p-5 slide-up border-l-4 ${s.answeredOptionId===correctOptionId?'border-emerald-500':(s.answered===-1?'border-amber-400':'border-rose-500')}">
         <div class="flex items-start gap-3">
-          <div class="text-3xl">${s.answeredOptionId===correctOptionId?'🎉':'💡'}</div>
+          <div class="text-3xl">${s.answeredOptionId===correctOptionId?'🎉':(s.answered===-1?'⏰':'💡')}</div>
           <div class="flex-1">
-            <div class="font-bold text-lg">${s.answeredOptionId===correctOptionId?t('correct'):t('wrong')}</div>
+            <div class="font-bold text-lg">${s.answeredOptionId===correctOptionId?t('correct'):(s.answered===-1?t('timesUp'):t('wrong'))}</div>
             <div class="mt-1 text-slate-700 text-sm"><strong>${t('explanation')}</strong> ${escapeHtml(pick(q.e))}</div>
             <div class="mt-2 text-violet-700 text-sm"><strong>💫 ${t('funFact')}</strong> ${escapeHtml(pick(q.f))}</div>
           </div>
