@@ -466,13 +466,14 @@ const I18N = {
     pickAge: 'Pick your age group',
     pickCat: 'Pick a category',
     pickDiff: 'Pick difficulty',
+    diffByAgeHint: 'Difficulty options adapt to the age group you chose.',
     metaCategory: 'Category', metaAge: 'Age group', metaDifficulty: 'Difficulty',
     metaMoreSoon: 'More categories and difficulty options will be added as the word banks grow.',
     currentChallenge: 'Current challenge',
     onlyAvailableBanks: 'Only available word banks are shown.',
     metaSmallBank: 'This set has a smaller word bank and may repeat sooner.',
     pickTimer: 'Timer (optional)',
-    timerOn: 'On (15s per question)',
+    timerOn: 'On ({s}s per question)',
     timerOff: 'Off — take your time',
     startQuiz: 'Start Quiz',
     question: 'Question',
@@ -480,11 +481,17 @@ const I18N = {
     timeLeft: 'Time left',
     correct: 'Correct!',
     wrong: 'Not quite.',
+    timesUp: "Time's up!",
     explanation: 'Why?',
     funFact: 'Did you know?',
     next: 'Next',
     finish: 'See results',
     resultsTitle: 'Round complete!',
+    learnedTitle: 'What you learned',
+    recapIntro: 'A quick recap of every question and its correct answer.',
+    recapCorrectLabel: 'Correct answer',
+    recapYourLabel: 'Your answer',
+    recapTimedOut: 'Time ran out on this one.',
     yourScore: 'Your score',
     accuracy: 'Accuracy',
     bestStreak: 'Best streak',
@@ -739,13 +746,14 @@ const I18N = {
     pickAge: 'Elige tu grupo de edad',
     pickCat: 'Elige una categoría',
     pickDiff: 'Elige dificultad',
+    diffByAgeHint: 'Las opciones de dificultad se adaptan a la edad que elegiste.',
     metaCategory: 'Categoría', metaAge: 'Grupo de edad', metaDifficulty: 'Dificultad',
     metaMoreSoon: 'Añadiremos más categorías y niveles cuando los bancos de palabras crezcan.',
     currentChallenge: 'Reto actual',
     onlyAvailableBanks: 'Solo se muestran bancos de palabras disponibles.',
     metaSmallBank: 'Este conjunto tiene un banco más pequeño y puede repetirse antes.',
     pickTimer: 'Temporizador (opcional)',
-    timerOn: 'Activado (15s por pregunta)',
+    timerOn: 'Activado ({s}s por pregunta)',
     timerOff: 'Desactivado — tómate tu tiempo',
     startQuiz: 'Empezar quiz',
     question: 'Pregunta',
@@ -753,11 +761,17 @@ const I18N = {
     timeLeft: 'Tiempo',
     correct: '¡Correcto!',
     wrong: 'No del todo.',
+    timesUp: '¡Se acabó el tiempo!',
     explanation: '¿Por qué?',
     funFact: '¿Sabías que...?',
     next: 'Siguiente',
     finish: 'Ver resultados',
     resultsTitle: '¡Ronda completada!',
+    learnedTitle: 'Lo que aprendiste',
+    recapIntro: 'Un repaso rápido de cada pregunta y su respuesta correcta.',
+    recapCorrectLabel: 'Respuesta correcta',
+    recapYourLabel: 'Tu respuesta',
+    recapTimedOut: 'Se acabó el tiempo en esta.',
     yourScore: 'Tu puntuación',
     accuracy: 'Aciertos',
     bestStreak: 'Mejor racha',
@@ -1012,13 +1026,14 @@ const I18N = {
     pickAge: 'Choisis ta tranche d\'âge',
     pickCat: 'Choisis une catégorie',
     pickDiff: 'Choisis la difficulté',
+    diffByAgeHint: 'Les options de difficulté s’adaptent à la tranche d’âge choisie.',
     metaCategory: 'Catégorie', metaAge: 'Groupe d’âge', metaDifficulty: 'Difficulté',
     metaMoreSoon: 'D’autres catégories et niveaux seront ajoutés à mesure que les banques de mots s’enrichissent.',
     currentChallenge: 'Défi actuel',
     onlyAvailableBanks: 'Seules les banques de mots disponibles sont affichées.',
     metaSmallBank: 'Cet ensemble a une banque plus petite et peut se répéter plus vite.',
     pickTimer: 'Minuteur (facultatif)',
-    timerOn: 'Activé (15 s par question)',
+    timerOn: 'Activé ({s} s par question)',
     timerOff: 'Désactivé — prends ton temps',
     startQuiz: 'Démarrer le quiz',
     question: 'Question',
@@ -1026,11 +1041,17 @@ const I18N = {
     timeLeft: 'Temps restant',
     correct: 'Bravo !',
     wrong: 'Pas tout à fait.',
+    timesUp: 'Temps écoulé !',
     explanation: 'Pourquoi ?',
     funFact: 'Le savais-tu ?',
     next: 'Suivant',
     finish: 'Voir les résultats',
     resultsTitle: 'Manche terminée !',
+    learnedTitle: 'Ce que tu as appris',
+    recapIntro: 'Un récapitulatif rapide de chaque question et de sa bonne réponse.',
+    recapCorrectLabel: 'Bonne réponse',
+    recapYourLabel: 'Ta réponse',
+    recapTimedOut: 'Le temps est écoulé pour celle-ci.',
     yourScore: 'Ton score',
     accuracy: 'Précision',
     bestStreak: 'Meilleure série',
@@ -7911,14 +7932,15 @@ function viewQuizSetup() {
   if (p.age) state.quiz.age = p.age;
   if (p.category) state.quiz.category = p.category;
   state.quiz.fromDaily = false; // reaching the setup screen means a manual Quiz Battle
+  // Make sure the selected difficulty is one that actually has questions for the
+  // current age+category (e.g. arriving via params on a young age + 'medium').
+  ensureValidQuizDifficulty();
 
   // --- live availability for the current age + category + difficulty ---
   const _need = MAX_QUIZ_QUESTIONS;
-  const diffCounts = {};
-  ['easy','medium','hard'].forEach(d => { diffCounts[d] = countEligibleQuestions(state.quiz.category, state.quiz.age, d); });
-  const eligibleNow = diffCounts[state.quiz.difficulty] || 0;
+  const playableDiffs = playableDifficulties(state.quiz.category, state.quiz.age, _need);
+  const eligibleNow = countEligibleQuestions(state.quiz.category, state.quiz.age, state.quiz.difficulty);
   const enough = eligibleNow >= _need;
-  const txtSoon = pick({en:'Coming soon', es:'Próximamente', fr:'Bientôt'});
   const txtInsuff = pick({
     en:'Not enough questions yet. Try another option.',
     es:'Todavía no hay suficientes preguntas. Prueba otra opción.',
@@ -7956,22 +7978,18 @@ function viewQuizSetup() {
         </div>
         <div>
           <h2 class="font-semibold mb-3">${t('pickDiff')}</h2>
-          <div class="grid grid-cols-3 gap-2">
-            ${['easy','medium','hard'].map(d=>{
-              const dn = diffCounts[d];
-              const ok = dn >= _need;
-              return `
+          <div class="grid grid-cols-${Math.max(1, playableDiffs.length)} gap-2">
+            ${playableDiffs.map(d=>`
               <button onclick="selectQuizOption('difficulty','${d}')" class="select-cell p-3 text-center ${state.quiz.difficulty===d?'is-selected border-brand-violet bg-violet-50':'border-slate-200'} focus-ring">
                 <div class="font-semibold capitalize">${t('difficulty'+d.charAt(0).toUpperCase()+d.slice(1))}</div>
-                ${ok?'':`<div class="text-[11px] mt-1 text-slate-400">${txtSoon}</div>`}
-              </button>`;
-            }).join('')}
+              </button>`).join('')}
           </div>
+          <p class="mt-2 text-[11px] text-slate-400">${t('diffByAgeHint')}</p>
         </div>
         <div>
           <h2 class="font-semibold mb-3">${t('pickTimer')}</h2>
           <div class="grid grid-cols-2 gap-2">
-            <button onclick="selectQuizOption('timerOn',true)" class="select-cell p-3 text-center ${state.quiz.timerOn===true?'is-selected border-brand-violet bg-violet-50':'border-slate-200'} focus-ring">⏱ ${t('timerOn')}</button>
+            <button onclick="selectQuizOption('timerOn',true)" class="select-cell p-3 text-center ${state.quiz.timerOn===true?'is-selected border-brand-violet bg-violet-50':'border-slate-200'} focus-ring">⏱ ${t('timerOn').replace('{s}', quizTimeForAge(state.quiz.age))}</button>
             <button onclick="selectQuizOption('timerOn',false)" class="select-cell p-3 text-center ${state.quiz.timerOn===false?'is-selected border-brand-violet bg-violet-50':'border-slate-200'} focus-ring">⏸ ${t('timerOff')}</button>
           </div>
         </div>
@@ -8037,11 +8055,11 @@ function viewQuizPlay() {
         </div>
       </div>
       ${s.answered !== null ? `
-      <div class="card mt-5 p-5 slide-up border-l-4 ${s.answeredOptionId===correctOptionId?'border-emerald-500':'border-rose-500'}">
+      <div class="card mt-5 p-5 slide-up border-l-4 ${s.answeredOptionId===correctOptionId?'border-emerald-500':(s.answered===-1?'border-amber-400':'border-rose-500')}">
         <div class="flex items-start gap-3">
-          <div class="text-3xl">${s.answeredOptionId===correctOptionId?'🎉':'💡'}</div>
+          <div class="text-3xl">${s.answeredOptionId===correctOptionId?'🎉':(s.answered===-1?'⏰':'💡')}</div>
           <div class="flex-1">
-            <div class="font-bold text-lg">${s.answeredOptionId===correctOptionId?t('correct'):t('wrong')}</div>
+            <div class="font-bold text-lg">${s.answeredOptionId===correctOptionId?t('correct'):(s.answered===-1?t('timesUp'):t('wrong'))}</div>
             <div class="mt-1 text-slate-700 text-sm"><strong>${t('explanation')}</strong> ${escapeHtml(pick(q.e))}</div>
             <div class="mt-2 text-violet-700 text-sm"><strong>💫 ${t('funFact')}</strong> ${escapeHtml(pick(q.f))}</div>
           </div>
@@ -8062,6 +8080,28 @@ function viewQuizResults() {
   const isPerfect = acc >= 80;
   if (isPerfect && !s.confettiShown) { confetti(); s.confettiShown = true; }
   const shareText = t('shareText').replace('{score}', s.score);
+  // Compact educational recap: every question with its correct answer; missed
+  // ones highlighted. Kept short (max 10 rows) so it stays mobile-friendly.
+  const review = Array.isArray(s.review) ? s.review : [];
+  const recapHtml = review.length ? `
+        <div class="mt-6 card p-4 text-left">
+          <div class="font-bold text-sm flex items-center gap-2">🎓 ${t('learnedTitle')}</div>
+          <p class="mt-1 text-xs text-slate-500">${t('recapIntro')}</p>
+          <ul class="mt-3 space-y-2 text-sm">
+            ${review.map(r=>`
+              <li class="rounded-lg p-2 ${r.correct?'bg-emerald-50':'bg-rose-50 ring-1 ring-rose-200'}">
+                <div class="flex items-start gap-2">
+                  <span class="shrink-0">${r.correct?'✅':'❌'}</span>
+                  <div class="flex-1 min-w-0">
+                    <div class="font-medium text-slate-800">${escapeHtml(r.q)}</div>
+                    <div class="text-xs mt-0.5"><span class="text-slate-500">${t('recapCorrectLabel')}:</span> <span class="font-semibold text-emerald-700">${escapeHtml(r.correctText)}</span></div>
+                    ${(!r.correct && r.chosenText)?`<div class="text-xs text-rose-600 mt-0.5">${t('recapYourLabel')}: ${escapeHtml(r.chosenText)}</div>`:''}
+                    ${(!r.correct && !r.chosenText)?`<div class="text-xs text-rose-600 mt-0.5">${t('recapTimedOut')}</div>`:''}
+                  </div>
+                </div>
+              </li>`).join('')}
+          </ul>
+        </div>` : '';
   return `
   <div class="min-h-screen bg-slate-50">
     ${Header()}
@@ -8088,6 +8128,7 @@ function viewQuizResults() {
             <div class="text-xs text-slate-600 mt-1">${t('totalTime')}</div>
           </div>
         </div>
+        ${recapHtml}
         <div class="mt-6 card p-4 text-left">
           <label class="text-sm font-medium">${t('guestName')}</label>
           <input id="guest-name" type="text" maxlength="${MAX_ALIAS_LENGTH}" placeholder="${t('aliasPlaceholder')}" style="text-transform:uppercase" class="mt-1 w-full px-3 py-2 rounded-lg border border-slate-200 focus-ring" ${s.saved?'disabled':''} />
@@ -8784,7 +8825,19 @@ function view404(){ return `
 function selectQuizOption(key, value) {
   state.quiz = state.quiz || {};
   state.quiz[key] = value;
+  // Changing age or category can make the current difficulty unplayable; if so,
+  // snap to the first playable one so Start is never blocked by a stale choice.
+  if (key === 'age' || key === 'category') ensureValidQuizDifficulty();
   render();
+}
+// Keep state.quiz.difficulty valid for the current category+age. Only changes
+// it when the current pick has no questions; otherwise leaves the user's choice.
+function ensureValidQuizDifficulty() {
+  if (!state.quiz) return;
+  const ok = playableDifficulties(state.quiz.category, state.quiz.age);
+  if (!ok.includes(state.quiz.difficulty)) {
+    state.quiz.difficulty = ok[0] || state.quiz.difficulty;
+  }
 }
 /*__QUIZENGINE_START__  Pure-ish question selection engine.
    Tests extract everything between the QUIZENGINE sentinels and run it in Node
@@ -8859,6 +8912,38 @@ function getEligibleQuestionPool(category, age, difficulty) {
 function countEligibleQuestions(category, age, difficulty) {
   return getEligibleQuestionPool(category, age, difficulty).length;
 }
+// Difficulties that actually have enough questions for this category+age, in a
+// fixed easy→hard order. Data-driven so the setup UI never offers a broken combo
+// (young ages naturally only expose easy; older ages medium/hard, etc.).
+const QUIZ_DIFFICULTIES = ['easy', 'medium', 'hard'];
+function playableDifficulties(category, age, need) {
+  const min = need || MAX_QUIZ_QUESTIONS;
+  return QUIZ_DIFFICULTIES.filter(d => countEligibleQuestions(category, age, d) >= min);
+}
+// First playable difficulty (easy→medium→hard) for a category+age, or null.
+function firstPlayableDifficulty(category, age, need) {
+  return playableDifficulties(category, age, need)[0] || null;
+}
+
+// Seconds per question when the optional timer is ON, by age group. Younger
+// players get more time to read; teens/adults keep the brisk 15s. Default 15.
+const QUIZ_TIME_BY_AGE = { family:30, '5-7':30, '8-10':25, '11-13':20, teens:15, adults:15 };
+function quizTimeForAge(age) {
+  return QUIZ_TIME_BY_AGE[age] || 15;
+}
+
+// Recap fields for the end-of-quiz "What you learned" card, resolved in `lang`.
+// displayIndex is the index in the SHUFFLED option order, or -1 for a timeout.
+// Pure (no DOM/state) so it is unit-testable.
+function quizReviewFields(q, displayIndex, lang) {
+  const rawOpts = (q['o_'+lang]) || q.o || [];
+  const chosenOrig = displayIndex >= 0 ? (q.perm ? q.perm[displayIndex] : displayIndex) : -1;
+  return {
+    q: (q.q && (q.q[lang] || q.q.en)) || '',
+    correctText: rawOpts[q.c],
+    chosenText: chosenOrig >= 0 ? rawOpts[chosenOrig] : null
+  };
+}
 
 // --- recent-questions memory (keyed language:category:age:difficulty) ----
 function recentKey(lang, category, age, difficulty) {
@@ -8931,9 +9016,11 @@ function startQuiz() {
   const questions = getRandomQuizQuestions(q.category, q.age, q.difficulty, MAX_QUIZ_QUESTIONS);
   // Remember what we served so the next game on this combo avoids repeats.
   pushRecentIds(state.lang, q.category, q.age, q.difficulty, questions.map(x => x.id));
+  const maxTime = quizTimeForAge(q.age); // seconds per question (timer ON only)
   state.quizSession = {
     ...q, questions, idx:0, score:0, correct:0, wrong:0, streak:0, bestStreak:0,
-    selected:null, answered:null, selectedOptionId:null, answeredOptionId:null, timeLeft:15, startedAt: Date.now(), durationMs:0,
+    review:[], maxTime,
+    selected:null, answered:null, selectedOptionId:null, answeredOptionId:null, timeLeft:maxTime, startedAt: Date.now(), durationMs:0,
     confettiShown: false, timerInterval:null, saved:false,
     language: state.lang, sessionId: 'qs_' + Date.now().toString(36) + Math.random().toString(36).slice(2,6)
   };
@@ -8973,11 +9060,16 @@ function selectQuizAnswer(i) {
   const isCorrect = optionId !== null
     ? optionId === q.correctOptionId
     : i === q.correctPos;
+  // Record a per-question entry for the end-of-quiz learning recap.
+  (s.review || (s.review = [])).push({
+    ...quizReviewFields(q, i, s.language || state.lang),
+    correct: isCorrect
+  });
   if (isCorrect) {
     s.correct++;
     s.streak++;
     if (s.streak > s.bestStreak) s.bestStreak = s.streak;
-    s.score += calcQuestionScore({ correct:true, streak:s.streak, timeLeft:s.timeLeft, maxTime:15, difficulty:s.difficulty, timerOn:s.timerOn });
+    s.score += calcQuestionScore({ correct:true, streak:s.streak, timeLeft:s.timeLeft, maxTime:s.maxTime || 15, difficulty:s.difficulty, timerOn:s.timerOn });
   } else {
     s.wrong++;
     s.streak = 0;
@@ -8987,7 +9079,7 @@ function selectQuizAnswer(i) {
 function nextQuestion() {
   const s = state.quizSession;
   s.idx++;
-  s.selected = null; s.answered = null; s.selectedOptionId = null; s.answeredOptionId = null; s.timeLeft = 15;
+  s.selected = null; s.answered = null; s.selectedOptionId = null; s.answeredOptionId = null; s.timeLeft = s.maxTime || 15;
   if (s.idx >= s.questions.length) {
     s.durationMs = Date.now() - s.startedAt;
     if (s.timerInterval) clearInterval(s.timerInterval);
