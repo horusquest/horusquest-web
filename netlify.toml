@@ -32,47 +32,47 @@
 [[headers]]
   for = "/store"
   [headers.values]
-    X-Robots-Tag = "noindex, follow"
+    X-Robots-Tag = "noindex"
 
 [[headers]]
   for = "/es/tienda"
   [headers.values]
-    X-Robots-Tag = "noindex, follow"
+    X-Robots-Tag = "noindex"
 
 [[headers]]
   for = "/fr/boutique"
   [headers.values]
-    X-Robots-Tag = "noindex, follow"
+    X-Robots-Tag = "noindex"
 
 [[headers]]
   for = "/oraquest/teams"
   [headers.values]
-    X-Robots-Tag = "noindex, follow"
+    X-Robots-Tag = "noindex"
 
 [[headers]]
   for = "/es/oraquest/equipos"
   [headers.values]
-    X-Robots-Tag = "noindex, follow"
+    X-Robots-Tag = "noindex"
 
 [[headers]]
   for = "/fr/oraquest/equipes"
   [headers.values]
-    X-Robots-Tag = "noindex, follow"
+    X-Robots-Tag = "noindex"
 
 [[headers]]
   for = "/oraquest/blog"
   [headers.values]
-    X-Robots-Tag = "noindex, follow"
+    X-Robots-Tag = "noindex"
 
 [[headers]]
   for = "/es/oraquest/blog"
   [headers.values]
-    X-Robots-Tag = "noindex, follow"
+    X-Robots-Tag = "noindex"
 
 [[headers]]
   for = "/fr/oraquest/blog"
   [headers.values]
-    X-Robots-Tag = "noindex, follow"
+    X-Robots-Tag = "noindex"
 
 # ----------------------------------------------------------------------------
 # Static files (robots.txt, sitemap.xml, ads.txt, /assets/*, tailwind.css,
