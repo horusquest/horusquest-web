@@ -512,34 +512,4 @@
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
-    <loc>https://horusquest.com/report</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://horusquest.com/report"/>
-    <xhtml:link rel="alternate" hreflang="es" href="https://horusquest.com/es/reportar"/>
-    <xhtml:link rel="alternate" hreflang="fr" href="https://horusquest.com/fr/signaler"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://horusquest.com/report"/>
-    <lastmod>2026-06-06</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://horusquest.com/es/reportar</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://horusquest.com/report"/>
-    <xhtml:link rel="alternate" hreflang="es" href="https://horusquest.com/es/reportar"/>
-    <xhtml:link rel="alternate" hreflang="fr" href="https://horusquest.com/fr/signaler"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://horusquest.com/report"/>
-    <lastmod>2026-06-06</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://horusquest.com/fr/signaler</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://horusquest.com/report"/>
-    <xhtml:link rel="alternate" hreflang="es" href="https://horusquest.com/es/reportar"/>
-    <xhtml:link rel="alternate" hreflang="fr" href="https://horusquest.com/fr/signaler"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://horusquest.com/report"/>
-    <lastmod>2026-06-06</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
 </urlset>

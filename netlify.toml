@@ -74,6 +74,21 @@
   [headers.values]
     X-Robots-Tag = "noindex"
 
+[[headers]]
+  for = "/report"
+  [headers.values]
+    X-Robots-Tag = "noindex"
+
+[[headers]]
+  for = "/es/reportar"
+  [headers.values]
+    X-Robots-Tag = "noindex"
+
+[[headers]]
+  for = "/fr/signaler"
+  [headers.values]
+    X-Robots-Tag = "noindex"
+
 # ----------------------------------------------------------------------------
 # Static files (robots.txt, sitemap.xml, ads.txt, /assets/*, tailwind.css,
 # OraQuest.html) are served as real files: Netlify matches existing files
