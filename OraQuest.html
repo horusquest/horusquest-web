@@ -466,6 +466,7 @@ const I18N = {
     pickAge: 'Pick your age group',
     pickCat: 'Pick a category',
     pickDiff: 'Pick difficulty',
+    diffByAgeHint: 'Difficulty options adapt to the age group you chose.',
     metaCategory: 'Category', metaAge: 'Age group', metaDifficulty: 'Difficulty',
     metaMoreSoon: 'More categories and difficulty options will be added as the word banks grow.',
     currentChallenge: 'Current challenge',
@@ -739,6 +740,7 @@ const I18N = {
     pickAge: 'Elige tu grupo de edad',
     pickCat: 'Elige una categoría',
     pickDiff: 'Elige dificultad',
+    diffByAgeHint: 'Las opciones de dificultad se adaptan a la edad que elegiste.',
     metaCategory: 'Categoría', metaAge: 'Grupo de edad', metaDifficulty: 'Dificultad',
     metaMoreSoon: 'Añadiremos más categorías y niveles cuando los bancos de palabras crezcan.',
     currentChallenge: 'Reto actual',
@@ -1012,6 +1014,7 @@ const I18N = {
     pickAge: 'Choisis ta tranche d\'âge',
     pickCat: 'Choisis une catégorie',
     pickDiff: 'Choisis la difficulté',
+    diffByAgeHint: 'Les options de difficulté s’adaptent à la tranche d’âge choisie.',
     metaCategory: 'Catégorie', metaAge: 'Groupe d’âge', metaDifficulty: 'Difficulté',
     metaMoreSoon: 'D’autres catégories et niveaux seront ajoutés à mesure que les banques de mots s’enrichissent.',
     currentChallenge: 'Défi actuel',
@@ -7911,14 +7914,15 @@ function viewQuizSetup() {
   if (p.age) state.quiz.age = p.age;
   if (p.category) state.quiz.category = p.category;
   state.quiz.fromDaily = false; // reaching the setup screen means a manual Quiz Battle
+  // Make sure the selected difficulty is one that actually has questions for the
+  // current age+category (e.g. arriving via params on a young age + 'medium').
+  ensureValidQuizDifficulty();
 
   // --- live availability for the current age + category + difficulty ---
   const _need = MAX_QUIZ_QUESTIONS;
-  const diffCounts = {};
-  ['easy','medium','hard'].forEach(d => { diffCounts[d] = countEligibleQuestions(state.quiz.category, state.quiz.age, d); });
-  const eligibleNow = diffCounts[state.quiz.difficulty] || 0;
+  const playableDiffs = playableDifficulties(state.quiz.category, state.quiz.age, _need);
+  const eligibleNow = countEligibleQuestions(state.quiz.category, state.quiz.age, state.quiz.difficulty);
   const enough = eligibleNow >= _need;
-  const txtSoon = pick({en:'Coming soon', es:'Próximamente', fr:'Bientôt'});
   const txtInsuff = pick({
     en:'Not enough questions yet. Try another option.',
     es:'Todavía no hay suficientes preguntas. Prueba otra opción.',
@@ -7956,17 +7960,13 @@ function viewQuizSetup() {
         </div>
         <div>
           <h2 class="font-semibold mb-3">${t('pickDiff')}</h2>
-          <div class="grid grid-cols-3 gap-2">
-            ${['easy','medium','hard'].map(d=>{
-              const dn = diffCounts[d];
-              const ok = dn >= _need;
-              return `
+          <div class="grid grid-cols-${Math.max(1, playableDiffs.length)} gap-2">
+            ${playableDiffs.map(d=>`
               <button onclick="selectQuizOption('difficulty','${d}')" class="select-cell p-3 text-center ${state.quiz.difficulty===d?'is-selected border-brand-violet bg-violet-50':'border-slate-200'} focus-ring">
                 <div class="font-semibold capitalize">${t('difficulty'+d.charAt(0).toUpperCase()+d.slice(1))}</div>
-                ${ok?'':`<div class="text-[11px] mt-1 text-slate-400">${txtSoon}</div>`}
-              </button>`;
-            }).join('')}
+              </button>`).join('')}
           </div>
+          <p class="mt-2 text-[11px] text-slate-400">${t('diffByAgeHint')}</p>
         </div>
         <div>
           <h2 class="font-semibold mb-3">${t('pickTimer')}</h2>
@@ -8784,7 +8784,19 @@ function view404(){ return `
 function selectQuizOption(key, value) {
   state.quiz = state.quiz || {};
   state.quiz[key] = value;
+  // Changing age or category can make the current difficulty unplayable; if so,
+  // snap to the first playable one so Start is never blocked by a stale choice.
+  if (key === 'age' || key === 'category') ensureValidQuizDifficulty();
   render();
+}
+// Keep state.quiz.difficulty valid for the current category+age. Only changes
+// it when the current pick has no questions; otherwise leaves the user's choice.
+function ensureValidQuizDifficulty() {
+  if (!state.quiz) return;
+  const ok = playableDifficulties(state.quiz.category, state.quiz.age);
+  if (!ok.includes(state.quiz.difficulty)) {
+    state.quiz.difficulty = ok[0] || state.quiz.difficulty;
+  }
 }
 /*__QUIZENGINE_START__  Pure-ish question selection engine.
    Tests extract everything between the QUIZENGINE sentinels and run it in Node
@@ -8858,6 +8870,18 @@ function getEligibleQuestionPool(category, age, difficulty) {
 }
 function countEligibleQuestions(category, age, difficulty) {
   return getEligibleQuestionPool(category, age, difficulty).length;
+}
+// Difficulties that actually have enough questions for this category+age, in a
+// fixed easy→hard order. Data-driven so the setup UI never offers a broken combo
+// (young ages naturally only expose easy; older ages medium/hard, etc.).
+const QUIZ_DIFFICULTIES = ['easy', 'medium', 'hard'];
+function playableDifficulties(category, age, need) {
+  const min = need || MAX_QUIZ_QUESTIONS;
+  return QUIZ_DIFFICULTIES.filter(d => countEligibleQuestions(category, age, d) >= min);
+}
+// First playable difficulty (easy→medium→hard) for a category+age, or null.
+function firstPlayableDifficulty(category, age, need) {
+  return playableDifficulties(category, age, need)[0] || null;
 }
 
 // --- recent-questions memory (keyed language:category:age:difficulty) ----
