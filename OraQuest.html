@@ -351,7 +351,8 @@ const ROUTE_PATHS = {
 // but they are marked noindex,follow and excluded from sitemap.xml so search
 // engines don't index placeholder/under-construction content (AdSense readiness).
 // Keep in sync with NOINDEX_ROUTES in tools/_gen-sitemap.js.
-const NOINDEX_ROUTES = new Set(['blog', 'shop', 'teams']);
+// 'report' is a thin utility form (no substantive content) → noindex too.
+const NOINDEX_ROUTES = new Set(['blog', 'shop', 'teams', 'report']);
 const PATH_TO_ROUTE = Object.keys(ROUTE_PATHS).reduce((acc, route) => {
   LANGS.forEach(lang => { acc[ROUTE_PATHS[route][lang]] = { route, lang }; });
   return acc;
