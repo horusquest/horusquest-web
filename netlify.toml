@@ -26,6 +26,54 @@
   [headers.values]
     Content-Type = "text/plain; charset=utf-8"
 
+# Thin / "coming soon" routes (store, teams, blog) — EN/ES/FR. Served 200 but
+# kept out of the index via an X-Robots-Tag header (defense-in-depth alongside
+# the runtime <meta name="robots"> the SPA injects). Excluded from sitemap.xml.
+[[headers]]
+  for = "/store"
+  [headers.values]
+    X-Robots-Tag = "noindex, follow"
+
+[[headers]]
+  for = "/es/tienda"
+  [headers.values]
+    X-Robots-Tag = "noindex, follow"
+
+[[headers]]
+  for = "/fr/boutique"
+  [headers.values]
+    X-Robots-Tag = "noindex, follow"
+
+[[headers]]
+  for = "/oraquest/teams"
+  [headers.values]
+    X-Robots-Tag = "noindex, follow"
+
+[[headers]]
+  for = "/es/oraquest/equipos"
+  [headers.values]
+    X-Robots-Tag = "noindex, follow"
+
+[[headers]]
+  for = "/fr/oraquest/equipes"
+  [headers.values]
+    X-Robots-Tag = "noindex, follow"
+
+[[headers]]
+  for = "/oraquest/blog"
+  [headers.values]
+    X-Robots-Tag = "noindex, follow"
+
+[[headers]]
+  for = "/es/oraquest/blog"
+  [headers.values]
+    X-Robots-Tag = "noindex, follow"
+
+[[headers]]
+  for = "/fr/oraquest/blog"
+  [headers.values]
+    X-Robots-Tag = "noindex, follow"
+
 # ----------------------------------------------------------------------------
 # Static files (robots.txt, sitemap.xml, ads.txt, /assets/*, tailwind.css,
 # OraQuest.html) are served as real files: Netlify matches existing files
