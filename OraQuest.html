@@ -473,7 +473,7 @@ const I18N = {
     onlyAvailableBanks: 'Only available word banks are shown.',
     metaSmallBank: 'This set has a smaller word bank and may repeat sooner.',
     pickTimer: 'Timer (optional)',
-    timerOn: 'On (15s per question)',
+    timerOn: 'On ({s}s per question)',
     timerOff: 'Off — take your time',
     startQuiz: 'Start Quiz',
     question: 'Question',
@@ -752,7 +752,7 @@ const I18N = {
     onlyAvailableBanks: 'Solo se muestran bancos de palabras disponibles.',
     metaSmallBank: 'Este conjunto tiene un banco más pequeño y puede repetirse antes.',
     pickTimer: 'Temporizador (opcional)',
-    timerOn: 'Activado (15s por pregunta)',
+    timerOn: 'Activado ({s}s por pregunta)',
     timerOff: 'Desactivado — tómate tu tiempo',
     startQuiz: 'Empezar quiz',
     question: 'Pregunta',
@@ -1031,7 +1031,7 @@ const I18N = {
     onlyAvailableBanks: 'Seules les banques de mots disponibles sont affichées.',
     metaSmallBank: 'Cet ensemble a une banque plus petite et peut se répéter plus vite.',
     pickTimer: 'Minuteur (facultatif)',
-    timerOn: 'Activé (15 s par question)',
+    timerOn: 'Activé ({s} s par question)',
     timerOff: 'Désactivé — prends ton temps',
     startQuiz: 'Démarrer le quiz',
     question: 'Question',
@@ -7986,7 +7986,7 @@ function viewQuizSetup() {
         <div>
           <h2 class="font-semibold mb-3">${t('pickTimer')}</h2>
           <div class="grid grid-cols-2 gap-2">
-            <button onclick="selectQuizOption('timerOn',true)" class="select-cell p-3 text-center ${state.quiz.timerOn===true?'is-selected border-brand-violet bg-violet-50':'border-slate-200'} focus-ring">⏱ ${t('timerOn')}</button>
+            <button onclick="selectQuizOption('timerOn',true)" class="select-cell p-3 text-center ${state.quiz.timerOn===true?'is-selected border-brand-violet bg-violet-50':'border-slate-200'} focus-ring">⏱ ${t('timerOn').replace('{s}', quizTimeForAge(state.quiz.age))}</button>
             <button onclick="selectQuizOption('timerOn',false)" class="select-cell p-3 text-center ${state.quiz.timerOn===false?'is-selected border-brand-violet bg-violet-50':'border-slate-200'} focus-ring">⏸ ${t('timerOff')}</button>
           </div>
         </div>
@@ -8922,6 +8922,13 @@ function firstPlayableDifficulty(category, age, need) {
   return playableDifficulties(category, age, need)[0] || null;
 }
 
+// Seconds per question when the optional timer is ON, by age group. Younger
+// players get more time to read; teens/adults keep the brisk 15s. Default 15.
+const QUIZ_TIME_BY_AGE = { family:30, '5-7':30, '8-10':25, '11-13':20, teens:15, adults:15 };
+function quizTimeForAge(age) {
+  return QUIZ_TIME_BY_AGE[age] || 15;
+}
+
 // --- recent-questions memory (keyed language:category:age:difficulty) ----
 function recentKey(lang, category, age, difficulty) {
   return [lang, category, age, difficulty].join(':');
@@ -8993,10 +9000,11 @@ function startQuiz() {
   const questions = getRandomQuizQuestions(q.category, q.age, q.difficulty, MAX_QUIZ_QUESTIONS);
   // Remember what we served so the next game on this combo avoids repeats.
   pushRecentIds(state.lang, q.category, q.age, q.difficulty, questions.map(x => x.id));
+  const maxTime = quizTimeForAge(q.age); // seconds per question (timer ON only)
   state.quizSession = {
     ...q, questions, idx:0, score:0, correct:0, wrong:0, streak:0, bestStreak:0,
-    review:[],
-    selected:null, answered:null, selectedOptionId:null, answeredOptionId:null, timeLeft:15, startedAt: Date.now(), durationMs:0,
+    review:[], maxTime,
+    selected:null, answered:null, selectedOptionId:null, answeredOptionId:null, timeLeft:maxTime, startedAt: Date.now(), durationMs:0,
     confettiShown: false, timerInterval:null, saved:false,
     language: state.lang, sessionId: 'qs_' + Date.now().toString(36) + Math.random().toString(36).slice(2,6)
   };
@@ -9050,7 +9058,7 @@ function selectQuizAnswer(i) {
     s.correct++;
     s.streak++;
     if (s.streak > s.bestStreak) s.bestStreak = s.streak;
-    s.score += calcQuestionScore({ correct:true, streak:s.streak, timeLeft:s.timeLeft, maxTime:15, difficulty:s.difficulty, timerOn:s.timerOn });
+    s.score += calcQuestionScore({ correct:true, streak:s.streak, timeLeft:s.timeLeft, maxTime:s.maxTime || 15, difficulty:s.difficulty, timerOn:s.timerOn });
   } else {
     s.wrong++;
     s.streak = 0;
@@ -9060,7 +9068,7 @@ function selectQuizAnswer(i) {
 function nextQuestion() {
   const s = state.quizSession;
   s.idx++;
-  s.selected = null; s.answered = null; s.selectedOptionId = null; s.answeredOptionId = null; s.timeLeft = 15;
+  s.selected = null; s.answered = null; s.selectedOptionId = null; s.answeredOptionId = null; s.timeLeft = s.maxTime || 15;
   if (s.idx >= s.questions.length) {
     s.durationMs = Date.now() - s.startedAt;
     if (s.timerInterval) clearInterval(s.timerInterval);
