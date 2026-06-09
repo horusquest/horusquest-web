@@ -486,6 +486,11 @@ const I18N = {
     next: 'Next',
     finish: 'See results',
     resultsTitle: 'Round complete!',
+    learnedTitle: 'What you learned',
+    recapIntro: 'A quick recap of every question and its correct answer.',
+    recapCorrectLabel: 'Correct answer',
+    recapYourLabel: 'Your answer',
+    recapTimedOut: 'Time ran out on this one.',
     yourScore: 'Your score',
     accuracy: 'Accuracy',
     bestStreak: 'Best streak',
@@ -760,6 +765,11 @@ const I18N = {
     next: 'Siguiente',
     finish: 'Ver resultados',
     resultsTitle: '¡Ronda completada!',
+    learnedTitle: 'Lo que aprendiste',
+    recapIntro: 'Un repaso rápido de cada pregunta y su respuesta correcta.',
+    recapCorrectLabel: 'Respuesta correcta',
+    recapYourLabel: 'Tu respuesta',
+    recapTimedOut: 'Se acabó el tiempo en esta.',
     yourScore: 'Tu puntuación',
     accuracy: 'Aciertos',
     bestStreak: 'Mejor racha',
@@ -1034,6 +1044,11 @@ const I18N = {
     next: 'Suivant',
     finish: 'Voir les résultats',
     resultsTitle: 'Manche terminée !',
+    learnedTitle: 'Ce que tu as appris',
+    recapIntro: 'Un récapitulatif rapide de chaque question et de sa bonne réponse.',
+    recapCorrectLabel: 'Bonne réponse',
+    recapYourLabel: 'Ta réponse',
+    recapTimedOut: 'Le temps est écoulé pour celle-ci.',
     yourScore: 'Ton score',
     accuracy: 'Précision',
     bestStreak: 'Meilleure série',
@@ -8062,6 +8077,28 @@ function viewQuizResults() {
   const isPerfect = acc >= 80;
   if (isPerfect && !s.confettiShown) { confetti(); s.confettiShown = true; }
   const shareText = t('shareText').replace('{score}', s.score);
+  // Compact educational recap: every question with its correct answer; missed
+  // ones highlighted. Kept short (max 10 rows) so it stays mobile-friendly.
+  const review = Array.isArray(s.review) ? s.review : [];
+  const recapHtml = review.length ? `
+        <div class="mt-6 card p-4 text-left">
+          <div class="font-bold text-sm flex items-center gap-2">🎓 ${t('learnedTitle')}</div>
+          <p class="mt-1 text-xs text-slate-500">${t('recapIntro')}</p>
+          <ul class="mt-3 space-y-2 text-sm">
+            ${review.map(r=>`
+              <li class="rounded-lg p-2 ${r.correct?'bg-emerald-50':'bg-rose-50 ring-1 ring-rose-200'}">
+                <div class="flex items-start gap-2">
+                  <span class="shrink-0">${r.correct?'✅':'❌'}</span>
+                  <div class="flex-1 min-w-0">
+                    <div class="font-medium text-slate-800">${escapeHtml(r.q)}</div>
+                    <div class="text-xs mt-0.5"><span class="text-slate-500">${t('recapCorrectLabel')}:</span> <span class="font-semibold text-emerald-700">${escapeHtml(r.correctText)}</span></div>
+                    ${(!r.correct && r.chosenText)?`<div class="text-xs text-rose-600 mt-0.5">${t('recapYourLabel')}: ${escapeHtml(r.chosenText)}</div>`:''}
+                    ${(!r.correct && !r.chosenText)?`<div class="text-xs text-rose-600 mt-0.5">${t('recapTimedOut')}</div>`:''}
+                  </div>
+                </div>
+              </li>`).join('')}
+          </ul>
+        </div>` : '';
   return `
   <div class="min-h-screen bg-slate-50">
     ${Header()}
@@ -8088,6 +8125,7 @@ function viewQuizResults() {
             <div class="text-xs text-slate-600 mt-1">${t('totalTime')}</div>
           </div>
         </div>
+        ${recapHtml}
         <div class="mt-6 card p-4 text-left">
           <label class="text-sm font-medium">${t('guestName')}</label>
           <input id="guest-name" type="text" maxlength="${MAX_ALIAS_LENGTH}" placeholder="${t('aliasPlaceholder')}" style="text-transform:uppercase" class="mt-1 w-full px-3 py-2 rounded-lg border border-slate-200 focus-ring" ${s.saved?'disabled':''} />
@@ -8957,6 +8995,7 @@ function startQuiz() {
   pushRecentIds(state.lang, q.category, q.age, q.difficulty, questions.map(x => x.id));
   state.quizSession = {
     ...q, questions, idx:0, score:0, correct:0, wrong:0, streak:0, bestStreak:0,
+    review:[],
     selected:null, answered:null, selectedOptionId:null, answeredOptionId:null, timeLeft:15, startedAt: Date.now(), durationMs:0,
     confettiShown: false, timerInterval:null, saved:false,
     language: state.lang, sessionId: 'qs_' + Date.now().toString(36) + Math.random().toString(36).slice(2,6)
@@ -8997,6 +9036,16 @@ function selectQuizAnswer(i) {
   const isCorrect = optionId !== null
     ? optionId === q.correctOptionId
     : i === q.correctPos;
+  // Record a per-question entry for the end-of-quiz learning recap.
+  const lang = s.language || state.lang;
+  const rawOpts = q['o_'+lang] || q.o;
+  const chosenOrig = i >= 0 ? (q.perm ? q.perm[i] : i) : -1;
+  (s.review || (s.review = [])).push({
+    q: (q.q && (q.q[lang] || q.q.en)) || '',
+    correct: isCorrect,
+    correctText: rawOpts[q.c],
+    chosenText: chosenOrig >= 0 ? rawOpts[chosenOrig] : null
+  });
   if (isCorrect) {
     s.correct++;
     s.streak++;
