@@ -8932,6 +8932,19 @@ function quizTimeForAge(age) {
   return QUIZ_TIME_BY_AGE[age] || 15;
 }
 
+// Recap fields for the end-of-quiz "What you learned" card, resolved in `lang`.
+// displayIndex is the index in the SHUFFLED option order, or -1 for a timeout.
+// Pure (no DOM/state) so it is unit-testable.
+function quizReviewFields(q, displayIndex, lang) {
+  const rawOpts = (q['o_'+lang]) || q.o || [];
+  const chosenOrig = displayIndex >= 0 ? (q.perm ? q.perm[displayIndex] : displayIndex) : -1;
+  return {
+    q: (q.q && (q.q[lang] || q.q.en)) || '',
+    correctText: rawOpts[q.c],
+    chosenText: chosenOrig >= 0 ? rawOpts[chosenOrig] : null
+  };
+}
+
 // --- recent-questions memory (keyed language:category:age:difficulty) ----
 function recentKey(lang, category, age, difficulty) {
   return [lang, category, age, difficulty].join(':');
@@ -9048,14 +9061,9 @@ function selectQuizAnswer(i) {
     ? optionId === q.correctOptionId
     : i === q.correctPos;
   // Record a per-question entry for the end-of-quiz learning recap.
-  const lang = s.language || state.lang;
-  const rawOpts = q['o_'+lang] || q.o;
-  const chosenOrig = i >= 0 ? (q.perm ? q.perm[i] : i) : -1;
   (s.review || (s.review = [])).push({
-    q: (q.q && (q.q[lang] || q.q.en)) || '',
-    correct: isCorrect,
-    correctText: rawOpts[q.c],
-    chosenText: chosenOrig >= 0 ? rawOpts[chosenOrig] : null
+    ...quizReviewFields(q, i, s.language || state.lang),
+    correct: isCorrect
   });
   if (isCorrect) {
     s.correct++;
