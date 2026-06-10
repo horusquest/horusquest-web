@@ -7705,6 +7705,310 @@ try { if (typeof window !== 'undefined'){ window.validateLetterRushWord = valida
 try { if (typeof module !== 'undefined' && module.exports){ module.exports.validateLetterRushWord = validateLetterRushWord; module.exports.ORAWORDS_LETTER_SETS = ORAWORDS_LETTER_SETS; module.exports.getLetterRushSets = getLetterRushSets; module.exports.pickLetterRushSet = pickLetterRushSet; } } catch (e) {}
 /* ====== LETTER RUSH END ====== */
 
+/* __MATHENGINE_START__ */
+/* OraMath pure engine — DOM-free, state-free, clock-free. Every random
+   function takes an injectable rng (defaults to Math.random) and every
+   date-dependent function takes the date key as an argument, so
+   tests/oramath-engine.test.js can extract and run this block in Node. */
+const MathEngine = (function () {
+  'use strict';
+
+  // The 6 site AGE_GROUPS collapse to the 3 OraMath difficulty bands.
+  // timeFactor widens/tightens time limits so the 6 groups still feel distinct.
+  const ORAMATH_AGE_BANDS = {
+    '5-7':    { band: '6-8',  timeFactor: 1.25 },
+    '8-10':   { band: '9-12', timeFactor: 1.10 },
+    '11-13':  { band: '9-12', timeFactor: 1.00 },
+    'teens':  { band: '13+',  timeFactor: 1.00 },
+    'adults': { band: '13+',  timeFactor: 0.90 },
+    'family': { band: '9-12', timeFactor: 1.15 }
+  };
+  function ageBandInfo(ageGroupId) { return ORAMATH_AGE_BANDS[ageGroupId] || ORAMATH_AGE_BANDS.family; }
+  function bandFor(ageGroupId) { return ageBandInfo(ageGroupId).band; }
+  function timeFactorFor(ageGroupId) { return ageBandInfo(ageGroupId).timeFactor; }
+
+  function ri(rng, min, max) { return min + Math.floor(rng() * (max - min + 1)); }
+  function pickFrom(rng, arr) { return arr[Math.floor(rng() * arr.length)]; }
+  function diffMult(difficulty) { return difficulty === 'hard' ? 1.5 : difficulty === 'medium' ? 1.25 : 1; }
+
+  /* ---- Operation generator (shared by Ora Sprint + ¿Verdad o Trampa?) ----
+     Invariants: answer is always a non-negative integer (sub operands ordered,
+     div exact, pct picked so the result is whole) — the Sprint keypad has no
+     minus key and no decimal point. */
+  const GEN_TABLE = {
+    '6-8': {
+      easy:   { kinds: ['add'],        max: 10 },
+      medium: { kinds: ['add', 'sub'], max: 20 },
+      hard:   { kinds: ['add', 'sub'], max: 50 }
+    },
+    '9-12': {
+      easy:   { kinds: ['mul'],                                  tables: [1, 5],  bRange: [1, 10] },
+      medium: { kinds: ['mul', 'div'],                           tables: [1, 10], bRange: [1, 10] },
+      hard:   { kinds: ['add', 'sub', 'mul', 'div', 'twoStep'],  tables: [2, 12], bRange: [2, 10], max: 100 }
+    },
+    '13+': {
+      easy:   { kinds: ['add', 'sub', 'mul', 'div'],             tables: [2, 12], bRange: [2, 12], max: 100 },
+      medium: { kinds: ['pct', 'pow', 'mul', 'div'],             tables: [2, 12], bRange: [2, 12], pcts: [10, 20, 25, 50, 75], pctOfMax: 200, powMax: 12 },
+      hard:   { kinds: ['chain'], chainMulMin: 11, chainMulMax: 25, chainAddMax: 50 }
+    }
+  };
+
+  function makeAdd(cell, rng) {
+    const a = ri(rng, 0, cell.max);
+    const b = ri(rng, 0, cell.max - a);
+    return { kind: 'add', a, b, answer: a + b, text: a + ' + ' + b };
+  }
+  function makeSub(cell, rng) {
+    const a = ri(rng, 1, cell.max);
+    const b = ri(rng, 0, a);
+    return { kind: 'sub', a, b, answer: a - b, text: a + ' − ' + b };
+  }
+  function makeMul(cell, rng) {
+    const a = ri(rng, cell.tables[0], cell.tables[1]);
+    const b = ri(rng, cell.bRange[0], cell.bRange[1]);
+    return { kind: 'mul', a, b, answer: a * b, text: a + ' × ' + b };
+  }
+  function makeDiv(cell, rng) {
+    const b = ri(rng, Math.max(2, cell.tables[0]), cell.tables[1]);
+    const q = ri(rng, 2, cell.bRange[1]);
+    const a = b * q;
+    return { kind: 'div', a, b, answer: q, text: a + ' ÷ ' + b };
+  }
+  function makeTwoStep(cell, rng) {
+    if (rng() < 0.5) {
+      const a = ri(rng, 2, 9), b = ri(rng, 2, 9), c = ri(rng, 1, 20);
+      return { kind: 'twoStep', a, b, c, op2: '+', answer: a * b + c, text: a + ' × ' + b + ' + ' + c };
+    }
+    const a = ri(rng, 2, 9), b = ri(rng, 2, 9);
+    const c = ri(rng, 1, a * b);
+    return { kind: 'twoStep', a, b, c, op2: '−', answer: a * b - c, text: a + ' × ' + b + ' − ' + c };
+  }
+  function makePct(cell, rng) {
+    const p = pickFrom(rng, cell.pcts);
+    // step keeps p% of base a whole number: base is a multiple of 100/gcd(p,100).
+    const gcd = (x, y) => y ? gcd(y, x % y) : x;
+    const step = 100 / gcd(p, 100);
+    const base = step * ri(rng, 1, Math.max(1, Math.floor(cell.pctOfMax / step)));
+    return { kind: 'pct', a: p, b: base, answer: p * base / 100, text: p + '% of ' + base };
+  }
+  function makePow(cell, rng) {
+    const base = ri(rng, 2, cell.powMax);
+    const exp = base <= 5 && rng() < 0.4 ? 3 : 2;
+    return { kind: 'pow', a: base, b: exp, answer: Math.pow(base, exp), text: '' + base + (exp === 3 ? '³' : '²') };
+  }
+  function makeChain(cell, rng) {
+    const a = ri(rng, cell.chainMulMin, cell.chainMulMax);
+    const b = ri(rng, 2, 9);
+    const minus = rng() < 0.5;
+    const c = ri(rng, 1, minus ? Math.min(cell.chainAddMax, a * b) : cell.chainAddMax);
+    return {
+      kind: 'chain', a, b, c, op2: minus ? '−' : '+',
+      answer: minus ? a * b - c : a * b + c,
+      text: '(' + a + ' × ' + b + ') ' + (minus ? '−' : '+') + ' ' + c
+    };
+  }
+  const OP_MAKERS = { add: makeAdd, sub: makeSub, mul: makeMul, div: makeDiv, twoStep: makeTwoStep, pct: makePct, pow: makePow, chain: makeChain };
+
+  function genOperation(band, difficulty, rng) {
+    rng = rng || Math.random;
+    const cell = (GEN_TABLE[band] || GEN_TABLE['9-12'])[difficulty] || GEN_TABLE['9-12'].easy;
+    return OP_MAKERS[pickFrom(rng, cell.kinds)](cell, rng);
+  }
+
+  /* ---- ¿Verdad o Trampa? trap generator ----
+     genTrapEquation returns structured fields so the truth of every statement
+     can be re-evaluated independently (the test does exactly that). `text` is
+     a canonical English form; the view localizes pct/divis wording. */
+  const TRAP_KINDS = ['off-by-delta', 'off-by-1', 'swap-digits', 'neighbor-table',
+                      'near-percent', 'flipped-comparison', 'false-divisibility', 'wrong-fraction'];
+
+  const TT_TABLE = {
+    '6-8': {
+      easy:   { src: ['add'],        traps: ['off-by-delta'], delta: 3, max: 10 },
+      medium: { src: ['add', 'sub'], traps: ['off-by-delta'], delta: 2, max: 20 },
+      hard:   { src: ['add', 'sub'], traps: ['off-by-1'],               max: 50 }
+    },
+    '9-12': {
+      easy:   { src: ['mul'],        traps: ['off-by-1', 'neighbor-table'],                 tables: [1, 5],  bRange: [1, 10] },
+      medium: { src: ['mul', 'div'], traps: ['off-by-1', 'swap-digits', 'neighbor-table'],  tables: [1, 10], bRange: [1, 10] },
+      hard:   { src: ['mul', 'div'], traps: ['swap-digits', 'neighbor-table'],              tables: [2, 12], bRange: [2, 10] }
+    },
+    '13+': {
+      easy:   { src: ['pct', 'frac'],   traps: ['near-percent', 'wrong-fraction'], pcts: [10, 25, 50, 75], pctOfMax: 200 },
+      medium: { src: ['compare'],       traps: ['flipped-comparison'] },
+      hard:   { src: ['divis', 'pct'],  traps: ['false-divisibility', 'near-percent'], pcts: [10, 20, 25, 75], pctOfMax: 200 }
+    }
+  };
+
+  function swapDigits(n, rng) {
+    const d = String(n).split('');
+    if (d.length < 2) return n;
+    const i = ri(rng, 0, d.length - 2);
+    const t = d[i]; d[i] = d[i + 1]; d[i + 1] = t;
+    if (d[0] === '0') return n; // would drop a digit — let caller fall back
+    return Number(d.join(''));
+  }
+
+  // Wrong-but-plausible shown value for an arithmetic/pct equality. Always ≠ answer, ≥ 0.
+  function trapShownValue(op, trapKind, cell, rng) {
+    const ans = op.answer;
+    if (trapKind === 'off-by-delta') {
+      const delta = ri(rng, 1, cell.delta || 1);
+      return ans - delta >= 0 && rng() < 0.5 ? ans - delta : ans + delta;
+    }
+    if (trapKind === 'off-by-1') return ans > 0 && rng() < 0.5 ? ans - 1 : ans + 1;
+    if (trapKind === 'swap-digits') return swapDigits(ans, rng); // may return ans — caller relabels as off-by-1
+    if (trapKind === 'neighbor-table') {
+      if (op.kind === 'mul') {
+        const s = rng() < 0.5 ? op.a * (op.b + (rng() < 0.5 && op.b > 1 ? -1 : 1)) : (op.a + (rng() < 0.5 && op.a > 1 ? -1 : 1)) * op.b;
+        return s !== ans ? s : ans + op.a;
+      }
+      return ans > 1 && rng() < 0.5 ? ans - 1 : ans + 1; // div: neighbouring quotient
+    }
+    if (trapKind === 'near-percent') {
+      const d = ri(rng, 1, Math.max(2, Math.round(ans * 0.15)));
+      return ans - d >= 0 && rng() < 0.5 ? ans - d : ans + d;
+    }
+    return ans + 1;
+  }
+
+  const FRAC_BASES = [[1, 2], [1, 3], [2, 3], [1, 4], [3, 4], [2, 5], [3, 5]];
+  const CMP_DENOMS = [2, 3, 4, 5, 8, 10];
+  const DIVIS_DIVISORS = [3, 4, 6, 7, 8, 9, 11];
+
+  function genTrapEquation(band, difficulty, rng) {
+    rng = rng || Math.random;
+    const cell = (TT_TABLE[band] || TT_TABLE['9-12'])[difficulty] || TT_TABLE['9-12'].easy;
+    const src = pickFrom(rng, cell.src);
+    const wantTrue = rng() < 0.5;
+
+    if (src === 'frac') {
+      const base = pickFrom(rng, FRAC_BASES);
+      const k = ri(rng, 2, 4);
+      const n1 = base[0] * k, d1 = base[1] * k;
+      if (wantTrue) {
+        return { kind: 'frac', n1, d1, n2: base[0], d2: base[1], isTrue: true, trapKind: null,
+                 text: n1 + '/' + d1 + ' = ' + base[0] + '/' + base[1] };
+      }
+      let n2 = base[0], d2 = base[1];
+      if (rng() < 0.5) n2 = n2 + (rng() < 0.5 && n2 > 1 ? -1 : 1); else d2 = d2 + 1;
+      if (n1 * d2 === n2 * d1) d2 = d2 + 1; // accidental equivalence — push it off
+      return { kind: 'frac', n1, d1, n2, d2, isTrue: false, trapKind: 'wrong-fraction',
+               text: n1 + '/' + d1 + ' = ' + n2 + '/' + d2 };
+    }
+
+    if (src === 'compare') {
+      const d = pickFrom(rng, CMP_DENOMS);
+      const n = ri(rng, 1, d - 1);
+      const v = n / d;
+      let w = Math.round((v + (rng() < 0.5 ? -1 : 1) * ri(rng, 5, 15) / 100) * 100) / 100;
+      if (w <= 0) w = Math.round((v + 0.07) * 100) / 100;
+      if (w === v) w = Math.round((w + 0.05) * 100) / 100;
+      const truthGt = v > w;
+      const cmp = wantTrue === truthGt ? '>' : '<';
+      const isTrue = cmp === '>' ? v > w : v < w;
+      return { kind: 'compare', n, d, w, cmp, isTrue, trapKind: isTrue ? null : 'flipped-comparison',
+               text: n + '/' + d + ' ' + cmp + ' ' + w };
+    }
+
+    if (src === 'divis') {
+      const b = pickFrom(rng, DIVIS_DIVISORS);
+      const k = ri(rng, 3, 12);
+      const a = wantTrue ? b * k : b * k + ri(rng, 1, b - 1);
+      return { kind: 'divis', a, b, isTrue: wantTrue, trapKind: wantTrue ? null : 'false-divisibility',
+               text: a + ' is divisible by ' + b };
+    }
+
+    // Arithmetic equality sources: add/sub/mul/div/pct — statement "op = shown".
+    const opCell = { max: cell.max, tables: cell.tables, bRange: cell.bRange, pcts: cell.pcts, pctOfMax: cell.pctOfMax };
+    const op = OP_MAKERS[src](opCell, rng);
+    if (wantTrue) {
+      return { kind: op.kind, a: op.a, b: op.b, shown: op.answer, isTrue: true, trapKind: null,
+               text: op.text + ' = ' + op.answer };
+    }
+    const applicable = cell.traps.filter(tk =>
+      (tk !== 'neighbor-table' || src === 'mul' || src === 'div') &&
+      (tk !== 'near-percent' || src === 'pct') &&
+      (tk !== 'swap-digits' || op.answer >= 10));
+    let trapKind = applicable.length ? pickFrom(rng, applicable) : 'off-by-1';
+    let shown = trapShownValue(op, trapKind, cell, rng);
+    if (shown === op.answer || shown < 0 || !Number.isInteger(shown)) {
+      trapKind = 'off-by-1';
+      shown = op.answer > 0 ? op.answer - 1 : op.answer + 1;
+    }
+    return { kind: op.kind, a: op.a, b: op.b, shown, isTrue: false, trapKind,
+             text: op.text + ' = ' + shown };
+  }
+
+  /* ---- ¿Verdad o Trampa? timing + scoring ---- */
+  function ttTimeLimitMs(band, streak, timeFactor) {
+    const base = { '6-8': 4000, '9-12': 3500, '13+': 3000 }[band] || 3500;
+    const floor = band === '6-8' ? 2500 : 1500;
+    return Math.round(Math.max(floor, base - streak * 150) * (timeFactor || 1));
+  }
+  function ttScoreFor(args) {
+    if (!args.correct) return 0;
+    const timeBonus = Math.round(50 * Math.max(0, args.timeLeftMs) / Math.max(1, args.timeLimitMs));
+    return Math.round((50 + timeBonus + Math.min(args.streak, 5) * 10) * diffMult(args.difficulty));
+  }
+
+  /* ---- Ora Sprint scoring ---- */
+  function sprintMultiplier(consecutive) { return Math.min(5, 1 + Math.floor(consecutive / 3)); }
+  function sprintScoreFor(args) { return Math.round(10 * sprintMultiplier(args.consecutive) * diffMult(args.difficulty)); }
+  function sprintBonusMs(answerMs) { return answerMs <= 3000 ? 2000 : 0; }
+
+  /* ---- XP + levels. Level L→L+1 costs L×100 XP. ---- */
+  function xpForGame(args) { return Math.max(5, Math.round((args.score / 10) * diffMult(args.difficulty))); }
+  function xpNeededFor(level) { return level * 100; }
+  function levelForXp(totalXp) {
+    let level = 1, rem = Math.max(0, Math.floor(totalXp || 0));
+    while (level < 999 && rem >= xpNeededFor(level)) { rem -= xpNeededFor(level); level++; }
+    const needed = xpNeededFor(level);
+    return { level, intoLevel: rem, needed, pct: Math.min(100, Math.round((rem / needed) * 100)) };
+  }
+
+  /* ---- Global OraMath daily streak (any OraMath game counts).
+     Callers MUST pass a LOCAL-date key (host todayKey() — getFullYear/getMonth/
+     getDate), never toISOString(), or post-midnight players lose their streak. */
+  function prevDayKey(dateKey) {
+    const p = String(dateKey).split('-').map(Number);
+    const d = new Date(Date.UTC(p[0], p[1] - 1, p[2]));
+    d.setUTCDate(d.getUTCDate() - 1);
+    return d.getUTCFullYear() + '-' + String(d.getUTCMonth() + 1).padStart(2, '0') + '-' + String(d.getUTCDate()).padStart(2, '0');
+  }
+  function updateDailyStreak(prev, today) {
+    if (prev && prev.last === today) return { days: prev.days, last: today, changed: false, milestone: null };
+    const days = (prev && prev.last === prevDayKey(today)) ? prev.days + 1 : 1;
+    const milestone = (days === 3 || days === 7 || days === 30) ? days : null;
+    return { days, last: today, changed: true, milestone };
+  }
+
+  /* ---- Personal records per gameMode|ageGroup|difficulty ---- */
+  function recordKey(gameMode, ageGroup, difficulty) { return gameMode + '|' + ageGroup + '|' + difficulty; }
+  function bestRecord(records, gameMode, ageGroup, difficulty) {
+    return (records && records[recordKey(gameMode, ageGroup, difficulty)]) || null;
+  }
+  function updateRecord(records, gameMode, ageGroup, difficulty, score, dateKey) {
+    const next = Object.assign({}, records || {});
+    const k = recordKey(gameMode, ageGroup, difficulty);
+    const cur = next[k];
+    if (!cur || score > cur.score) { next[k] = { score, date: dateKey }; return { records: next, isNew: true }; }
+    return { records: next, isNew: false };
+  }
+
+  // FUTURE (phase 2): badges/achievements registry.
+
+  return { ORAMATH_AGE_BANDS, bandFor, timeFactorFor, GEN_TABLE, TT_TABLE, TRAP_KINDS,
+           genOperation, genTrapEquation,
+           ttTimeLimitMs, ttScoreFor,
+           sprintMultiplier, sprintScoreFor, sprintBonusMs,
+           xpForGame, xpNeededFor, levelForXp,
+           prevDayKey, updateDailyStreak,
+           recordKey, bestRecord, updateRecord };
+})();
+try { if (typeof window !== 'undefined') window.MathEngine = MathEngine; } catch (e) {}
+/* __MATHENGINE_END__ */
+
 function viewOraQuestHome() {
   const seed = dailySeed();
   const dailyCat = CATEGORIES[seed % CATEGORIES.length];
