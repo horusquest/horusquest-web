@@ -117,6 +117,19 @@
 </style>
 </head>
 <body>
+<form name="contact" method="POST" action="/" data-netlify="true" netlify netlify-honeypot="bot-field" hidden>
+  <input type="hidden" name="form-name" value="contact" />
+  <p>
+    <label>Do not fill this out if you are human: <input name="bot-field" /></label>
+  </p>
+  <input type="text" name="displayName" />
+  <input type="email" name="email" />
+  <input type="text" name="topic" />
+  <textarea name="message"></textarea>
+  <input type="text" name="language" />
+  <input type="text" name="page" />
+  <input type="text" name="subject" value="New HorusQuest contact message" />
+</form>
 <div id="app" class="min-h-screen flex flex-col"></div>
 
 <!-- Cookie Banner (injected by JS) -->
@@ -588,7 +601,10 @@ const I18N = {
     contactTopic: 'Topic',
     contactMsg: 'Message',
     contactSend: 'Send message',
+    contactSending: 'Sending...',
     contactSent: 'Thanks — we got your message and will reply as soon as we can.',
+    contactError: 'Sorry, your message could not be sent. Please try again.',
+    contactMsgTooShort: 'Please write at least 10 characters so we can understand your message.',
     privacyTitle: 'Privacy Policy',
     cookiePolicyTitle: 'Cookie Policy',
     termsTitle: 'Terms of Service',
@@ -869,7 +885,10 @@ const I18N = {
     contactTopic: 'Tema',
     contactMsg: 'Mensaje',
     contactSend: 'Enviar mensaje',
+    contactSending: 'Enviando...',
     contactSent: 'Gracias, hemos recibido tu mensaje y responderemos lo antes posible.',
+    contactError: 'No se pudo enviar tu mensaje. Inténtalo de nuevo.',
+    contactMsgTooShort: 'Escribe al menos 10 caracteres para que podamos entender tu mensaje.',
     privacyTitle: 'Política de privacidad',
     cookiePolicyTitle: 'Política de cookies',
     termsTitle: 'Términos de servicio',
@@ -1150,7 +1169,10 @@ const I18N = {
     contactTopic: 'Sujet',
     contactMsg: 'Message',
     contactSend: 'Envoyer le message',
+    contactSending: 'Envoi...',
     contactSent: 'Merci — nous avons bien reçu ton message et te répondrons dès que possible.',
+    contactError: 'Désolé, ton message n\'a pas pu être envoyé. Réessaie.',
+    contactMsgTooShort: 'Écris au moins 10 caractères pour que nous puissions comprendre ton message.',
     privacyTitle: 'Politique de confidentialité',
     cookiePolicyTitle: 'Politique des cookies',
     termsTitle: 'Conditions d\'utilisation',
@@ -9708,18 +9730,25 @@ function aboutBody(){ return `
 `; }
 function contactBody(){ return `
   <p>${t('contactIntro')}</p>
-  <form onsubmit="event.preventDefault(); submitContact();" class="mt-4 space-y-3">
+  <form id="contact-form" name="contact" method="POST" action="/" data-netlify="true" netlify-honeypot="bot-field" onsubmit="submitContact(event)" class="mt-4 space-y-3">
+    <input type="hidden" name="form-name" value="contact" />
+    <input type="hidden" name="language" value="${escapeHtml(state.lang)}" />
+    <input type="hidden" name="page" value="${escapeHtml(pathFor('contact', state.lang))}" />
+    <input type="hidden" name="subject" value="New HorusQuest contact message" />
+    <p class="hide">
+      <label>Do not fill this out if you are human: <input name="bot-field" autocomplete="off" tabindex="-1" /></label>
+    </p>
     <div>
       <label class="text-sm font-medium">${t('contactName')}</label>
-      <input id="c-name" type="text" maxlength="50" class="mt-1 w-full px-3 py-2 rounded-lg border border-slate-200 focus-ring"/>
+      <input id="c-name" name="displayName" type="text" maxlength="50" autocomplete="name" class="mt-1 w-full px-3 py-2 rounded-lg border border-slate-200 focus-ring"/>
     </div>
     <div>
       <label class="text-sm font-medium">${t('contactEmail')}</label>
-      <input id="c-email" type="email" required class="mt-1 w-full px-3 py-2 rounded-lg border border-slate-200 focus-ring"/>
+      <input id="c-email" name="email" type="email" required autocomplete="email" class="mt-1 w-full px-3 py-2 rounded-lg border border-slate-200 focus-ring"/>
     </div>
     <div>
       <label class="text-sm font-medium">${t('contactTopic')}</label>
-      <select id="c-topic" class="mt-1 w-full px-3 py-2 rounded-lg border border-slate-200 focus-ring">
+      <select id="c-topic" name="topic" class="mt-1 w-full px-3 py-2 rounded-lg border border-slate-200 focus-ring">
         <option>${t('contactOptGeneral')}</option>
         <option>${t('reportBtn')}</option>
         <option>${t('contactOptCorrection')}</option>
@@ -9728,9 +9757,10 @@ function contactBody(){ return `
     </div>
     <div>
       <label class="text-sm font-medium">${t('contactMsg')}</label>
-      <textarea id="c-msg" required rows="5" class="mt-1 w-full px-3 py-2 rounded-lg border border-slate-200 focus-ring"></textarea>
+      <textarea id="c-msg" name="message" required rows="5" class="mt-1 w-full px-3 py-2 rounded-lg border border-slate-200 focus-ring"></textarea>
     </div>
-    <button class="btn-primary w-full">${t('contactSend')}</button>
+    <p id="contact-status" class="text-sm" aria-live="polite"></p>
+    <button id="contact-submit" type="submit" class="btn-primary w-full">${t('contactSend')}</button>
   </form>
 `; }
 function reportBody(){ return `
@@ -10448,7 +10478,66 @@ function generateGuestAlias() {
 }
 // Team create/join intentionally removed: there is no backend, so these only
 // faked success. The Teams page is now an honest "in development" notice.
-function submitContact() { toast(t('contactSent')); }
+const CONTACT_MESSAGE_MIN_LENGTH = 10;
+function setContactStatus(statusEl, message, ok) {
+  if (!statusEl) return;
+  statusEl.textContent = message || '';
+  statusEl.className = ok ? 'text-sm text-emerald-700' : 'text-sm text-rose-700';
+}
+async function submitContact(event) {
+  if (event) event.preventDefault();
+  const form = event && event.currentTarget ? event.currentTarget : document.getElementById('contact-form');
+  if (!form) return;
+  const statusEl = document.getElementById('contact-status');
+  const submitBtn = document.getElementById('contact-submit');
+  const messageEl = form.elements.message;
+  const message = messageEl ? messageEl.value.trim() : '';
+
+  setContactStatus(statusEl, '', true);
+  if (!form.reportValidity()) return;
+  if (message.length < CONTACT_MESSAGE_MIN_LENGTH) {
+    setContactStatus(statusEl, t('contactMsgTooShort'), false);
+    if (messageEl) messageEl.focus();
+    return;
+  }
+
+  const formData = new FormData(form);
+  formData.set('form-name', 'contact');
+  formData.set('language', state.lang);
+  formData.set('page', location.pathname || pathFor('contact', state.lang));
+
+  if (formData.get('bot-field')) {
+    setContactStatus(statusEl, t('contactSent'), true);
+    form.reset();
+    return;
+  }
+
+  const originalText = submitBtn ? submitBtn.textContent : '';
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.textContent = t('contactSending');
+  }
+  setContactStatus(statusEl, t('contactSending'), true);
+
+  try {
+    const response = await fetch('/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams(formData).toString()
+    });
+    if (!response.ok) throw new Error('Netlify Forms submission failed');
+    form.reset();
+    setContactStatus(statusEl, t('contactSent'), true);
+  } catch (err) {
+    console.error(err);
+    setContactStatus(statusEl, t('contactError'), false);
+  } finally {
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = originalText || t('contactSend');
+    }
+  }
+}
 function submitReport() { toast(t('toastReportThanks')); }
 // Dev-only diagnostics: logs to the console only off-production (localhost /
 // local file). Never sends anything to the network and adds no analytics.
