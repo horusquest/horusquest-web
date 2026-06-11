@@ -164,6 +164,7 @@ const LBCore = (function () {
     oraquest:     { key:'oraquest',     name:'OraQuest',  modes:['quiz-battle','daily-quest','general-quiz','family-quiz'] },
     guessora:     { key:'guessora',     name:'OraGuess',  modes:['guess-challenge'] },
     orawords:     { key:'orawords',     name:'OraWords',  modes:['spelling-sprint','vocabulary-quest','letter-rush','anagram-challenge','daily-quest'] },
+    oramath:      { key:'oramath',      name:'OraMath',   modes:['truth-or-trap','math-sprint'] },
     'team-quest': { key:'team-quest',   name:'Team Quest', modes:['team-quest'] }
   };
 
@@ -174,6 +175,7 @@ const LBCore = (function () {
     { id:'oraquest', gameKeys:['oraquest'] },
     { id:'guessora', gameKeys:['guessora'] },
     { id:'orawords', gameKeys:['orawords'] },
+    { id:'oramath',  gameKeys:['oramath'] },
     { id:'daily',    gameKeys:['oraquest'], modes:['daily-quest'] },
     { id:'teams',    gameKeys:['team-quest'] }
   ];
@@ -329,6 +331,7 @@ const ROUTE_PATHS = {
   universe: { en:'/ora-universe', es:'/es/universo-ora', fr:'/fr/univers-ora' },
   guess: { en:'/oraguess', es:'/es/oraguess', fr:'/fr/oraguess' },
   words: { en:'/words', es:'/es/palabras', fr:'/fr/mots' },
+  oramath: { en:'/oramath', es:'/es/oramath', fr:'/fr/oramath' },
   leaderboards: { en:'/leaderboards', es:'/es/clasificaciones', fr:'/fr/classements' },
   shop: { en:'/store', es:'/es/tienda', fr:'/fr/boutique' },
   parents: { en:'/for-families', es:'/es/familias', fr:'/fr/familles' },
@@ -392,6 +395,9 @@ const state = {
   streak: LS.get('ora.streak', { days: 0, last: null }),
   quiz: null, // active quiz session
   guess: null, // active guess session
+  mathSetup: null, // OraMath shared setup { ageGroup, difficulty }
+  mathTT: null, // active ¿Verdad o Trampa? session
+  mathSprint: null, // active Ora Sprint session
   toast: null,
   mobileMenu: false,
   langMenu: false,
@@ -627,6 +633,7 @@ const I18N = {
     lbTitleOraquest: 'OraQuest Leaderboard', lbSubOraquest: 'Quizzes, daily quests and knowledge challenges.',
     lbTitleGuessora: 'OraGuess Leaderboard', lbSubGuessora: 'Saved scores from the guessing game.',
     lbTitleOrawords: 'OraWords Leaderboard', lbSubOrawords: 'Word, vocabulary and beat-the-clock challenges.',
+    lbTabOramath: 'OraMath', lbTitleOramath: 'OraMath Leaderboard', lbSubOramath: 'Mental-maths sprints and true-or-trap challenges.',
     lbTitleDaily: 'Daily Quest Leaderboard', lbSubDaily: 'Scores from the daily challenge.',
     lbTitleTeams: 'Teams Leaderboard', lbSubTeams: 'Classroom and family team scores.',
     lbGame: 'Game', lbCategory: 'Category', lbDate: 'Date',
@@ -907,6 +914,7 @@ const I18N = {
     lbTitleOraquest: 'Clasificación de OraQuest', lbSubOraquest: 'Quizzes, retos diarios y desafíos de conocimiento.',
     lbTitleGuessora: 'Clasificación de OraGuess', lbSubGuessora: 'Puntuaciones guardadas del juego de adivinanzas.',
     lbTitleOrawords: 'Clasificación de OraWords', lbSubOrawords: 'Retos de palabras, vocabulario y juegos contra reloj.',
+    lbTabOramath: 'OraMath', lbTitleOramath: 'Clasificación de OraMath', lbSubOramath: 'Sprints de cálculo mental y retos de verdad o trampa.',
     lbTitleDaily: 'Clasificación del reto diario', lbSubDaily: 'Puntuaciones del reto diario.',
     lbTitleTeams: 'Clasificación de equipos', lbSubTeams: 'Puntuaciones de equipos de clase y familia.',
     lbGame: 'Juego', lbCategory: 'Categoría', lbDate: 'Fecha',
@@ -1187,6 +1195,7 @@ const I18N = {
     lbTitleOraquest: 'Classement OraQuest', lbSubOraquest: 'Quiz, défis du jour et défis de connaissances.',
     lbTitleGuessora: 'Classement OraGuess', lbSubGuessora: 'Scores enregistrés du jeu de devinettes.',
     lbTitleOrawords: 'Classement OraWords', lbSubOrawords: 'Défis de mots, de vocabulaire et contre la montre.',
+    lbTabOramath: 'OraMath', lbTitleOramath: 'Classement OraMath', lbSubOramath: 'Sprints de calcul mental et défis vrai ou piège.',
     lbTitleDaily: 'Classement du défi du jour', lbSubDaily: 'Scores du défi quotidien.',
     lbTitleTeams: 'Classement des équipes', lbSubTeams: 'Scores des équipes de classe et de famille.',
     lbGame: 'Jeu', lbCategory: 'Catégorie', lbDate: 'Date',
@@ -1264,6 +1273,14 @@ const I18N_EXT = {
     oraQuestProductSub:'Play family-friendly challenges for kids, teens, adults and families — guided by Ora, the wise quiz owl.',
     wordsTitle:'OraWords', wordsSub:'Word games, spelling, vocabulary and timed challenges in the HorusQuest universe.',
     wordsBody:'OraWords is the language-learning product in the HorusQuest ecosystem. This page introduces the word, spelling and vocabulary direction without listing fake games, prices or rankings. Active word challenges will appear here after they are reviewed and ready to play.',
+    mathTitle:'OraMath', mathSub:'Quick mental-maths games by age: spot the trap equation or race the clock in a 60-second sprint.',
+    mathBody:'OraMath is the maths corner of HorusQuest. Pick an age group and a difficulty, and train your number sense in short rounds guided by Ora — no account needed, and every game lasts under two minutes. Playing any OraMath game keeps your daily streak alive, earns XP and can beat your personal records.',
+    mathTTName:'Truth or Trap?', mathTTSub:'An equation flashes on screen — swipe to call it true or false before the bar runs out. Traps look almost right!',
+    mathSprintName:'Ora Sprint', mathSprintSub:'60 seconds of mental maths. Chain correct answers to grow your combo multiplier; fast answers add extra time.',
+    mathLevel:'Level', mathStreakDays:'day streak', mathPlayNow:'Play',
+    mathRecordLine:'Your record: {score} — can you beat it?', mathNoRecordYet:'No record for this combo yet — set the first one!',
+    mathMoreSoon:'More maths games are on the way: number puzzles, estimation challenges and a daily equation.',
+    mathShareText:'I scored {score} points in {game} on OraMath (HorusQuest)! Can you beat me? 🦉➗',
     faqWhatHorus:'What is HorusQuest?', faqWhatHorusA:'HorusQuest is the family-friendly learning universe guided by Ora, combining quizzes, guessing games, word challenges and future learning adventures.',
     faqWhatOraQuest:'What is OraQuest?', faqWhatGuess:'What is OraGuess?', faqWhatWords:'What is OraWords?', faqAccount:'Do I need an account?', faqChildren:'Is HorusQuest suitable for children?', faqAds:'Does HorusQuest show ads?', faqBoards:'How do leaderboards work?'
   },
@@ -1289,6 +1306,14 @@ const I18N_EXT = {
     oraQuestProductSub:'Juega retos para toda la familia — niños, adolescentes, adultos y familias — guiados por Ora, la búho sabia de los quizzes.',
     wordsTitle:'OraWords', wordsSub:'Juegos de palabras, ortografía, vocabulario y retos contra reloj dentro del universo HorusQuest.',
     wordsBody:'OraWords es el producto de aprendizaje lingüístico del ecosistema HorusQuest. Esta página presenta la dirección de palabras, ortografía y vocabulario sin inventar juegos, precios ni rankings. Los retos activos aparecerán aquí cuando estén revisados y listos para jugar.',
+    mathTitle:'OraMath', mathSub:'Juegos rápidos de cálculo mental por edad: detecta la igualdad trampa o corre contra el reloj en un sprint de 60 segundos.',
+    mathBody:'OraMath es el rincón de matemáticas de HorusQuest. Elige grupo de edad y dificultad y entrena tu sentido numérico en rondas cortas guiadas por Ora: sin cuenta y con partidas de menos de dos minutos. Jugar a cualquier juego de OraMath mantiene viva tu racha diaria, suma XP y puede batir tus récords personales.',
+    mathTTName:'¿Verdad o Trampa?', mathTTSub:'Aparece una igualdad en pantalla: desliza para decir si es verdadera o falsa antes de que se agote la barra. ¡Las trampas casi parecen correctas!',
+    mathSprintName:'Ora Sprint', mathSprintSub:'60 segundos de cálculo mental. Encadena aciertos para subir tu multiplicador de combo; responder rápido añade tiempo extra.',
+    mathLevel:'Nivel', mathStreakDays:'días de racha', mathPlayNow:'Jugar',
+    mathRecordLine:'Tu récord: {score} — ¿lo superas?', mathNoRecordYet:'Aún no hay récord para esta combinación. ¡Marca el primero!',
+    mathMoreSoon:'Más juegos de matemáticas en camino: puzzles numéricos, retos de estimación y una ecuación diaria.',
+    mathShareText:'¡Hice {score} puntos en {game} de OraMath (HorusQuest)! ¿Me superas? 🦉➗',
     faqWhatHorus:'¿Qué es HorusQuest?', faqWhatHorusA:'HorusQuest es el universo de aprendizaje familiar guiado por Ora, con quizzes, adivinanzas, retos de palabras y futuras aventuras educativas.',
     faqWhatOraQuest:'¿Qué es OraQuest?', faqWhatGuess:'¿Qué es OraGuess?', faqWhatWords:'¿Qué es OraWords?', faqAccount:'¿Necesito una cuenta?', faqChildren:'¿HorusQuest es apto para niños?', faqAds:'¿HorusQuest muestra anuncios?', faqBoards:'¿Cómo funcionan las clasificaciones?'
   },
@@ -1314,6 +1339,14 @@ const I18N_EXT = {
     oraQuestProductSub:'Joue à des défis adaptés aux enfants, aux adolescents, aux adultes et aux familles — guidés par Ora, la chouette sage des quiz.',
     wordsTitle:'OraWords', wordsSub:'Jeux de mots, orthographe, vocabulaire et défis chronométrés dans l’univers HorusQuest.',
     wordsBody:'OraWords est le produit d’apprentissage des langues dans l’écosystème HorusQuest. Cette page présente l’orientation mots, orthographe et vocabulaire sans inventer de jeux, de prix ni de classements. Les défis actifs apparaîtront ici après relecture et mise en ligne.',
+    mathTitle:'OraMath', mathSub:'Des jeux rapides de calcul mental par âge : repère l’égalité piège ou cours contre la montre dans un sprint de 60 secondes.',
+    mathBody:'OraMath est le coin maths de HorusQuest. Choisis un groupe d’âge et une difficulté et entraîne ton sens du nombre en manches courtes guidées par Ora — sans compte, et chaque partie dure moins de deux minutes. Jouer à n’importe quel jeu OraMath entretient ta série quotidienne, rapporte de l’XP et peut battre tes records personnels.',
+    mathTTName:'Vrai ou Piège ?', mathTTSub:'Une égalité s’affiche : glisse pour dire si elle est vraie ou fausse avant la fin de la barre. Les pièges ont l’air presque corrects !',
+    mathSprintName:'Ora Sprint', mathSprintSub:'60 secondes de calcul mental. Enchaîne les bonnes réponses pour augmenter ton multiplicateur de combo ; répondre vite ajoute du temps.',
+    mathLevel:'Niveau', mathStreakDays:'jours de série', mathPlayNow:'Jouer',
+    mathRecordLine:'Ton record : {score} — tu peux le battre ?', mathNoRecordYet:'Pas encore de record pour cette combinaison. Établis le premier !',
+    mathMoreSoon:'D’autres jeux de maths arrivent : puzzles numériques, défis d’estimation et une équation quotidienne.',
+    mathShareText:'J’ai marqué {score} points à {game} sur OraMath (HorusQuest) ! Tu fais mieux ? 🦉➗',
     faqWhatHorus:'Qu’est-ce que HorusQuest ?', faqWhatHorusA:'HorusQuest est l’univers d’apprentissage familial guidé par Ora, avec des quiz, des devinettes, des défis de mots et de futures aventures éducatives.',
     faqWhatOraQuest:'Qu’est-ce que OraQuest ?', faqWhatGuess:'Qu’est-ce que OraGuess ?', faqWhatWords:'Qu’est-ce que OraWords ?', faqAccount:'Ai-je besoin d’un compte ?', faqChildren:'HorusQuest convient-il aux enfants ?', faqAds:'HorusQuest affiche-t-il des publicités ?', faqBoards:'Comment fonctionnent les classements ?'
   }
@@ -1365,8 +1398,8 @@ const ORA_UNIVERSE_GAMES = [
     description:{ en:'Geography, flags and countries.', es:'Geografía, banderas y países.', fr:'Géographie, drapeaux et pays.' }
   },
   {
-    key:'oramath', name:'OraMath', status:'coming-soon', route:'universe', anchor:'oramath', icon:'➗', color:'from-amber-500 to-orange-500',
-    description:{ en:'Math challenges by age.', es:'Retos de matemáticas por edad.', fr:'Défis de mathématiques par âge.' }
+    key:'oramath', name:'OraMath', status:'live', route:'oramath', icon:'➗', color:'from-amber-500 to-orange-500',
+    description:{ en:'Mental-maths games and challenges by age.', es:'Juegos y retos de cálculo mental por edad.', fr:'Jeux et défis de calcul mental par âge.' }
   }
 ];
 // Honest detail for the not-yet-released universe games: what players will
@@ -1377,18 +1410,6 @@ const COMING_SOON_INFO = {
       en: 'Geography for curious explorers: continents, countries, capitals, flags and famous landmarks, through friendly map-based challenges with short explanations.',
       es: 'Geografía para exploradores curiosos: continentes, países, capitales, banderas y monumentos famosos, mediante retos con mapas y explicaciones breves.',
       fr: 'La géographie pour les explorateurs curieux : continents, pays, capitales, drapeaux et monuments célèbres, via des défis cartographiques avec de courtes explications.'
-    },
-    status: {
-      en: 'In early development. There is no release date yet — when it is ready we will announce it here and on the Ora Universe page.',
-      es: 'En desarrollo inicial. Aún no hay fecha de lanzamiento; cuando esté listo lo anunciaremos aquí y en la página Universo Ora.',
-      fr: 'En début de développement. Il n’y a pas encore de date de sortie ; lorsqu’il sera prêt, nous l’annoncerons ici et sur la page Univers Ora.'
-    }
-  },
-  oramath: {
-    learn: {
-      en: 'Mental-maths practice by age: number sense, arithmetic, patterns and simple problem-solving, with clear explanations instead of time pressure.',
-      es: 'Práctica de cálculo mental por edad: sentido numérico, aritmética, patrones y resolución de problemas sencillos, con explicaciones claras y sin presión de tiempo.',
-      fr: 'Entraînement au calcul mental par âge : sens du nombre, arithmétique, motifs et résolution de problèmes simples, avec des explications claires plutôt que la pression du temps.'
     },
     status: {
       en: 'In early development. There is no release date yet — when it is ready we will announce it here and on the Ora Universe page.',
@@ -1415,6 +1436,10 @@ const GAME_GUIDE = {
   words: {
     skill: { en:'Spelling, vocabulary and word patterns in several languages', es:'Ortografía, vocabulario y patrones de palabras en varios idiomas', fr:'Orthographe, vocabulaire et structures de mots en plusieurs langues' },
     ages:  { en:'Readers of all ages', es:'Lectores de todas las edades', fr:'Lecteurs de tous âges' }
+  },
+  oramath: {
+    skill: { en:'Mental arithmetic and number sense, scaled to your age and difficulty', es:'Cálculo mental y sentido numérico, adaptados a tu edad y dificultad', fr:'Calcul mental et sens du nombre, adaptés à ton âge et à ta difficulté' },
+    ages:  { en:'Ages 5–7 to adults, plus a family mode', es:'De 5–7 años a adultos, con modo familia', fr:'De 5–7 ans aux adultes, avec un mode famille' }
   }
 };
 // Plain explanation of how Quiz points are calculated. These numbers mirror
@@ -5952,6 +5977,7 @@ function updateMeta() {
     play: { title:{en:'Play HorusQuest Games', es:'Jugar a HorusQuest', fr:'Jouer aux jeux HorusQuest'}, desc:{en:t('playSub'), es:t('playSub'), fr:t('playSub')} },
     universe: { title:{en:'Ora Universe — HorusQuest', es:'Universo Ora — HorusQuest', fr:'Univers Ora — HorusQuest'}, desc:{en:t('universeSub'), es:t('universeSub'), fr:t('universeSub')} },
     words: { title:{en:'OraWords — Word Games by HorusQuest', es:'OraWords — Juegos de palabras de HorusQuest', fr:'OraWords — Jeux de mots par HorusQuest'}, desc:{en:t('wordsSub'), es:t('wordsSub'), fr:t('wordsSub')} },
+    oramath: { title:{en:'OraMath — Mental Maths Games by HorusQuest', es:'OraMath — Juegos de cálculo mental de HorusQuest', fr:'OraMath — Jeux de calcul mental par HorusQuest'}, desc:{en:t('mathSub'), es:t('mathSub'), fr:t('mathSub')} },
     shop: {
       title: { en:'Official HorusQuest Merchandise — Ora T-shirts and Mugs', es:t('shopTitle') + ' — HorusQuest', fr:t('shopTitle') + ' — HorusQuest' },
       desc: { en:'Family-friendly Ora T-shirts and mugs for curious minds, fulfilled through print-on-demand partners.', es:t('shopSub'), fr:t('shopSub') }
@@ -6122,7 +6148,7 @@ function Footer() {
   const cols = [
     { t:'HorusQuest', d:t('hqBadge')+'. '+t('trustCopy') },
     { t:t('navPlay'), links:[
-      ['play', t('navPlay')],['oraquest', 'OraQuest'],['guess', 'OraGuess'],['words', 'OraWords'],['leaderboards', t('navLeader')]
+      ['play', t('navPlay')],['oraquest', 'OraQuest'],['guess', 'OraGuess'],['words', 'OraWords'],['oramath', 'OraMath'],['leaderboards', t('navLeader')]
     ]},
     { t:t('navUniverse'), links:[
       ['universe', t('navUniverse')],['parents', t('navFamilies')],['teams', t('navTeams')+' · '+t('comingSoon')],['blog', t('navBlog')],['shop', t('navShop')]
@@ -6156,7 +6182,7 @@ function Footer() {
         </div>
         <p class="text-slate-500">${t('footerTag')}</p>
       </div>
-      <p class="mt-4 text-xs text-slate-500">© ${new Date().getFullYear()} HorusQuest. OraQuest, OraGuess and OraWords are products in the HorusQuest universe.</p>
+      <p class="mt-4 text-xs text-slate-500">© ${new Date().getFullYear()} HorusQuest. OraQuest, OraGuess, OraWords and OraMath are products in the HorusQuest universe.</p>
     </div>
   </footer>`;
 }
@@ -6462,6 +6488,7 @@ function viewPlay() {
     { route:'oraquest', icon:'✨', title:t('playOraQuest'), desc:t('oraQuestProductSub') },
     { route:'guess', icon:'🔍', title:t('playGuessOra'), desc:pick(ORA_UNIVERSE_GAMES[0].description) },
     { route:'words', icon:'🔤', title:t('exploreOraWords'), desc:t('wordsSub') },
+    { route:'oramath', icon:'➗', title:t('mathTitle'), desc:t('mathSub') },
     { route:'leaderboards', icon:'🏆', title:t('viewLeaderboards'), desc:t('lbAllSub') },
     { route:'parents', icon:'👥', title:t('familyTeams'), desc:t('teamHelp') }
   ];
@@ -8009,6 +8036,163 @@ const MathEngine = (function () {
 try { if (typeof window !== 'undefined') window.MathEngine = MathEngine; } catch (e) {}
 /* __MATHENGINE_END__ */
 
+/* ====== ORAMATH (retention core + hub) ====== */
+const ORAMATH_LS = { profile:'oramath:profile', streak:'oramath:streak', records:'oramath:records' };
+function loadMathProfile(){ const p = LS.get(ORAMATH_LS.profile, null); return p && typeof p.xp === 'number' ? p : { xp:0, games:0 }; }
+function saveMathProfile(p){ LS.set(ORAMATH_LS.profile, p); }
+function loadMathStreak(){ return LS.get(ORAMATH_LS.streak, null); }
+function loadMathRecords(){ return LS.get(ORAMATH_LS.records, {}) || {}; }
+
+// Streak as shown on the hub: alive if last play was today or yesterday.
+function mathActiveStreakDays(){
+  const st = loadMathStreak();
+  if (!st || !st.last) return 0;
+  const today = todayKey();
+  return (st.last === today || st.last === MathEngine.prevDayKey(today)) ? st.days : 0;
+}
+
+/* Single funnel every OraMath game calls when a session ends: saves the score
+   to the leaderboard, updates the personal record, adds XP and advances the
+   global OraMath daily streak. Returns everything the results screen needs. */
+function finishMathGame(args){
+  try {
+    const rec = LBCore.makeScoreRecord({
+      gameKey:'oramath', gameMode:args.gameMode, language:state.lang,
+      ageGroup:args.ageGroup, difficulty:args.difficulty,
+      score:args.score, accuracy:args.accuracy, durationMs:args.durationMs
+    });
+    state.guestScores.unshift(rec);
+    LS.set(SCORES_KEY, state.guestScores);
+  } catch (e) {}
+  // todayKey() is LOCAL-date based on purpose: a UTC key (toISOString) would
+  // break streaks for anyone playing after local midnight.
+  const today = todayKey();
+  const upd = MathEngine.updateRecord(loadMathRecords(), args.gameMode, args.ageGroup, args.difficulty, args.score, today);
+  LS.set(ORAMATH_LS.records, upd.records);
+  const profile = loadMathProfile();
+  const levelBefore = MathEngine.levelForXp(profile.xp).level;
+  const xpGained = MathEngine.xpForGame({ score:args.score, difficulty:args.difficulty });
+  profile.xp += xpGained;
+  profile.games = (profile.games || 0) + 1;
+  saveMathProfile(profile);
+  const levelAfter = MathEngine.levelForXp(profile.xp).level;
+  const streak = MathEngine.updateDailyStreak(loadMathStreak(), today);
+  LS.set(ORAMATH_LS.streak, { days:streak.days, last:streak.last });
+  return { xpGained, leveledUp: levelAfter > levelBefore, newLevel: levelAfter,
+           recordIsNew: upd.isNew, streakDays: streak.days, milestone: streak.milestone };
+}
+
+function mathSetupOrDefault(){
+  if (!state.mathSetup) state.mathSetup = { ageGroup:'family', difficulty:'easy' };
+  return state.mathSetup;
+}
+// Full render() on every change so the record line always reflects the
+// currently selected mode|ageGroup|difficulty combo (never a cached one).
+function selectMathOption(key, val){ mathSetupOrDefault()[key] = val; render(); }
+
+function mathRecordLineHtml(gameMode){
+  const su = mathSetupOrDefault();
+  const rec = MathEngine.bestRecord(loadMathRecords(), gameMode, su.ageGroup, su.difficulty);
+  return rec
+    ? '<p class="mt-5 text-sm font-semibold text-amber-700">🏅 ' + t('mathRecordLine').replace('{score}', rec.score) + '</p>'
+    : '<p class="mt-5 text-sm text-slate-500">' + t('mathNoRecordYet') + '</p>';
+}
+
+// Shared age + difficulty selector grids for both game setup screens.
+function mathSetupGridsHtml(){
+  const su = mathSetupOrDefault();
+  return ''
+    + '<div>'
+    + '  <h2 class="font-semibold mb-3">' + t('pickAge') + '</h2>'
+    + '  <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2">'
+    + AGE_GROUPS.map(a => ''
+        + '<button onclick="selectMathOption(\'ageGroup\',\'' + a.id + '\')" class="select-cell p-3 text-center ' + (su.ageGroup===a.id?'is-selected border-brand-violet bg-violet-50':'border-slate-200') + ' focus-ring">'
+        + '  <div class="text-2xl">' + a.emoji + '</div>'
+        + '  <div class="text-xs font-semibold mt-1">' + ageName(a) + '</div>'
+        + '</button>').join('')
+    + '  </div>'
+    + '</div>'
+    + '<div>'
+    + '  <h2 class="font-semibold mb-3">' + t('pickDiff') + '</h2>'
+    + '  <div class="grid grid-cols-3 gap-2">'
+    + ['easy','medium','hard'].map(d => ''
+        + '<button onclick="selectMathOption(\'difficulty\',\'' + d + '\')" class="select-cell p-3 text-center ' + (su.difficulty===d?'is-selected border-brand-violet bg-violet-50':'border-slate-200') + ' focus-ring">'
+        + '  <div class="font-semibold capitalize">' + t('difficulty' + d.charAt(0).toUpperCase() + d.slice(1)) + '</div>'
+        + '</button>').join('')
+    + '  </div>'
+    + '</div>';
+}
+
+function mathPlayerPanelHtml(){
+  const profile = loadMathProfile();
+  const lv = MathEngine.levelForXp(profile.xp);
+  const days = mathActiveStreakDays();
+  const nextMilestone = days < 3 ? 3 : days < 7 ? 7 : days < 30 ? 30 : null;
+  const milestoneHint = nextMilestone === null ? '' : pick({
+    en:(nextMilestone-days) + ' more day' + (nextMilestone-days===1?'':'s') + ' to a ' + nextMilestone + '-day streak!',
+    es:'¡' + (nextMilestone-days) + ' día' + (nextMilestone-days===1?'':'s') + ' más para la racha de ' + nextMilestone + '!',
+    fr:'Encore ' + (nextMilestone-days) + ' jour' + (nextMilestone-days===1?'':'s') + ' pour la série de ' + nextMilestone + ' !'
+  });
+  return ''
+    + '<section class="card p-5 md:p-6" aria-label="' + pick({en:'Your OraMath progress',es:'Tu progreso en OraMath',fr:'Ta progression OraMath'}) + '">'
+    + '  <div class="flex flex-wrap items-center gap-x-6 gap-y-3">'
+    + '    <div class="flex items-center gap-3">'
+    + '      <span class="w-11 h-11 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center text-lg font-bold text-white">' + lv.level + '</span>'
+    + '      <div>'
+    + '        <div class="text-sm font-bold text-slate-900">' + t('mathLevel') + ' ' + lv.level + '</div>'
+    + '        <div class="text-xs text-slate-500">' + lv.intoLevel + ' / ' + lv.needed + ' XP</div>'
+    + '      </div>'
+    + '    </div>'
+    + '    <div class="flex-1 min-w-[10rem]">'
+    + '      <div class="h-3 rounded-full bg-slate-100 overflow-hidden" role="progressbar" aria-valuenow="' + lv.pct + '" aria-valuemin="0" aria-valuemax="100">'
+    + '        <div class="h-full rounded-full bg-gradient-to-r from-amber-400 to-orange-500" style="width:' + lv.pct + '%"></div>'
+    + '      </div>'
+    + '    </div>'
+    + '    <div class="text-right">'
+    + '      <div class="text-sm font-bold text-slate-900">🔥 ' + days + ' ' + t('mathStreakDays') + '</div>'
+    + (milestoneHint ? '      <div class="text-xs text-slate-500">' + milestoneHint + '</div>' : '')
+    + '    </div>'
+    + '  </div>'
+    + '</section>';
+}
+
+function viewOraMath(){
+  const mode = state.params.mode || 'hub';
+  const gameCards = [
+    { mode:'truth-or-trap', icon:'🎭', name:t('mathTTName'), blurb:t('mathTTSub') },
+    { mode:'math-sprint', icon:'⚡', name:t('mathSprintName'), blurb:t('mathSprintSub') }
+  ].map(g => ''
+    + '<button onclick="go(\'oramath\',{mode:\'' + g.mode + '\'})" class="card card-hover p-5 text-left focus-ring">'
+    + '  <div class="text-3xl" aria-hidden="true">' + g.icon + '</div>'
+    + '  <h2 class="mt-3 font-display text-xl font-bold">' + g.name + '</h2>'
+    + '  <p class="mt-2 text-sm text-slate-600">' + g.blurb + '</p>'
+    + '  <span class="mt-3 inline-block text-sm font-semibold text-brand-violet">▶ ' + t('mathPlayNow') + '</span>'
+    + '</button>').join('');
+  return ''
+    + '<div class="min-h-screen bg-slate-50">'
+    + Header()
+    + '<main class="max-w-5xl mx-auto px-4 sm:px-6 py-10">'
+    + '  <section class="text-center max-w-3xl mx-auto">'
+    + '    <span class="chip bg-amber-100 text-amber-800">➗ OraMath · HorusQuest</span>'
+    + '    <h1 class="mt-4 font-display text-4xl md:text-5xl font-bold">' + t('mathTitle') + '</h1>'
+    + '    <p class="mt-4 text-lg text-slate-600">' + t('mathSub') + '</p>'
+    + '    <p class="mt-4 text-slate-600 leading-relaxed">' + t('mathBody') + '</p>'
+    + '  </section>'
+    + '  <div class="mt-8">' + mathPlayerPanelHtml() + '</div>'
+    + '  <div class="mt-6 grid sm:grid-cols-2 gap-5">'
+    + gameCards
+    + '    <div class="card p-5 opacity-70" aria-disabled="true">'
+    + '      <div class="text-3xl" aria-hidden="true">🧩</div>'
+    + '      <h2 class="mt-3 font-display text-xl font-bold">' + t('comingSoon') + '</h2>'
+    + '      <p class="mt-2 text-sm text-slate-600">' + t('mathMoreSoon') + '</p>'
+    + '    </div>'
+    + '  </div>'
+    + '</main>'
+    + Footer()
+    + '</div>';
+}
+/* ====== ORAMATH END ====== */
+
 function viewOraQuestHome() {
   const seed = dailySeed();
   const dailyCat = CATEGORIES[seed % CATEGORIES.length];
@@ -8701,6 +8885,7 @@ const LB_TAB_META = {
   oraquest: { titleKey:'lbTitleOraquest', subKey:'lbSubOraquest', labelKey:'lbTabOraquest' },
   guessora: { titleKey:'lbTitleGuessora', subKey:'lbSubGuessora', labelKey:'lbTabGuessora' },
   orawords: { titleKey:'lbTitleOrawords', subKey:'lbSubOrawords', labelKey:'lbTabOrawords' },
+  oramath:  { titleKey:'lbTitleOramath',  subKey:'lbSubOramath',  labelKey:'lbTabOramath' },
   daily:    { titleKey:'lbTitleDaily',    subKey:'lbSubDaily',    labelKey:'lbTabDaily' },
   teams:    { titleKey:'lbTitleTeams',    subKey:'lbSubTeams',    labelKey:'lbTabTeams' }
 };
@@ -9826,6 +10011,7 @@ function render() {
     case 'oraquest': html = viewOraQuestHome(); break;
     case 'universe': html = viewOraUniverse(); break;
     case 'words': html = viewWords(); break;
+    case 'oramath': html = viewOraMath(); break;
     case 'quiz': html = viewQuizSetup(); break;
     case 'quiz-play': html = viewQuizPlay(); break;
     case 'quiz-results': html = viewQuizResults(); break;
