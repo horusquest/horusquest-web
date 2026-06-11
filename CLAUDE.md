@@ -12,13 +12,13 @@ Static files served at the site root (must stay versioned, they deploy):
 
 `netlify.toml` routing:
 - legacy `301`: `/shop→/store`, `/guessora→/oraguess` (+ `es`/`fr` variants)
-- `200` rewrites: an explicit allow-list of the **63 valid routes** → `/OraQuest.html`
+- `200` rewrites: an explicit allow-list of the **66 valid routes** → `/OraQuest.html`
 - catch-all `/* → /404.html` with **status 404** (real 404, no soft-404)
 - real static files win over redirects (Netlify default `force = false`)
 
 ### ⚠️ Keep these in sync with `ROUTE_PATHS` (in `OraQuest.html`)
 `sitemap.xml` and `netlify.toml` are **generated mirrors** of `ROUTE_PATHS`
-(21 routes × 3 langs = 63 URLs). If routes change, regenerate:
+(22 routes × 3 langs = 66 URLs). If routes change, regenerate:
 
 ```
 node tools/_gen-sitemap.js     # rewrites sitemap.xml
@@ -80,6 +80,39 @@ Fixed the "tigre → oso" unfairness (generic clues + harsh scoring):
 Pending (approved plan, NOT yet done): difficulty/category selector for OraGuess,
 large animal-bank expansion (e.g. leopard/jaguar/puma), possible new categories,
 and any later tests/UX polish.
+
+## OraMath (maths games) — Fase 1 done
+
+Route `oramath` (`/oramath` + es/fr, indexable), modes via `state.params.mode`
+like OraWords. Pure logic lives in the `__MATHENGINE_START__/END__` sentinel
+block (`MathEngine` IIFE: injectable rng/date, no DOM/state/clock) — tested by
+`tests/oramath-engine.test.js` (34 tests, seeded mulberry32 property tests).
+
+- **Age mapping:** UI uses the site's 6 `AGE_GROUPS`; `ORAMATH_AGE_BANDS`
+  collapses them to the spec's 3 bands (`6-8`/`9-12`/`13+`) + `timeFactor`.
+  Leaderboard records keep the real ageGroup id.
+- **Retention core:** `oramath:profile` (XP; level L→L+1 costs L×100),
+  `oramath:streak` (global daily streak, **local-date** `todayKey()`, milestones
+  3/7/30), `oramath:records` (per `mode|ageGroup|difficulty`, strictly-higher
+  replaces). `finishMathGame()` is the end-of-game funnel for record + XP +
+  streak; the leaderboard save is a separate, optional step on the results
+  screen via `saveMathScore()` (3–4 char alias card, same validation flow as
+  Quiz/OraGuess `saveScore()`). The suspicious flag is intentionally NOT set
+  (Sprint legitimately has <1.5s answers).
+- **¿Verdad o Trampa?** (`truth-or-trap`): trap equations from `TT_TABLE`
+  (engine re-checks falseness; accidental truths fall back to off-by-1 — the
+  property test re-evaluates every statement independently). Time bar is a pure
+  CSS animation; the `.tt-bar` node is **recreated per question** (same-node
+  reuse would freeze it). Swipe via pointer events (`touch-action:pan-y`),
+  buttons + ←/→ keys as accessible path. 3 lives, per-question `setTimeout`
+  with route/session guards.
+- **Ora Sprint** (`math-sprint`): 60s, `endsAt`-based (+2s bonus = `endsAt +=
+  2000`), 250ms interval that self-clears via guards, custom on-screen keypad
+  (no `<input>` → OS keyboard never opens), combo ×(1+⌊n/3⌋) cap ×5.
+- **Leaderboards page** now renders `LeaderboardTabs()` (was locked to the
+  OraQuest tab); OraMath has its own tab via `LB_TAB_META`.
+- Pending (spec approved, NOT built): NumDrop, Camino Mágico, EquaCode (daily),
+  Ojo de Ora, achievements/badges, OraMath share emoji-grids.
 
 ## Validation
 - `npm run lint` — lints the inline `<script>` block

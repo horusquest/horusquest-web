@@ -78,6 +78,13 @@
   .fade-in { animation: fadeIn .35s ease both; }
   @keyframes fadeIn { from { opacity:0; transform: translateY(8px);} to { opacity:1; transform: translateY(0);} }
   .confetti { position: fixed; width:10px; height:14px; top:-20px; z-index: 9999; pointer-events:none; animation: fall 2.2s linear forwards; }
+  /* OraMath · ¿Verdad o Trampa?: the time bar is a pure CSS animation; the bar
+     node is recreated with each question card so the animation restarts. */
+  .tt-bar { transform-origin: left; animation-name: ttShrink; animation-timing-function: linear; animation-fill-mode: forwards; }
+  @keyframes ttShrink { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+  .tt-card { touch-action: pan-y; user-select: none; -webkit-user-select: none; cursor: grab; }
+  .ms-key { min-height: 3.5rem; font-size: 1.5rem; font-weight: 700; border-radius: 0.75rem; border: 2px solid rgb(226 232 240); background: white; touch-action: manipulation; user-select: none; -webkit-user-select: none; }
+  .ms-key:active { background: rgb(237 233 254); border-color: rgb(124 58 237); }
   @keyframes fall { to { transform: translateY(110vh) rotate(720deg); opacity:0; } }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
   /* Ora the owl mascot animations */
@@ -164,6 +171,7 @@ const LBCore = (function () {
     oraquest:     { key:'oraquest',     name:'OraQuest',  modes:['quiz-battle','daily-quest','general-quiz','family-quiz'] },
     guessora:     { key:'guessora',     name:'OraGuess',  modes:['guess-challenge'] },
     orawords:     { key:'orawords',     name:'OraWords',  modes:['spelling-sprint','vocabulary-quest','letter-rush','anagram-challenge','daily-quest'] },
+    oramath:      { key:'oramath',      name:'OraMath',   modes:['truth-or-trap','math-sprint'] },
     'team-quest': { key:'team-quest',   name:'Team Quest', modes:['team-quest'] }
   };
 
@@ -174,6 +182,7 @@ const LBCore = (function () {
     { id:'oraquest', gameKeys:['oraquest'] },
     { id:'guessora', gameKeys:['guessora'] },
     { id:'orawords', gameKeys:['orawords'] },
+    { id:'oramath',  gameKeys:['oramath'] },
     { id:'daily',    gameKeys:['oraquest'], modes:['daily-quest'] },
     { id:'teams',    gameKeys:['team-quest'] }
   ];
@@ -329,6 +338,7 @@ const ROUTE_PATHS = {
   universe: { en:'/ora-universe', es:'/es/universo-ora', fr:'/fr/univers-ora' },
   guess: { en:'/oraguess', es:'/es/oraguess', fr:'/fr/oraguess' },
   words: { en:'/words', es:'/es/palabras', fr:'/fr/mots' },
+  oramath: { en:'/oramath', es:'/es/oramath', fr:'/fr/oramath' },
   leaderboards: { en:'/leaderboards', es:'/es/clasificaciones', fr:'/fr/classements' },
   shop: { en:'/store', es:'/es/tienda', fr:'/fr/boutique' },
   parents: { en:'/for-families', es:'/es/familias', fr:'/fr/familles' },
@@ -392,6 +402,9 @@ const state = {
   streak: LS.get('ora.streak', { days: 0, last: null }),
   quiz: null, // active quiz session
   guess: null, // active guess session
+  mathSetup: null, // OraMath shared setup { ageGroup, difficulty }
+  mathTT: null, // active ¿Verdad o Trampa? session
+  mathSprint: null, // active Ora Sprint session
   toast: null,
   mobileMenu: false,
   langMenu: false,
@@ -627,6 +640,7 @@ const I18N = {
     lbTitleOraquest: 'OraQuest Leaderboard', lbSubOraquest: 'Quizzes, daily quests and knowledge challenges.',
     lbTitleGuessora: 'OraGuess Leaderboard', lbSubGuessora: 'Saved scores from the guessing game.',
     lbTitleOrawords: 'OraWords Leaderboard', lbSubOrawords: 'Word, vocabulary and beat-the-clock challenges.',
+    lbTabOramath: 'OraMath', lbTitleOramath: 'OraMath Leaderboard', lbSubOramath: 'Mental-maths sprints and true-or-trap challenges.',
     lbTitleDaily: 'Daily Quest Leaderboard', lbSubDaily: 'Scores from the daily challenge.',
     lbTitleTeams: 'Teams Leaderboard', lbSubTeams: 'Classroom and family team scores.',
     lbGame: 'Game', lbCategory: 'Category', lbDate: 'Date',
@@ -907,6 +921,7 @@ const I18N = {
     lbTitleOraquest: 'Clasificación de OraQuest', lbSubOraquest: 'Quizzes, retos diarios y desafíos de conocimiento.',
     lbTitleGuessora: 'Clasificación de OraGuess', lbSubGuessora: 'Puntuaciones guardadas del juego de adivinanzas.',
     lbTitleOrawords: 'Clasificación de OraWords', lbSubOrawords: 'Retos de palabras, vocabulario y juegos contra reloj.',
+    lbTabOramath: 'OraMath', lbTitleOramath: 'Clasificación de OraMath', lbSubOramath: 'Sprints de cálculo mental y retos de verdad o trampa.',
     lbTitleDaily: 'Clasificación del reto diario', lbSubDaily: 'Puntuaciones del reto diario.',
     lbTitleTeams: 'Clasificación de equipos', lbSubTeams: 'Puntuaciones de equipos de clase y familia.',
     lbGame: 'Juego', lbCategory: 'Categoría', lbDate: 'Fecha',
@@ -1187,6 +1202,7 @@ const I18N = {
     lbTitleOraquest: 'Classement OraQuest', lbSubOraquest: 'Quiz, défis du jour et défis de connaissances.',
     lbTitleGuessora: 'Classement OraGuess', lbSubGuessora: 'Scores enregistrés du jeu de devinettes.',
     lbTitleOrawords: 'Classement OraWords', lbSubOrawords: 'Défis de mots, de vocabulaire et contre la montre.',
+    lbTabOramath: 'OraMath', lbTitleOramath: 'Classement OraMath', lbSubOramath: 'Sprints de calcul mental et défis vrai ou piège.',
     lbTitleDaily: 'Classement du défi du jour', lbSubDaily: 'Scores du défi quotidien.',
     lbTitleTeams: 'Classement des équipes', lbSubTeams: 'Scores des équipes de classe et de famille.',
     lbGame: 'Jeu', lbCategory: 'Catégorie', lbDate: 'Date',
@@ -1264,6 +1280,14 @@ const I18N_EXT = {
     oraQuestProductSub:'Play family-friendly challenges for kids, teens, adults and families — guided by Ora, the wise quiz owl.',
     wordsTitle:'OraWords', wordsSub:'Word games, spelling, vocabulary and timed challenges in the HorusQuest universe.',
     wordsBody:'OraWords is the language-learning product in the HorusQuest ecosystem. This page introduces the word, spelling and vocabulary direction without listing fake games, prices or rankings. Active word challenges will appear here after they are reviewed and ready to play.',
+    mathTitle:'OraMath', mathSub:'Quick mental-maths games by age: spot the trap equation or race the clock in a 60-second sprint.',
+    mathBody:'OraMath is the maths corner of HorusQuest. Pick an age group and a difficulty, and train your number sense in short rounds guided by Ora — no account needed, and every game lasts under two minutes. Playing any OraMath game keeps your daily streak alive, earns XP and can beat your personal records.',
+    mathTTName:'Truth or Trap?', mathTTSub:'An equation flashes on screen — swipe to call it true or false before the bar runs out. Traps look almost right!',
+    mathSprintName:'Ora Sprint', mathSprintSub:'60 seconds of mental maths. Chain correct answers to grow your combo multiplier; fast answers add extra time.',
+    mathLevel:'Level', mathStreakDays:'day streak', mathPlayNow:'Play',
+    mathRecordLine:'Your record: {score} — can you beat it?', mathNoRecordYet:'No record for this combo yet — set the first one!',
+    mathMoreSoon:'More maths games are on the way: number puzzles, estimation challenges and a daily equation.',
+    mathShareText:'I scored {score} points in {game} on OraMath (HorusQuest)! Can you beat me? 🦉➗',
     faqWhatHorus:'What is HorusQuest?', faqWhatHorusA:'HorusQuest is the family-friendly learning universe guided by Ora, combining quizzes, guessing games, word challenges and future learning adventures.',
     faqWhatOraQuest:'What is OraQuest?', faqWhatGuess:'What is OraGuess?', faqWhatWords:'What is OraWords?', faqAccount:'Do I need an account?', faqChildren:'Is HorusQuest suitable for children?', faqAds:'Does HorusQuest show ads?', faqBoards:'How do leaderboards work?'
   },
@@ -1289,6 +1313,14 @@ const I18N_EXT = {
     oraQuestProductSub:'Juega retos para toda la familia — niños, adolescentes, adultos y familias — guiados por Ora, la búho sabia de los quizzes.',
     wordsTitle:'OraWords', wordsSub:'Juegos de palabras, ortografía, vocabulario y retos contra reloj dentro del universo HorusQuest.',
     wordsBody:'OraWords es el producto de aprendizaje lingüístico del ecosistema HorusQuest. Esta página presenta la dirección de palabras, ortografía y vocabulario sin inventar juegos, precios ni rankings. Los retos activos aparecerán aquí cuando estén revisados y listos para jugar.',
+    mathTitle:'OraMath', mathSub:'Juegos rápidos de cálculo mental por edad: detecta la igualdad trampa o corre contra el reloj en un sprint de 60 segundos.',
+    mathBody:'OraMath es el rincón de matemáticas de HorusQuest. Elige grupo de edad y dificultad y entrena tu sentido numérico en rondas cortas guiadas por Ora: sin cuenta y con partidas de menos de dos minutos. Jugar a cualquier juego de OraMath mantiene viva tu racha diaria, suma XP y puede batir tus récords personales.',
+    mathTTName:'¿Verdad o Trampa?', mathTTSub:'Aparece una igualdad en pantalla: desliza para decir si es verdadera o falsa antes de que se agote la barra. ¡Las trampas casi parecen correctas!',
+    mathSprintName:'Ora Sprint', mathSprintSub:'60 segundos de cálculo mental. Encadena aciertos para subir tu multiplicador de combo; responder rápido añade tiempo extra.',
+    mathLevel:'Nivel', mathStreakDays:'días de racha', mathPlayNow:'Jugar',
+    mathRecordLine:'Tu récord: {score} — ¿lo superas?', mathNoRecordYet:'Aún no hay récord para esta combinación. ¡Marca el primero!',
+    mathMoreSoon:'Más juegos de matemáticas en camino: puzzles numéricos, retos de estimación y una ecuación diaria.',
+    mathShareText:'¡Hice {score} puntos en {game} de OraMath (HorusQuest)! ¿Me superas? 🦉➗',
     faqWhatHorus:'¿Qué es HorusQuest?', faqWhatHorusA:'HorusQuest es el universo de aprendizaje familiar guiado por Ora, con quizzes, adivinanzas, retos de palabras y futuras aventuras educativas.',
     faqWhatOraQuest:'¿Qué es OraQuest?', faqWhatGuess:'¿Qué es OraGuess?', faqWhatWords:'¿Qué es OraWords?', faqAccount:'¿Necesito una cuenta?', faqChildren:'¿HorusQuest es apto para niños?', faqAds:'¿HorusQuest muestra anuncios?', faqBoards:'¿Cómo funcionan las clasificaciones?'
   },
@@ -1314,6 +1346,14 @@ const I18N_EXT = {
     oraQuestProductSub:'Joue à des défis adaptés aux enfants, aux adolescents, aux adultes et aux familles — guidés par Ora, la chouette sage des quiz.',
     wordsTitle:'OraWords', wordsSub:'Jeux de mots, orthographe, vocabulaire et défis chronométrés dans l’univers HorusQuest.',
     wordsBody:'OraWords est le produit d’apprentissage des langues dans l’écosystème HorusQuest. Cette page présente l’orientation mots, orthographe et vocabulaire sans inventer de jeux, de prix ni de classements. Les défis actifs apparaîtront ici après relecture et mise en ligne.',
+    mathTitle:'OraMath', mathSub:'Des jeux rapides de calcul mental par âge : repère l’égalité piège ou cours contre la montre dans un sprint de 60 secondes.',
+    mathBody:'OraMath est le coin maths de HorusQuest. Choisis un groupe d’âge et une difficulté et entraîne ton sens du nombre en manches courtes guidées par Ora — sans compte, et chaque partie dure moins de deux minutes. Jouer à n’importe quel jeu OraMath entretient ta série quotidienne, rapporte de l’XP et peut battre tes records personnels.',
+    mathTTName:'Vrai ou Piège ?', mathTTSub:'Une égalité s’affiche : glisse pour dire si elle est vraie ou fausse avant la fin de la barre. Les pièges ont l’air presque corrects !',
+    mathSprintName:'Ora Sprint', mathSprintSub:'60 secondes de calcul mental. Enchaîne les bonnes réponses pour augmenter ton multiplicateur de combo ; répondre vite ajoute du temps.',
+    mathLevel:'Niveau', mathStreakDays:'jours de série', mathPlayNow:'Jouer',
+    mathRecordLine:'Ton record : {score} — tu peux le battre ?', mathNoRecordYet:'Pas encore de record pour cette combinaison. Établis le premier !',
+    mathMoreSoon:'D’autres jeux de maths arrivent : puzzles numériques, défis d’estimation et une équation quotidienne.',
+    mathShareText:'J’ai marqué {score} points à {game} sur OraMath (HorusQuest) ! Tu fais mieux ? 🦉➗',
     faqWhatHorus:'Qu’est-ce que HorusQuest ?', faqWhatHorusA:'HorusQuest est l’univers d’apprentissage familial guidé par Ora, avec des quiz, des devinettes, des défis de mots et de futures aventures éducatives.',
     faqWhatOraQuest:'Qu’est-ce que OraQuest ?', faqWhatGuess:'Qu’est-ce que OraGuess ?', faqWhatWords:'Qu’est-ce que OraWords ?', faqAccount:'Ai-je besoin d’un compte ?', faqChildren:'HorusQuest convient-il aux enfants ?', faqAds:'HorusQuest affiche-t-il des publicités ?', faqBoards:'Comment fonctionnent les classements ?'
   }
@@ -1365,8 +1405,8 @@ const ORA_UNIVERSE_GAMES = [
     description:{ en:'Geography, flags and countries.', es:'Geografía, banderas y países.', fr:'Géographie, drapeaux et pays.' }
   },
   {
-    key:'oramath', name:'OraMath', status:'coming-soon', route:'universe', anchor:'oramath', icon:'➗', color:'from-amber-500 to-orange-500',
-    description:{ en:'Math challenges by age.', es:'Retos de matemáticas por edad.', fr:'Défis de mathématiques par âge.' }
+    key:'oramath', name:'OraMath', status:'live', route:'oramath', icon:'➗', color:'from-amber-500 to-orange-500',
+    description:{ en:'Mental-maths games and challenges by age.', es:'Juegos y retos de cálculo mental por edad.', fr:'Jeux et défis de calcul mental par âge.' }
   }
 ];
 // Honest detail for the not-yet-released universe games: what players will
@@ -1377,18 +1417,6 @@ const COMING_SOON_INFO = {
       en: 'Geography for curious explorers: continents, countries, capitals, flags and famous landmarks, through friendly map-based challenges with short explanations.',
       es: 'Geografía para exploradores curiosos: continentes, países, capitales, banderas y monumentos famosos, mediante retos con mapas y explicaciones breves.',
       fr: 'La géographie pour les explorateurs curieux : continents, pays, capitales, drapeaux et monuments célèbres, via des défis cartographiques avec de courtes explications.'
-    },
-    status: {
-      en: 'In early development. There is no release date yet — when it is ready we will announce it here and on the Ora Universe page.',
-      es: 'En desarrollo inicial. Aún no hay fecha de lanzamiento; cuando esté listo lo anunciaremos aquí y en la página Universo Ora.',
-      fr: 'En début de développement. Il n’y a pas encore de date de sortie ; lorsqu’il sera prêt, nous l’annoncerons ici et sur la page Univers Ora.'
-    }
-  },
-  oramath: {
-    learn: {
-      en: 'Mental-maths practice by age: number sense, arithmetic, patterns and simple problem-solving, with clear explanations instead of time pressure.',
-      es: 'Práctica de cálculo mental por edad: sentido numérico, aritmética, patrones y resolución de problemas sencillos, con explicaciones claras y sin presión de tiempo.',
-      fr: 'Entraînement au calcul mental par âge : sens du nombre, arithmétique, motifs et résolution de problèmes simples, avec des explications claires plutôt que la pression du temps.'
     },
     status: {
       en: 'In early development. There is no release date yet — when it is ready we will announce it here and on the Ora Universe page.',
@@ -1415,6 +1443,10 @@ const GAME_GUIDE = {
   words: {
     skill: { en:'Spelling, vocabulary and word patterns in several languages', es:'Ortografía, vocabulario y patrones de palabras en varios idiomas', fr:'Orthographe, vocabulaire et structures de mots en plusieurs langues' },
     ages:  { en:'Readers of all ages', es:'Lectores de todas las edades', fr:'Lecteurs de tous âges' }
+  },
+  oramath: {
+    skill: { en:'Mental arithmetic and number sense, scaled to your age and difficulty', es:'Cálculo mental y sentido numérico, adaptados a tu edad y dificultad', fr:'Calcul mental et sens du nombre, adaptés à ton âge et à ta difficulté' },
+    ages:  { en:'Ages 5–7 to adults, plus a family mode', es:'De 5–7 años a adultos, con modo familia', fr:'De 5–7 ans aux adultes, avec un mode famille' }
   }
 };
 // Plain explanation of how Quiz points are calculated. These numbers mirror
@@ -5952,6 +5984,7 @@ function updateMeta() {
     play: { title:{en:'Play HorusQuest Games', es:'Jugar a HorusQuest', fr:'Jouer aux jeux HorusQuest'}, desc:{en:t('playSub'), es:t('playSub'), fr:t('playSub')} },
     universe: { title:{en:'Ora Universe — HorusQuest', es:'Universo Ora — HorusQuest', fr:'Univers Ora — HorusQuest'}, desc:{en:t('universeSub'), es:t('universeSub'), fr:t('universeSub')} },
     words: { title:{en:'OraWords — Word Games by HorusQuest', es:'OraWords — Juegos de palabras de HorusQuest', fr:'OraWords — Jeux de mots par HorusQuest'}, desc:{en:t('wordsSub'), es:t('wordsSub'), fr:t('wordsSub')} },
+    oramath: { title:{en:'OraMath — Mental Maths Games by HorusQuest', es:'OraMath — Juegos de cálculo mental de HorusQuest', fr:'OraMath — Jeux de calcul mental par HorusQuest'}, desc:{en:t('mathSub'), es:t('mathSub'), fr:t('mathSub')} },
     shop: {
       title: { en:'Official HorusQuest Merchandise — Ora T-shirts and Mugs', es:t('shopTitle') + ' — HorusQuest', fr:t('shopTitle') + ' — HorusQuest' },
       desc: { en:'Family-friendly Ora T-shirts and mugs for curious minds, fulfilled through print-on-demand partners.', es:t('shopSub'), fr:t('shopSub') }
@@ -6122,7 +6155,7 @@ function Footer() {
   const cols = [
     { t:'HorusQuest', d:t('hqBadge')+'. '+t('trustCopy') },
     { t:t('navPlay'), links:[
-      ['play', t('navPlay')],['oraquest', 'OraQuest'],['guess', 'OraGuess'],['words', 'OraWords'],['leaderboards', t('navLeader')]
+      ['play', t('navPlay')],['oraquest', 'OraQuest'],['guess', 'OraGuess'],['words', 'OraWords'],['oramath', 'OraMath'],['leaderboards', t('navLeader')]
     ]},
     { t:t('navUniverse'), links:[
       ['universe', t('navUniverse')],['parents', t('navFamilies')],['teams', t('navTeams')+' · '+t('comingSoon')],['blog', t('navBlog')],['shop', t('navShop')]
@@ -6156,7 +6189,7 @@ function Footer() {
         </div>
         <p class="text-slate-500">${t('footerTag')}</p>
       </div>
-      <p class="mt-4 text-xs text-slate-500">© ${new Date().getFullYear()} HorusQuest. OraQuest, OraGuess and OraWords are products in the HorusQuest universe.</p>
+      <p class="mt-4 text-xs text-slate-500">© ${new Date().getFullYear()} HorusQuest. OraQuest, OraGuess, OraWords and OraMath are products in the HorusQuest universe.</p>
     </div>
   </footer>`;
 }
@@ -6462,6 +6495,7 @@ function viewPlay() {
     { route:'oraquest', icon:'✨', title:t('playOraQuest'), desc:t('oraQuestProductSub') },
     { route:'guess', icon:'🔍', title:t('playGuessOra'), desc:pick(ORA_UNIVERSE_GAMES[0].description) },
     { route:'words', icon:'🔤', title:t('exploreOraWords'), desc:t('wordsSub') },
+    { route:'oramath', icon:'➗', title:t('mathTitle'), desc:t('mathSub') },
     { route:'leaderboards', icon:'🏆', title:t('viewLeaderboards'), desc:t('lbAllSub') },
     { route:'parents', icon:'👥', title:t('familyTeams'), desc:t('teamHelp') }
   ];
@@ -7705,6 +7739,912 @@ try { if (typeof window !== 'undefined'){ window.validateLetterRushWord = valida
 try { if (typeof module !== 'undefined' && module.exports){ module.exports.validateLetterRushWord = validateLetterRushWord; module.exports.ORAWORDS_LETTER_SETS = ORAWORDS_LETTER_SETS; module.exports.getLetterRushSets = getLetterRushSets; module.exports.pickLetterRushSet = pickLetterRushSet; } } catch (e) {}
 /* ====== LETTER RUSH END ====== */
 
+/* __MATHENGINE_START__ */
+/* OraMath pure engine — DOM-free, state-free, clock-free. Every random
+   function takes an injectable rng (defaults to Math.random) and every
+   date-dependent function takes the date key as an argument, so
+   tests/oramath-engine.test.js can extract and run this block in Node. */
+const MathEngine = (function () {
+  'use strict';
+
+  // The 6 site AGE_GROUPS collapse to the 3 OraMath difficulty bands.
+  // timeFactor widens/tightens time limits so the 6 groups still feel distinct.
+  const ORAMATH_AGE_BANDS = {
+    '5-7':    { band: '6-8',  timeFactor: 1.25 },
+    '8-10':   { band: '9-12', timeFactor: 1.10 },
+    '11-13':  { band: '9-12', timeFactor: 1.00 },
+    'teens':  { band: '13+',  timeFactor: 1.00 },
+    'adults': { band: '13+',  timeFactor: 0.90 },
+    'family': { band: '9-12', timeFactor: 1.15 }
+  };
+  function ageBandInfo(ageGroupId) { return ORAMATH_AGE_BANDS[ageGroupId] || ORAMATH_AGE_BANDS.family; }
+  function bandFor(ageGroupId) { return ageBandInfo(ageGroupId).band; }
+  function timeFactorFor(ageGroupId) { return ageBandInfo(ageGroupId).timeFactor; }
+
+  function ri(rng, min, max) { return min + Math.floor(rng() * (max - min + 1)); }
+  function pickFrom(rng, arr) { return arr[Math.floor(rng() * arr.length)]; }
+  function diffMult(difficulty) { return difficulty === 'hard' ? 1.5 : difficulty === 'medium' ? 1.25 : 1; }
+
+  /* ---- Operation generator (shared by Ora Sprint + ¿Verdad o Trampa?) ----
+     Invariants: answer is always a non-negative integer (sub operands ordered,
+     div exact, pct picked so the result is whole) — the Sprint keypad has no
+     minus key and no decimal point. */
+  const GEN_TABLE = {
+    '6-8': {
+      easy:   { kinds: ['add'],        max: 10 },
+      medium: { kinds: ['add', 'sub'], max: 20 },
+      hard:   { kinds: ['add', 'sub'], max: 50 }
+    },
+    '9-12': {
+      easy:   { kinds: ['mul'],                                  tables: [1, 5],  bRange: [1, 10] },
+      medium: { kinds: ['mul', 'div'],                           tables: [1, 10], bRange: [1, 10] },
+      hard:   { kinds: ['add', 'sub', 'mul', 'div', 'twoStep'],  tables: [2, 12], bRange: [2, 10], max: 100 }
+    },
+    '13+': {
+      easy:   { kinds: ['add', 'sub', 'mul', 'div'],             tables: [2, 12], bRange: [2, 12], max: 100 },
+      medium: { kinds: ['pct', 'pow', 'mul', 'div'],             tables: [2, 12], bRange: [2, 12], pcts: [10, 20, 25, 50, 75], pctOfMax: 200, powMax: 12 },
+      hard:   { kinds: ['chain'], chainMulMin: 11, chainMulMax: 25, chainAddMax: 50 }
+    }
+  };
+
+  function makeAdd(cell, rng) {
+    const a = ri(rng, 0, cell.max);
+    const b = ri(rng, 0, cell.max - a);
+    return { kind: 'add', a, b, answer: a + b, text: a + ' + ' + b };
+  }
+  function makeSub(cell, rng) {
+    const a = ri(rng, 1, cell.max);
+    const b = ri(rng, 0, a);
+    return { kind: 'sub', a, b, answer: a - b, text: a + ' − ' + b };
+  }
+  function makeMul(cell, rng) {
+    const a = ri(rng, cell.tables[0], cell.tables[1]);
+    const b = ri(rng, cell.bRange[0], cell.bRange[1]);
+    return { kind: 'mul', a, b, answer: a * b, text: a + ' × ' + b };
+  }
+  function makeDiv(cell, rng) {
+    const b = ri(rng, Math.max(2, cell.tables[0]), cell.tables[1]);
+    const q = ri(rng, 2, cell.bRange[1]);
+    const a = b * q;
+    return { kind: 'div', a, b, answer: q, text: a + ' ÷ ' + b };
+  }
+  function makeTwoStep(cell, rng) {
+    if (rng() < 0.5) {
+      const a = ri(rng, 2, 9), b = ri(rng, 2, 9), c = ri(rng, 1, 20);
+      return { kind: 'twoStep', a, b, c, op2: '+', answer: a * b + c, text: a + ' × ' + b + ' + ' + c };
+    }
+    const a = ri(rng, 2, 9), b = ri(rng, 2, 9);
+    const c = ri(rng, 1, a * b);
+    return { kind: 'twoStep', a, b, c, op2: '−', answer: a * b - c, text: a + ' × ' + b + ' − ' + c };
+  }
+  function makePct(cell, rng) {
+    const p = pickFrom(rng, cell.pcts);
+    // step keeps p% of base a whole number: base is a multiple of 100/gcd(p,100).
+    const gcd = (x, y) => y ? gcd(y, x % y) : x;
+    const step = 100 / gcd(p, 100);
+    const base = step * ri(rng, 1, Math.max(1, Math.floor(cell.pctOfMax / step)));
+    return { kind: 'pct', a: p, b: base, answer: p * base / 100, text: p + '% of ' + base };
+  }
+  function makePow(cell, rng) {
+    const base = ri(rng, 2, cell.powMax);
+    const exp = base <= 5 && rng() < 0.4 ? 3 : 2;
+    return { kind: 'pow', a: base, b: exp, answer: Math.pow(base, exp), text: '' + base + (exp === 3 ? '³' : '²') };
+  }
+  function makeChain(cell, rng) {
+    const a = ri(rng, cell.chainMulMin, cell.chainMulMax);
+    const b = ri(rng, 2, 9);
+    const minus = rng() < 0.5;
+    const c = ri(rng, 1, minus ? Math.min(cell.chainAddMax, a * b) : cell.chainAddMax);
+    return {
+      kind: 'chain', a, b, c, op2: minus ? '−' : '+',
+      answer: minus ? a * b - c : a * b + c,
+      text: '(' + a + ' × ' + b + ') ' + (minus ? '−' : '+') + ' ' + c
+    };
+  }
+  const OP_MAKERS = { add: makeAdd, sub: makeSub, mul: makeMul, div: makeDiv, twoStep: makeTwoStep, pct: makePct, pow: makePow, chain: makeChain };
+
+  function genOperation(band, difficulty, rng) {
+    rng = rng || Math.random;
+    const cell = (GEN_TABLE[band] || GEN_TABLE['9-12'])[difficulty] || GEN_TABLE['9-12'].easy;
+    return OP_MAKERS[pickFrom(rng, cell.kinds)](cell, rng);
+  }
+
+  /* ---- ¿Verdad o Trampa? trap generator ----
+     genTrapEquation returns structured fields so the truth of every statement
+     can be re-evaluated independently (the test does exactly that). `text` is
+     a canonical English form; the view localizes pct/divis wording. */
+  const TRAP_KINDS = ['off-by-delta', 'off-by-1', 'swap-digits', 'neighbor-table',
+                      'near-percent', 'flipped-comparison', 'false-divisibility', 'wrong-fraction'];
+
+  const TT_TABLE = {
+    '6-8': {
+      easy:   { src: ['add'],        traps: ['off-by-delta'], delta: 3, max: 10 },
+      medium: { src: ['add', 'sub'], traps: ['off-by-delta'], delta: 2, max: 20 },
+      hard:   { src: ['add', 'sub'], traps: ['off-by-1'],               max: 50 }
+    },
+    '9-12': {
+      easy:   { src: ['mul'],        traps: ['off-by-1', 'neighbor-table'],                 tables: [1, 5],  bRange: [1, 10] },
+      medium: { src: ['mul', 'div'], traps: ['off-by-1', 'swap-digits', 'neighbor-table'],  tables: [1, 10], bRange: [1, 10] },
+      hard:   { src: ['mul', 'div'], traps: ['swap-digits', 'neighbor-table'],              tables: [2, 12], bRange: [2, 10] }
+    },
+    '13+': {
+      easy:   { src: ['pct', 'frac'],   traps: ['near-percent', 'wrong-fraction'], pcts: [10, 25, 50, 75], pctOfMax: 200 },
+      medium: { src: ['compare'],       traps: ['flipped-comparison'] },
+      hard:   { src: ['divis', 'pct'],  traps: ['false-divisibility', 'near-percent'], pcts: [10, 20, 25, 75], pctOfMax: 200 }
+    }
+  };
+
+  function swapDigits(n, rng) {
+    const d = String(n).split('');
+    if (d.length < 2) return n;
+    const i = ri(rng, 0, d.length - 2);
+    const t = d[i]; d[i] = d[i + 1]; d[i + 1] = t;
+    if (d[0] === '0') return n; // would drop a digit — let caller fall back
+    return Number(d.join(''));
+  }
+
+  // Wrong-but-plausible shown value for an arithmetic/pct equality. Always ≠ answer, ≥ 0.
+  function trapShownValue(op, trapKind, cell, rng) {
+    const ans = op.answer;
+    if (trapKind === 'off-by-delta') {
+      const delta = ri(rng, 1, cell.delta || 1);
+      return ans - delta >= 0 && rng() < 0.5 ? ans - delta : ans + delta;
+    }
+    if (trapKind === 'off-by-1') return ans > 0 && rng() < 0.5 ? ans - 1 : ans + 1;
+    if (trapKind === 'swap-digits') return swapDigits(ans, rng); // may return ans — caller relabels as off-by-1
+    if (trapKind === 'neighbor-table') {
+      if (op.kind === 'mul') {
+        const s = rng() < 0.5 ? op.a * (op.b + (rng() < 0.5 && op.b > 1 ? -1 : 1)) : (op.a + (rng() < 0.5 && op.a > 1 ? -1 : 1)) * op.b;
+        return s !== ans ? s : ans + op.a;
+      }
+      return ans > 1 && rng() < 0.5 ? ans - 1 : ans + 1; // div: neighbouring quotient
+    }
+    if (trapKind === 'near-percent') {
+      const d = ri(rng, 1, Math.max(2, Math.round(ans * 0.15)));
+      return ans - d >= 0 && rng() < 0.5 ? ans - d : ans + d;
+    }
+    return ans + 1;
+  }
+
+  const FRAC_BASES = [[1, 2], [1, 3], [2, 3], [1, 4], [3, 4], [2, 5], [3, 5]];
+  const CMP_DENOMS = [2, 3, 4, 5, 8, 10];
+  const DIVIS_DIVISORS = [3, 4, 6, 7, 8, 9, 11];
+
+  function genTrapEquation(band, difficulty, rng) {
+    rng = rng || Math.random;
+    const cell = (TT_TABLE[band] || TT_TABLE['9-12'])[difficulty] || TT_TABLE['9-12'].easy;
+    const src = pickFrom(rng, cell.src);
+    const wantTrue = rng() < 0.5;
+
+    if (src === 'frac') {
+      const base = pickFrom(rng, FRAC_BASES);
+      const k = ri(rng, 2, 4);
+      const n1 = base[0] * k, d1 = base[1] * k;
+      if (wantTrue) {
+        return { kind: 'frac', n1, d1, n2: base[0], d2: base[1], isTrue: true, trapKind: null,
+                 text: n1 + '/' + d1 + ' = ' + base[0] + '/' + base[1] };
+      }
+      let n2 = base[0], d2 = base[1];
+      if (rng() < 0.5) n2 = n2 + (rng() < 0.5 && n2 > 1 ? -1 : 1); else d2 = d2 + 1;
+      if (n1 * d2 === n2 * d1) d2 = d2 + 1; // accidental equivalence — push it off
+      return { kind: 'frac', n1, d1, n2, d2, isTrue: false, trapKind: 'wrong-fraction',
+               text: n1 + '/' + d1 + ' = ' + n2 + '/' + d2 };
+    }
+
+    if (src === 'compare') {
+      const d = pickFrom(rng, CMP_DENOMS);
+      const n = ri(rng, 1, d - 1);
+      const v = n / d;
+      let w = Math.round((v + (rng() < 0.5 ? -1 : 1) * ri(rng, 5, 15) / 100) * 100) / 100;
+      if (w <= 0) w = Math.round((v + 0.07) * 100) / 100;
+      if (w === v) w = Math.round((w + 0.05) * 100) / 100;
+      const truthGt = v > w;
+      const cmp = wantTrue === truthGt ? '>' : '<';
+      const isTrue = cmp === '>' ? v > w : v < w;
+      return { kind: 'compare', n, d, w, cmp, isTrue, trapKind: isTrue ? null : 'flipped-comparison',
+               text: n + '/' + d + ' ' + cmp + ' ' + w };
+    }
+
+    if (src === 'divis') {
+      const b = pickFrom(rng, DIVIS_DIVISORS);
+      const k = ri(rng, 3, 12);
+      const a = wantTrue ? b * k : b * k + ri(rng, 1, b - 1);
+      return { kind: 'divis', a, b, isTrue: wantTrue, trapKind: wantTrue ? null : 'false-divisibility',
+               text: a + ' is divisible by ' + b };
+    }
+
+    // Arithmetic equality sources: add/sub/mul/div/pct — statement "op = shown".
+    const opCell = { max: cell.max, tables: cell.tables, bRange: cell.bRange, pcts: cell.pcts, pctOfMax: cell.pctOfMax };
+    const op = OP_MAKERS[src](opCell, rng);
+    if (wantTrue) {
+      return { kind: op.kind, a: op.a, b: op.b, shown: op.answer, isTrue: true, trapKind: null,
+               text: op.text + ' = ' + op.answer };
+    }
+    const applicable = cell.traps.filter(tk =>
+      (tk !== 'neighbor-table' || src === 'mul' || src === 'div') &&
+      (tk !== 'near-percent' || src === 'pct') &&
+      (tk !== 'swap-digits' || op.answer >= 10));
+    let trapKind = applicable.length ? pickFrom(rng, applicable) : 'off-by-1';
+    let shown = trapShownValue(op, trapKind, cell, rng);
+    if (shown === op.answer || shown < 0 || !Number.isInteger(shown)) {
+      trapKind = 'off-by-1';
+      shown = op.answer > 0 ? op.answer - 1 : op.answer + 1;
+    }
+    return { kind: op.kind, a: op.a, b: op.b, shown, isTrue: false, trapKind,
+             text: op.text + ' = ' + shown };
+  }
+
+  /* ---- ¿Verdad o Trampa? timing + scoring ---- */
+  function ttTimeLimitMs(band, streak, timeFactor) {
+    const base = { '6-8': 4000, '9-12': 3500, '13+': 3000 }[band] || 3500;
+    const floor = band === '6-8' ? 2500 : 1500;
+    return Math.round(Math.max(floor, base - streak * 150) * (timeFactor || 1));
+  }
+  function ttScoreFor(args) {
+    if (!args.correct) return 0;
+    const timeBonus = Math.round(50 * Math.max(0, args.timeLeftMs) / Math.max(1, args.timeLimitMs));
+    return Math.round((50 + timeBonus + Math.min(args.streak, 5) * 10) * diffMult(args.difficulty));
+  }
+
+  /* ---- Ora Sprint scoring ---- */
+  function sprintMultiplier(consecutive) { return Math.min(5, 1 + Math.floor(consecutive / 3)); }
+  function sprintScoreFor(args) { return Math.round(10 * sprintMultiplier(args.consecutive) * diffMult(args.difficulty)); }
+  function sprintBonusMs(answerMs) { return answerMs <= 3000 ? 2000 : 0; }
+
+  /* ---- XP + levels. Level L→L+1 costs L×100 XP. ---- */
+  function xpForGame(args) { return Math.max(5, Math.round((args.score / 10) * diffMult(args.difficulty))); }
+  function xpNeededFor(level) { return level * 100; }
+  function levelForXp(totalXp) {
+    let level = 1, rem = Math.max(0, Math.floor(totalXp || 0));
+    while (level < 999 && rem >= xpNeededFor(level)) { rem -= xpNeededFor(level); level++; }
+    const needed = xpNeededFor(level);
+    return { level, intoLevel: rem, needed, pct: Math.min(100, Math.round((rem / needed) * 100)) };
+  }
+
+  /* ---- Global OraMath daily streak (any OraMath game counts).
+     Callers MUST pass a LOCAL-date key (host todayKey() — getFullYear/getMonth/
+     getDate), never toISOString(), or post-midnight players lose their streak. */
+  function prevDayKey(dateKey) {
+    const p = String(dateKey).split('-').map(Number);
+    const d = new Date(Date.UTC(p[0], p[1] - 1, p[2]));
+    d.setUTCDate(d.getUTCDate() - 1);
+    return d.getUTCFullYear() + '-' + String(d.getUTCMonth() + 1).padStart(2, '0') + '-' + String(d.getUTCDate()).padStart(2, '0');
+  }
+  function updateDailyStreak(prev, today) {
+    if (prev && prev.last === today) return { days: prev.days, last: today, changed: false, milestone: null };
+    const days = (prev && prev.last === prevDayKey(today)) ? prev.days + 1 : 1;
+    const milestone = (days === 3 || days === 7 || days === 30) ? days : null;
+    return { days, last: today, changed: true, milestone };
+  }
+
+  /* ---- Personal records per gameMode|ageGroup|difficulty ---- */
+  function recordKey(gameMode, ageGroup, difficulty) { return gameMode + '|' + ageGroup + '|' + difficulty; }
+  function bestRecord(records, gameMode, ageGroup, difficulty) {
+    return (records && records[recordKey(gameMode, ageGroup, difficulty)]) || null;
+  }
+  function updateRecord(records, gameMode, ageGroup, difficulty, score, dateKey) {
+    const next = Object.assign({}, records || {});
+    const k = recordKey(gameMode, ageGroup, difficulty);
+    const cur = next[k];
+    if (!cur || score > cur.score) { next[k] = { score, date: dateKey }; return { records: next, isNew: true }; }
+    return { records: next, isNew: false };
+  }
+
+  // FUTURE (phase 2): badges/achievements registry.
+
+  return { ORAMATH_AGE_BANDS, bandFor, timeFactorFor, GEN_TABLE, TT_TABLE, TRAP_KINDS,
+           genOperation, genTrapEquation,
+           ttTimeLimitMs, ttScoreFor,
+           sprintMultiplier, sprintScoreFor, sprintBonusMs,
+           xpForGame, xpNeededFor, levelForXp,
+           prevDayKey, updateDailyStreak,
+           recordKey, bestRecord, updateRecord };
+})();
+try { if (typeof window !== 'undefined') window.MathEngine = MathEngine; } catch (e) {}
+/* __MATHENGINE_END__ */
+
+/* ====== ORAMATH (retention core + hub) ====== */
+const ORAMATH_LS = { profile:'oramath:profile', streak:'oramath:streak', records:'oramath:records' };
+function loadMathProfile(){ const p = LS.get(ORAMATH_LS.profile, null); return p && typeof p.xp === 'number' ? p : { xp:0, games:0 }; }
+function saveMathProfile(p){ LS.set(ORAMATH_LS.profile, p); }
+function loadMathStreak(){ return LS.get(ORAMATH_LS.streak, null); }
+function loadMathRecords(){ return LS.get(ORAMATH_LS.records, {}) || {}; }
+
+// Streak as shown on the hub: alive if last play was today or yesterday.
+function mathActiveStreakDays(){
+  const st = loadMathStreak();
+  if (!st || !st.last) return 0;
+  const today = todayKey();
+  return (st.last === today || st.last === MathEngine.prevDayKey(today)) ? st.days : 0;
+}
+
+/* Single funnel every OraMath game calls when a session ends: updates the
+   personal record, adds XP and advances the global OraMath daily streak.
+   Leaderboard saving is NOT automatic — like Quiz/OraGuess it is an explicit,
+   optional step on the results screen via saveMathScore() (3–4 char alias). */
+function finishMathGame(args){
+  // todayKey() is LOCAL-date based on purpose: a UTC key (toISOString) would
+  // break streaks for anyone playing after local midnight.
+  const today = todayKey();
+  const upd = MathEngine.updateRecord(loadMathRecords(), args.gameMode, args.ageGroup, args.difficulty, args.score, today);
+  LS.set(ORAMATH_LS.records, upd.records);
+  const profile = loadMathProfile();
+  const levelBefore = MathEngine.levelForXp(profile.xp).level;
+  const xpGained = MathEngine.xpForGame({ score:args.score, difficulty:args.difficulty });
+  profile.xp += xpGained;
+  profile.games = (profile.games || 0) + 1;
+  saveMathProfile(profile);
+  const levelAfter = MathEngine.levelForXp(profile.xp).level;
+  const streak = MathEngine.updateDailyStreak(loadMathStreak(), today);
+  LS.set(ORAMATH_LS.streak, { days:streak.days, last:streak.last });
+  return { xpGained, leveledUp: levelAfter > levelBefore, newLevel: levelAfter,
+           recordIsNew: upd.isNew, streakDays: streak.days, milestone: streak.milestone };
+}
+
+function mathSetupOrDefault(){
+  if (!state.mathSetup) state.mathSetup = { ageGroup:'family', difficulty:'easy' };
+  return state.mathSetup;
+}
+// Full render() on every change so the record line always reflects the
+// currently selected mode|ageGroup|difficulty combo (never a cached one).
+function selectMathOption(key, val){ mathSetupOrDefault()[key] = val; render(); }
+
+function mathRecordLineHtml(gameMode){
+  const su = mathSetupOrDefault();
+  const rec = MathEngine.bestRecord(loadMathRecords(), gameMode, su.ageGroup, su.difficulty);
+  return rec
+    ? '<p class="mt-5 text-sm font-semibold text-amber-700">🏅 ' + t('mathRecordLine').replace('{score}', rec.score) + '</p>'
+    : '<p class="mt-5 text-sm text-slate-500">' + t('mathNoRecordYet') + '</p>';
+}
+
+// Shared age + difficulty selector grids for both game setup screens.
+function mathSetupGridsHtml(){
+  const su = mathSetupOrDefault();
+  return ''
+    + '<div>'
+    + '  <h2 class="font-semibold mb-3">' + t('pickAge') + '</h2>'
+    + '  <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2">'
+    + AGE_GROUPS.map(a => ''
+        + '<button onclick="selectMathOption(\'ageGroup\',\'' + a.id + '\')" class="select-cell p-3 text-center ' + (su.ageGroup===a.id?'is-selected border-brand-violet bg-violet-50':'border-slate-200') + ' focus-ring">'
+        + '  <div class="text-2xl">' + a.emoji + '</div>'
+        + '  <div class="text-xs font-semibold mt-1">' + ageName(a) + '</div>'
+        + '</button>').join('')
+    + '  </div>'
+    + '</div>'
+    + '<div>'
+    + '  <h2 class="font-semibold mb-3">' + t('pickDiff') + '</h2>'
+    + '  <div class="grid grid-cols-3 gap-2">'
+    + ['easy','medium','hard'].map(d => ''
+        + '<button onclick="selectMathOption(\'difficulty\',\'' + d + '\')" class="select-cell p-3 text-center ' + (su.difficulty===d?'is-selected border-brand-violet bg-violet-50':'border-slate-200') + ' focus-ring">'
+        + '  <div class="font-semibold capitalize">' + t('difficulty' + d.charAt(0).toUpperCase() + d.slice(1)) + '</div>'
+        + '</button>').join('')
+    + '  </div>'
+    + '</div>';
+}
+
+function mathPlayerPanelHtml(){
+  const profile = loadMathProfile();
+  const lv = MathEngine.levelForXp(profile.xp);
+  const days = mathActiveStreakDays();
+  const nextMilestone = days < 3 ? 3 : days < 7 ? 7 : days < 30 ? 30 : null;
+  const milestoneHint = nextMilestone === null ? '' : pick({
+    en:(nextMilestone-days) + ' more day' + (nextMilestone-days===1?'':'s') + ' to a ' + nextMilestone + '-day streak!',
+    es:'¡' + (nextMilestone-days) + ' día' + (nextMilestone-days===1?'':'s') + ' más para la racha de ' + nextMilestone + '!',
+    fr:'Encore ' + (nextMilestone-days) + ' jour' + (nextMilestone-days===1?'':'s') + ' pour la série de ' + nextMilestone + ' !'
+  });
+  return ''
+    + '<section class="card p-5 md:p-6" aria-label="' + pick({en:'Your OraMath progress',es:'Tu progreso en OraMath',fr:'Ta progression OraMath'}) + '">'
+    + '  <div class="flex flex-wrap items-center gap-x-6 gap-y-3">'
+    + '    <div class="flex items-center gap-3">'
+    + '      <span class="w-11 h-11 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center text-lg font-bold text-white">' + lv.level + '</span>'
+    + '      <div>'
+    + '        <div class="text-sm font-bold text-slate-900">' + t('mathLevel') + ' ' + lv.level + '</div>'
+    + '        <div class="text-xs text-slate-500">' + lv.intoLevel + ' / ' + lv.needed + ' XP</div>'
+    + '      </div>'
+    + '    </div>'
+    + '    <div class="flex-1 min-w-[10rem]">'
+    + '      <div class="h-3 rounded-full bg-slate-100 overflow-hidden" role="progressbar" aria-valuenow="' + lv.pct + '" aria-valuemin="0" aria-valuemax="100">'
+    + '        <div class="h-full rounded-full bg-gradient-to-r from-amber-400 to-orange-500" style="width:' + lv.pct + '%"></div>'
+    + '      </div>'
+    + '    </div>'
+    + '    <div class="text-right">'
+    + '      <div class="text-sm font-bold text-slate-900">🔥 ' + days + ' ' + t('mathStreakDays') + '</div>'
+    + (milestoneHint ? '      <div class="text-xs text-slate-500">' + milestoneHint + '</div>' : '')
+    + '    </div>'
+    + '  </div>'
+    + '</section>';
+}
+
+// Localized rendering of engine equations/operations. The engine emits
+// canonical English `text`; only pct/divis/compare need language-aware parts.
+function mathEqText(eq){
+  if (eq.kind === 'pct') return eq.a + '% ' + pick({en:'of',es:'de',fr:'de'}) + ' ' + eq.b + ' = ' + eq.shown;
+  if (eq.kind === 'divis') return eq.a + ' ' + pick({en:'is divisible by',es:'es divisible entre',fr:'est divisible par'}) + ' ' + eq.b;
+  if (eq.kind === 'compare') return eq.n + '/' + eq.d + ' ' + eq.cmp + ' ' + String(eq.w).replace('.', pick({en:'.',es:',',fr:','}));
+  return eq.text;
+}
+function mathOpText(op){
+  if (op.kind === 'pct') return op.a + '% ' + pick({en:'of',es:'de',fr:'de'}) + ' ' + op.b;
+  return op.text;
+}
+
+// Shared setup screen (age + difficulty + record line) for both OraMath games.
+function mathGameSetupHtml(gameMode){
+  const isTT = gameMode === 'truth-or-trap';
+  return ''
+    + '<div class="min-h-screen bg-slate-50">'
+    + Header()
+    + '<main class="max-w-4xl mx-auto px-4 sm:px-6 py-10">'
+    + '  <div class="text-center mb-8">'
+    + '    <span class="chip bg-amber-100 text-amber-800">➗ OraMath</span>'
+    + '    <h1 class="mt-4 font-display text-3xl md:text-4xl font-bold">' + (isTT ? '🎭 ' + t('mathTTName') : '⚡ ' + t('mathSprintName')) + '</h1>'
+    + '    <p class="mt-3 text-slate-600 max-w-2xl mx-auto">' + (isTT ? t('mathTTSub') : t('mathSprintSub')) + '</p>'
+    + '  </div>'
+    + '  <div class="card p-6 md:p-8 space-y-8">'
+    + mathSetupGridsHtml()
+    + '  <div class="text-center">'
+    + mathRecordLineHtml(gameMode)
+    + '    <button onclick="' + (isTT ? 'startMathTT()' : 'startMathSprint()') + '" class="mt-4 btn-primary px-8 py-3 text-lg">▶ ' + t('mathPlayNow') + '</button>'
+    + '    <button onclick="go(\'oramath\')" class="mt-4 block mx-auto text-sm text-slate-500 hover:underline focus-ring">← OraMath</button>'
+    + '  </div>'
+    + '  </div>'
+    + '</main>'
+    + Footer()
+    + '</div>';
+}
+
+// Shared results screen. `meta` is the object returned by finishMathGame().
+function mathResultsHtml(opts){
+  const meta = opts.meta || {};
+  const lv = MathEngine.levelForXp(loadMathProfile().xp);
+  const name = opts.gameMode === 'truth-or-trap' ? t('mathTTName') : t('mathSprintName');
+  const milestoneTxt = meta.milestone ? pick({
+    en:'🏆 ' + meta.milestone + '-day streak — Ora is proud of you!',
+    es:'🏆 ¡Racha de ' + meta.milestone + ' días — Ora está orgullosa de ti!',
+    fr:'🏆 Série de ' + meta.milestone + ' jours — Ora est fière de toi !'
+  }) : '';
+  return ''
+    + '<div class="min-h-screen bg-slate-50">'
+    + Header()
+    + '<main class="max-w-3xl mx-auto px-4 sm:px-6 py-10">'
+    + '  <div class="card p-8 text-center">'
+    + '    <span class="chip bg-amber-100 text-amber-800">➗ OraMath · ' + name + '</span>'
+    + '    <h1 class="mt-4 font-display text-3xl font-bold">' + pick({en:'Round over!',es:'¡Fin de la partida!',fr:'Partie terminée !'}) + '</h1>'
+    + '    <div class="mt-6 grid grid-cols-2 gap-3">'
+    + '      <div class="stat-cell bg-amber-50 p-4"><div class="text-3xl font-bold text-amber-700">' + opts.score + '</div><div class="text-xs text-slate-600 mt-1">' + t('yourScore') + '</div></div>'
+    + '      <div class="stat-cell bg-sky-50 p-4"><div class="text-3xl font-bold text-sky-700">' + opts.accuracy + '%</div><div class="text-xs text-slate-600 mt-1">' + t('accuracy') + '</div></div>'
+    + '    </div>'
+    + (opts.statLine ? '<p class="mt-4 text-sm text-slate-600">' + opts.statLine + '</p>' : '')
+    + (meta.recordIsNew
+        ? '<p class="mt-4 text-sm font-bold text-amber-700">🏅 ' + pick({en:'New personal record!',es:'¡Nuevo récord personal!',fr:'Nouveau record personnel !'}) + '</p>'
+        : '<p class="mt-4 text-sm text-slate-500">' + mathRecordTextFor(opts.gameMode) + '</p>')
+    + '    <div class="mt-5 text-left max-w-sm mx-auto">'
+    + '      <div class="flex items-center justify-between text-sm font-semibold text-slate-700"><span>+' + (meta.xpGained || 0) + ' XP</span><span>' + t('mathLevel') + ' ' + lv.level + '</span></div>'
+    + '      <div class="mt-1 h-3 rounded-full bg-slate-100 overflow-hidden"><div class="h-full rounded-full bg-gradient-to-r from-amber-400 to-orange-500" style="width:' + lv.pct + '%"></div></div>'
+    + (meta.leveledUp ? '<p class="mt-2 text-sm font-bold text-violet-700">🎉 ' + pick({en:'Level up! You reached level ',es:'¡Subes de nivel! Llegaste al nivel ',fr:'Niveau supérieur ! Tu as atteint le niveau '}) + meta.newLevel + '</p>' : '')
+    + '    </div>'
+    + '    <p class="mt-4 text-sm font-semibold text-slate-700">🔥 ' + (meta.streakDays || 0) + ' ' + t('mathStreakDays') + '</p>'
+    + (milestoneTxt ? '<p class="mt-2 text-sm font-bold text-amber-700">' + milestoneTxt + '</p>' : '')
+    + '    <div class="mt-6 card p-4 text-left">'
+    + '      <label class="text-sm font-medium">' + t('guestName') + '</label>'
+    + '      <input id="guest-name" type="text" maxlength="' + MAX_ALIAS_LENGTH + '" placeholder="' + t('aliasPlaceholder') + '" style="text-transform:uppercase" class="mt-1 w-full px-3 py-2 rounded-lg border border-slate-200 focus-ring" ' + (opts.saved ? 'disabled' : '') + ' />'
+    + '      <p class="mt-2 text-xs text-slate-500">' + t('aliasHelp') + '</p>'
+    + '      <p class="mt-1 text-xs text-slate-500">' + t('guestRules') + '</p>'
+    + '      <label class="mt-2 flex items-center gap-2 text-xs text-slate-600"><input type="checkbox" id="accept-rules" class="focus-ring" ' + (opts.saved ? 'disabled' : '') + '/> ' + t('rulesAccept') + '</label>'
+    + '    </div>'
+    + '    <div class="mt-5 grid sm:grid-cols-2 lg:grid-cols-4 gap-2">'
+    + '      <button onclick="saveMathScore(\'' + opts.gameMode + '\')" class="btn-primary" ' + (opts.saved ? 'disabled' : '') + '>' + (opts.saved ? t('saved') : t('saveScore')) + '</button>'
+    + '      <button onclick="' + opts.retryFn + '" class="btn-ghost">' + t('playAgain') + '</button>'
+    + '      <button onclick="mathShare(\'' + opts.gameMode + '\',' + opts.score + ')" class="btn-ghost">📤 ' + pick({en:'Share',es:'Compartir',fr:'Partager'}) + '</button>'
+    + '      <button onclick="go(\'oramath\')" class="btn-ghost">← OraMath</button>'
+    + '    </div>'
+    + '  </div>'
+    + AdSlot()
+    + '</main>'
+    + Footer()
+    + '</div>';
+}
+function mathRecordTextFor(gameMode){
+  const su = mathSetupOrDefault();
+  const rec = MathEngine.bestRecord(loadMathRecords(), gameMode, su.ageGroup, su.difficulty);
+  return rec ? '🏅 ' + t('mathRecordLine').replace('{score}', rec.score) : '';
+}
+function mathShare(gameMode, score){
+  const name = gameMode === 'truth-or-trap' ? t('mathTTName') : t('mathSprintName');
+  shareResult(t('mathShareText').replace('{score}', score).replace('{game}', name));
+}
+/* Explicit, optional leaderboard save with a 3–4 char alias — same flow and
+   validation as Quiz/OraGuess saveScore() (rules checkbox, blocklist, empty
+   alias auto-generates one). XP/record/streak were already applied at game end. */
+function saveMathScore(gameMode){
+  const s = gameMode === 'truth-or-trap' ? state.mathTT : state.mathSprint;
+  if (!s || !s.ended || s.saved) return;
+  const rulesEl = document.getElementById('accept-rules');
+  if (!rulesEl || !rulesEl.checked) { toast(t('toastAcceptRules')); return; }
+  const nameEl = document.getElementById('guest-name');
+  const typed = nameEl ? nameEl.value : '';
+  let alias;
+  if (!typed.trim()) {
+    alias = generateGuestAlias();
+  } else {
+    alias = normalizeAlias(typed);
+    const check = validateLeaderboardAlias(alias);
+    if (!check.ok) { toast(t(check.error)); if (nameEl) nameEl.focus(); return; }
+  }
+  const acc = s.attempts ? Math.round((s.correct / s.attempts) * 100) : 0;
+  const record = LBCore.makeScoreRecord({
+    gameKey:'oramath', gameName:'OraMath', gameMode,
+    difficulty:s.difficulty, ageGroup:s.ageGroup, language:state.lang,
+    playerName: alias,
+    score: s.score, accuracy: acc,
+    durationSeconds: s.durationMs ? Math.round(s.durationMs / 1000) : null
+    // suspicious intentionally not set: Sprint legitimately has <1.5s answers
+  });
+  state.guestScores.push(record);
+  state.guestScores.sort((a, b) => b.score - a.score);
+  state.guestScores = state.guestScores.slice(0, 200);
+  LS.set(SCORES_KEY, state.guestScores);
+  state.user = { name: alias, isGuest: true };
+  LS.set('ora.user', state.user);
+  s.saved = true;
+  toast(t('saved'));
+  render();
+}
+
+/* ---- ¿Verdad o Trampa? (truth-or-trap) ---- */
+function startMathTT(){
+  const su = mathSetupOrDefault();
+  const info = MathEngine.ORAMATH_AGE_BANDS[su.ageGroup] || MathEngine.ORAMATH_AGE_BANDS.family;
+  if (state.mathTT && state.mathTT.qTimeout) clearTimeout(state.mathTT.qTimeout);
+  state.mathTT = {
+    ageGroup: su.ageGroup, difficulty: su.difficulty,
+    band: info.band, timeFactor: info.timeFactor,
+    lives: 3, score: 0, streak: 0, bestStreak: 0,
+    attempts: 0, correct: 0,
+    current: null, qTimeout: null, swipe: null,
+    ended: false, resultMeta: null, startedAt: Date.now(), durationMs: 0, saved: false
+  };
+  go('oramath', { mode:'truth-or-trap', play:true });
+  ttNext();
+}
+function resetMathTT(){
+  if (state.mathTT && state.mathTT.qTimeout) clearTimeout(state.mathTT.qTimeout);
+  state.mathTT = null;
+  startMathTT();
+}
+function ttNext(){
+  const s = state.mathTT;
+  if (!s || s.ended) return;
+  if (s.qTimeout){ clearTimeout(s.qTimeout); s.qTimeout = null; }
+  const eq = MathEngine.genTrapEquation(s.band, s.difficulty);
+  const timeLimitMs = MathEngine.ttTimeLimitMs(s.band, s.streak, s.timeFactor);
+  s.current = { eq, shownAt: Date.now(), timeLimitMs, resolved: false };
+  // Replacing #tt-zone's content recreates the card AND its .tt-bar node, so
+  // the CSS shrink animation restarts cleanly on every question.
+  const zone = document.getElementById('tt-zone');
+  if (zone) zone.innerHTML = mathTTCardHtml(s);
+  s.qTimeout = setTimeout(() => {
+    // Guard: a timeout firing on a navigated-away / replaced session is a no-op.
+    if (state.route !== 'oramath' || state.params.mode !== 'truth-or-trap' || state.mathTT !== s || s.ended) return;
+    ttResolve(null);
+  }, timeLimitMs);
+}
+function mathTTCardHtml(s){
+  const cur = s.current;
+  const elapsed = Math.max(0, Date.now() - cur.shownAt);
+  return ''
+    + '<div id="tt-card" class="tt-card card p-8 text-center fade-in" onpointerdown="ttDown(event)" onpointermove="ttMove(event)" onpointerup="ttUp(event)" onpointercancel="ttCancel(event)">'
+    + '  <div class="h-2 rounded-full bg-slate-100 overflow-hidden mb-6" aria-hidden="true"><div class="tt-bar h-full bg-gradient-to-r from-amber-400 to-rose-500" style="animation-duration:' + cur.timeLimitMs + 'ms;animation-delay:-' + elapsed + 'ms"></div></div>'
+    + '  <div id="tt-eq" class="font-display text-4xl md:text-5xl font-bold tabular-nums" aria-live="polite">' + mathEqText(cur.eq) + '</div>'
+    + '  <div id="tt-feedback" class="mt-4 min-h-[1.75rem] text-base font-semibold"></div>'
+    + '</div>';
+}
+function ttAnswer(guess){
+  const s = state.mathTT;
+  if (!s || s.ended || !s.current || s.current.resolved) return;
+  ttResolve(guess);
+}
+function ttResolve(guess){
+  const s = state.mathTT;
+  if (!s || s.ended || !s.current || s.current.resolved) return;
+  if (s.qTimeout){ clearTimeout(s.qTimeout); s.qTimeout = null; }
+  const cur = s.current;
+  cur.resolved = true;
+  s.attempts++;
+  const correct = guess !== null && guess === cur.eq.isTrue;
+  const timeLeftMs = Math.max(0, cur.timeLimitMs - (Date.now() - cur.shownAt));
+  if (correct){
+    const pts = MathEngine.ttScoreFor({ correct:true, streak:s.streak, timeLeftMs, timeLimitMs:cur.timeLimitMs, difficulty:s.difficulty });
+    s.correct++;
+    s.streak++;
+    if (s.streak > s.bestStreak) s.bestStreak = s.streak;
+    s.score += pts;
+    ttFlash(true, pts, false);
+  } else {
+    s.streak = 0;
+    s.lives--;
+    ttFlash(false, 0, guess === null);
+  }
+  ttPatchStats();
+  const delay = correct ? 550 : 1100; // give a beat to read the truth on misses
+  setTimeout(() => {
+    if (state.route !== 'oramath' || state.params.mode !== 'truth-or-trap' || state.mathTT !== s || s.ended) return;
+    if (s.lives <= 0) endMathTT(); else ttNext();
+  }, delay);
+}
+function ttFlash(ok, pts, timedOut){
+  const s = state.mathTT;
+  const card = document.getElementById('tt-card');
+  const fb = document.getElementById('tt-feedback');
+  const bar = document.querySelector('#tt-card .tt-bar');
+  if (bar) bar.style.animationPlayState = 'paused';
+  if (card) card.style.background = ok ? '#ecfdf5' : '#fff1f2';
+  if (!fb) return;
+  const truth = s && s.current ? (s.current.eq.isTrue
+    ? pick({en:'It was TRUE.',es:'Era VERDADERA.',fr:'C’était VRAI.'})
+    : pick({en:'It was FALSE.',es:'Era FALSA.',fr:'C’était FAUX.'})) : '';
+  fb.className = 'mt-4 min-h-[1.75rem] text-base font-semibold ' + (ok ? 'text-emerald-600' : 'text-rose-600');
+  fb.textContent = ok ? '+' + pts : ((timedOut ? pick({en:'Time’s up! ',es:'¡Tiempo! ',fr:'Temps écoulé ! '}) : '') + truth);
+}
+function ttPatchStats(){
+  const s = state.mathTT; if (!s) return;
+  const lives = document.getElementById('tt-lives'); if (lives) lives.textContent = '❤️'.repeat(Math.max(0, s.lives)) + '🖤'.repeat(Math.max(0, 3 - s.lives));
+  const sc = document.getElementById('tt-score'); if (sc) sc.textContent = s.score;
+  const st = document.getElementById('tt-streak'); if (st) st.textContent = s.streak;
+}
+function endMathTT(){
+  const s = state.mathTT;
+  if (!s || s.ended) return;
+  s.ended = true;
+  if (s.qTimeout){ clearTimeout(s.qTimeout); s.qTimeout = null; }
+  s.durationMs = Date.now() - s.startedAt;
+  const acc = s.attempts ? Math.round((s.correct / s.attempts) * 100) : 0;
+  s.resultMeta = finishMathGame({ gameMode:'truth-or-trap', ageGroup:s.ageGroup, difficulty:s.difficulty, score:s.score, accuracy:acc, durationMs: s.durationMs });
+  render();
+  if (s.resultMeta.leveledUp || s.resultMeta.milestone || s.resultMeta.recordIsNew) { try { confetti(); } catch (e) {} }
+}
+/* Swipe: pointer events with capture; vertical scroll keeps working thanks to
+   touch-action:pan-y on the card. Buttons + arrow keys remain the accessible path. */
+function ttDown(e){
+  const s = state.mathTT;
+  if (!s || s.ended || !s.current || s.current.resolved) return;
+  s.swipe = { id:e.pointerId, x:e.clientX, y:e.clientY, dx:0, dy:0 };
+  const card = document.getElementById('tt-card');
+  if (card){ try { card.setPointerCapture(e.pointerId); } catch (err) {} }
+}
+function ttMove(e){
+  const s = state.mathTT;
+  if (!s || !s.swipe || e.pointerId !== s.swipe.id) return;
+  s.swipe.dx = e.clientX - s.swipe.x;
+  s.swipe.dy = e.clientY - s.swipe.y;
+  const card = document.getElementById('tt-card');
+  if (card && Math.abs(s.swipe.dx) > Math.abs(s.swipe.dy)){
+    card.style.transform = 'translateX(' + s.swipe.dx + 'px) rotate(' + (s.swipe.dx / 20) + 'deg)';
+    card.style.background = s.swipe.dx > 30 ? '#ecfdf5' : s.swipe.dx < -30 ? '#fff1f2' : '';
+  }
+}
+function ttUp(e){
+  const s = state.mathTT;
+  if (!s || !s.swipe || e.pointerId !== s.swipe.id) return;
+  const dx = s.swipe.dx, dy = s.swipe.dy;
+  s.swipe = null;
+  const card = document.getElementById('tt-card');
+  if (card){ card.style.transform = ''; if (!s.current || !s.current.resolved) card.style.background = ''; }
+  if (Math.abs(dx) >= 60 && Math.abs(dx) > Math.abs(dy)) ttAnswer(dx > 0);
+}
+function ttCancel(){
+  const s = state.mathTT;
+  if (s) s.swipe = null;
+  const card = document.getElementById('tt-card');
+  if (card){ card.style.transform = ''; card.style.background = ''; }
+}
+function viewMathTrueFalse(){
+  const s = state.mathTT;
+  if (!s || !state.params.play){
+    // Setup screen: drop any stale session (back button mid-game etc.).
+    if (s){ if (s.qTimeout) clearTimeout(s.qTimeout); state.mathTT = null; }
+    return mathGameSetupHtml('truth-or-trap');
+  }
+  if (s.ended){
+    const acc = s.attempts ? Math.round((s.correct / s.attempts) * 100) : 0;
+    return mathResultsHtml({
+      gameMode:'truth-or-trap', score:s.score, accuracy:acc, meta:s.resultMeta, retryFn:'resetMathTT()', saved:s.saved,
+      statLine: pick({en:'Best streak',es:'Mejor racha',fr:'Meilleure série'}) + ': <strong>' + s.bestStreak + '</strong> · ' + pick({en:'Answered',es:'Respondidas',fr:'Répondues'}) + ': <strong>' + s.attempts + '</strong>'
+    });
+  }
+  return ''
+    + '<div class="min-h-screen bg-slate-50">'
+    + Header()
+    + '<main class="max-w-xl mx-auto px-4 sm:px-6 py-8">'
+    + '  <div class="flex items-center justify-between mb-4 text-sm">'
+    + '    <span id="tt-lives" class="text-base" aria-label="' + pick({en:'Lives',es:'Vidas',fr:'Vies'}) + '">' + '❤️'.repeat(s.lives) + '🖤'.repeat(3 - s.lives) + '</span>'
+    + '    <span class="font-semibold text-slate-700">🔥 <span id="tt-streak">' + s.streak + '</span></span>'
+    + '    <span class="font-semibold text-amber-700">' + pick({en:'Score',es:'Puntos',fr:'Score'}) + ': <span id="tt-score">' + s.score + '</span></span>'
+    + '  </div>'
+    + '  <div id="tt-zone">' + (s.current ? mathTTCardHtml(s) : '') + '</div>'
+    + '  <div class="mt-5 grid grid-cols-2 gap-3">'
+    + '    <button onclick="ttAnswer(false)" class="btn-ghost py-4 text-lg font-bold text-rose-600 focus-ring">✗ ' + pick({en:'False',es:'Falso',fr:'Faux'}) + '</button>'
+    + '    <button onclick="ttAnswer(true)" class="btn-primary py-4 text-lg font-bold focus-ring">✓ ' + pick({en:'True',es:'Verdadero',fr:'Vrai'}) + '</button>'
+    + '  </div>'
+    + '  <p class="mt-3 text-center text-xs text-slate-500">' + pick({en:'Swipe right = true, left = false — or use the buttons or ←/→ keys.',es:'Desliza a la derecha = verdadero, a la izquierda = falso — o usa los botones o las flechas ←/→.',fr:'Glisse à droite = vrai, à gauche = faux — ou utilise les boutons ou les flèches ←/→.'}) + '</p>'
+    + '  <button onclick="go(\'oramath\')" class="mt-5 block mx-auto text-sm text-slate-500 hover:underline focus-ring">' + pick({en:'Quit round',es:'Salir de la partida',fr:'Quitter la partie'}) + '</button>'
+    + '</main>'
+    + '</div>';
+}
+
+/* ---- Ora Sprint (math-sprint) ---- */
+const MATH_SPRINT_SECONDS = 60;
+function startMathSprint(){
+  const su = mathSetupOrDefault();
+  const info = MathEngine.ORAMATH_AGE_BANDS[su.ageGroup] || MathEngine.ORAMATH_AGE_BANDS.family;
+  if (state.mathSprint && state.mathSprint.timer) clearInterval(state.mathSprint.timer);
+  state.mathSprint = {
+    ageGroup: su.ageGroup, difficulty: su.difficulty, band: info.band,
+    endsAt: Date.now() + MATH_SPRINT_SECONDS * 1000,
+    timer: null, consecutive: 0, score: 0, correct: 0, attempts: 0,
+    current: null, input: '',
+    ended: false, resultMeta: null, startedAt: Date.now(), durationMs: 0, saved: false
+  };
+  msNextOp();
+  go('oramath', { mode:'math-sprint', play:true });
+  msStartTimer();
+}
+function resetMathSprint(){
+  if (state.mathSprint && state.mathSprint.timer) clearInterval(state.mathSprint.timer);
+  state.mathSprint = null;
+  startMathSprint();
+}
+function msNextOp(){
+  const s = state.mathSprint;
+  if (!s || s.ended) return;
+  s.current = { op: MathEngine.genOperation(s.band, s.difficulty), askedAt: Date.now() };
+  s.input = '';
+  const opEl = document.getElementById('ms-op'); if (opEl) opEl.textContent = mathOpText(s.current.op);
+  const inEl = document.getElementById('ms-input'); if (inEl) inEl.textContent = '';
+}
+function msStartTimer(){
+  const s = state.mathSprint;
+  if (!s) return;
+  if (s.timer) clearInterval(s.timer);
+  s.timer = setInterval(() => {
+    // Guard: an interval ticking on a navigated-away / replaced session
+    // clears itself instead of touching the DOM of another page.
+    if (state.route !== 'oramath' || state.params.mode !== 'math-sprint' || state.mathSprint !== s || s.ended){ clearInterval(s.timer); return; }
+    const leftMs = s.endsAt - Date.now();
+    const el = document.getElementById('ms-time'); if (el) el.textContent = Math.max(0, Math.ceil(leftMs / 1000));
+    const bar = document.getElementById('ms-timebar'); if (bar) bar.style.width = Math.max(0, Math.min(100, (leftMs / (MATH_SPRINT_SECONDS * 1000)) * 100)) + '%';
+    if (leftMs <= 0){ clearInterval(s.timer); s.timer = null; endMathSprint(); }
+  }, 250);
+}
+function msKey(k){
+  const s = state.mathSprint;
+  if (!s || s.ended || !s.current) return;
+  if (k === 'ok'){ msSubmit(); return; }
+  if (k === 'back') s.input = s.input.slice(0, -1);
+  else if (/^[0-9]$/.test(k) && s.input.length < 4) s.input += k;
+  const inEl = document.getElementById('ms-input'); if (inEl) inEl.textContent = s.input;
+}
+function msSubmit(){
+  const s = state.mathSprint;
+  if (!s || s.ended || !s.current || s.input === '') return;
+  s.attempts++;
+  const fb = document.getElementById('ms-feedback');
+  if (Number(s.input) === s.current.op.answer){
+    const answerMs = Date.now() - s.current.askedAt;
+    const pts = MathEngine.sprintScoreFor({ consecutive: s.consecutive, difficulty: s.difficulty });
+    const bonus = MathEngine.sprintBonusMs(answerMs);
+    s.correct++;
+    s.consecutive++;
+    s.score += pts;
+    if (bonus) s.endsAt += bonus; // +2s for fast answers — endsAt-based, no counter drift
+    if (fb){
+      fb.className = 'min-h-[1.5rem] text-sm font-semibold text-emerald-600';
+      fb.textContent = '+' + pts + (bonus ? ' · +2s ⏱️' : '');
+    }
+  } else {
+    s.consecutive = 0;
+    if (fb){
+      fb.className = 'min-h-[1.5rem] text-sm font-semibold text-rose-600';
+      fb.textContent = pick({en:'Combo lost — it was ',es:'Combo perdido — era ',fr:'Combo perdu — c’était '}) + s.current.op.answer;
+    }
+  }
+  const sc = document.getElementById('ms-score'); if (sc) sc.textContent = s.score;
+  const combo = document.getElementById('ms-combo');
+  if (combo){
+    combo.textContent = '×' + MathEngine.sprintMultiplier(s.consecutive);
+    combo.classList.remove('fade-in'); void combo.offsetWidth; combo.classList.add('fade-in');
+  }
+  msNextOp();
+}
+function endMathSprint(){
+  const s = state.mathSprint;
+  if (!s || s.ended) return;
+  s.ended = true;
+  if (s.timer){ clearInterval(s.timer); s.timer = null; }
+  s.durationMs = Date.now() - s.startedAt;
+  const acc = s.attempts ? Math.round((s.correct / s.attempts) * 100) : 0;
+  s.resultMeta = finishMathGame({ gameMode:'math-sprint', ageGroup:s.ageGroup, difficulty:s.difficulty, score:s.score, accuracy:acc, durationMs: s.durationMs });
+  render();
+  if (s.resultMeta.leveledUp || s.resultMeta.milestone || s.resultMeta.recordIsNew){ try { confetti(); } catch (e) {} }
+}
+function viewMathSprint(){
+  const s = state.mathSprint;
+  if (!s || !state.params.play){
+    // Setup screen: drop any stale session (back button mid-game etc.).
+    if (s){ if (s.timer) clearInterval(s.timer); state.mathSprint = null; }
+    return mathGameSetupHtml('math-sprint');
+  }
+  if (s.ended){
+    const acc = s.attempts ? Math.round((s.correct / s.attempts) * 100) : 0;
+    return mathResultsHtml({
+      gameMode:'math-sprint', score:s.score, accuracy:acc, meta:s.resultMeta, retryFn:'resetMathSprint()', saved:s.saved,
+      statLine: pick({en:'Solved',es:'Resueltas',fr:'Résolues'}) + ': <strong>' + s.correct + '</strong> / ' + s.attempts
+    });
+  }
+  const leftMs = Math.max(0, s.endsAt - Date.now());
+  const keypad = [['7','7'],['8','8'],['9','9'],['4','4'],['5','5'],['6','6'],['1','1'],['2','2'],['3','3'],['back','⌫'],['0','0'],['ok','✓']]
+    .map(k => '<button onclick="msKey(\'' + k[0] + '\')" class="ms-key focus-ring' + (k[0]==='ok' ? ' !bg-violet-600 !text-white !border-violet-600' : '') + '" aria-label="' + (k[0]==='back' ? pick({en:'Delete',es:'Borrar',fr:'Effacer'}) : k[0]==='ok' ? pick({en:'Submit',es:'Enviar',fr:'Valider'}) : k[1]) + '">' + k[1] + '</button>').join('');
+  return ''
+    + '<div class="min-h-screen bg-slate-50">'
+    + Header()
+    + '<main class="max-w-md mx-auto px-4 sm:px-6 py-8">'
+    + '  <div class="flex items-center justify-between mb-2 text-sm">'
+    + '    <span class="font-semibold text-slate-700">⏱️ <span id="ms-time">' + Math.ceil(leftMs / 1000) + '</span>s</span>'
+    + '    <span id="ms-combo" class="chip bg-violet-100 text-violet-700 font-bold">×' + MathEngine.sprintMultiplier(s.consecutive) + '</span>'
+    + '    <span class="font-semibold text-amber-700">' + pick({en:'Score',es:'Puntos',fr:'Score'}) + ': <span id="ms-score">' + s.score + '</span></span>'
+    + '  </div>'
+    + '  <div class="h-2 rounded-full bg-slate-100 overflow-hidden mb-5" aria-hidden="true"><div id="ms-timebar" class="h-full bg-gradient-to-r from-violet-500 to-fuchsia-500 transition-all" style="width:' + Math.min(100, (leftMs / (MATH_SPRINT_SECONDS * 1000)) * 100) + '%"></div></div>'
+    + '  <div class="card p-6 text-center">'
+    + '    <div id="ms-op" class="font-display text-4xl md:text-5xl font-bold tabular-nums" aria-live="polite">' + (s.current ? mathOpText(s.current.op) : '') + '</div>'
+    + '    <div id="ms-input" class="mt-4 min-h-[2.5rem] text-3xl font-bold tabular-nums text-violet-700">' + s.input + '</div>'
+    + '    <div id="ms-feedback" class="min-h-[1.5rem] text-sm font-semibold"></div>'
+    + '  </div>'
+    + '  <div class="mt-4 grid grid-cols-3 gap-2">' + keypad + '</div>'
+    + '  <p class="mt-3 text-center text-xs text-slate-500">' + pick({en:'On a keyboard: digits, Backspace and Enter.',es:'Con teclado: dígitos, Retroceso y Enter.',fr:'Au clavier : chiffres, Retour arrière et Entrée.'}) + '</p>'
+    + '  <button onclick="go(\'oramath\')" class="mt-4 block mx-auto text-sm text-slate-500 hover:underline focus-ring">' + pick({en:'Quit round',es:'Salir de la partida',fr:'Quitter la partie'}) + '</button>'
+    + '</main>'
+    + '</div>';
+}
+
+function viewOraMath(){
+  const mode = state.params.mode || 'hub';
+  if (mode === 'truth-or-trap') return viewMathTrueFalse();
+  if (mode === 'math-sprint') return viewMathSprint();
+  const gameCards = [
+    { mode:'truth-or-trap', icon:'🎭', name:t('mathTTName'), blurb:t('mathTTSub') },
+    { mode:'math-sprint', icon:'⚡', name:t('mathSprintName'), blurb:t('mathSprintSub') }
+  ].map(g => ''
+    + '<button onclick="go(\'oramath\',{mode:\'' + g.mode + '\'})" class="card card-hover p-5 text-left focus-ring">'
+    + '  <div class="text-3xl" aria-hidden="true">' + g.icon + '</div>'
+    + '  <h2 class="mt-3 font-display text-xl font-bold">' + g.name + '</h2>'
+    + '  <p class="mt-2 text-sm text-slate-600">' + g.blurb + '</p>'
+    + '  <span class="mt-3 inline-block text-sm font-semibold text-brand-violet">▶ ' + t('mathPlayNow') + '</span>'
+    + '</button>').join('');
+  return ''
+    + '<div class="min-h-screen bg-slate-50">'
+    + Header()
+    + '<main class="max-w-5xl mx-auto px-4 sm:px-6 py-10">'
+    + '  <section class="text-center max-w-3xl mx-auto">'
+    + '    <span class="chip bg-amber-100 text-amber-800">➗ OraMath · HorusQuest</span>'
+    + '    <h1 class="mt-4 font-display text-4xl md:text-5xl font-bold">' + t('mathTitle') + '</h1>'
+    + '    <p class="mt-4 text-lg text-slate-600">' + t('mathSub') + '</p>'
+    + '    <p class="mt-4 text-slate-600 leading-relaxed">' + t('mathBody') + '</p>'
+    + '  </section>'
+    + '  <div class="mt-8">' + mathPlayerPanelHtml() + '</div>'
+    + '  <div class="mt-6 grid sm:grid-cols-2 gap-5">'
+    + gameCards
+    + '    <div class="card p-5 opacity-70" aria-disabled="true">'
+    + '      <div class="text-3xl" aria-hidden="true">🧩</div>'
+    + '      <h2 class="mt-3 font-display text-xl font-bold">' + t('comingSoon') + '</h2>'
+    + '      <p class="mt-2 text-sm text-slate-600">' + t('mathMoreSoon') + '</p>'
+    + '    </div>'
+    + '  </div>'
+    + '</main>'
+    + Footer()
+    + '</div>';
+}
+/* ====== ORAMATH END ====== */
+
 function viewOraQuestHome() {
   const seed = dailySeed();
   const dailyCat = CATEGORIES[seed % CATEGORIES.length];
@@ -8397,6 +9337,7 @@ const LB_TAB_META = {
   oraquest: { titleKey:'lbTitleOraquest', subKey:'lbSubOraquest', labelKey:'lbTabOraquest' },
   guessora: { titleKey:'lbTitleGuessora', subKey:'lbSubGuessora', labelKey:'lbTabGuessora' },
   orawords: { titleKey:'lbTitleOrawords', subKey:'lbSubOrawords', labelKey:'lbTabOrawords' },
+  oramath:  { titleKey:'lbTitleOramath',  subKey:'lbSubOramath',  labelKey:'lbTabOramath' },
   daily:    { titleKey:'lbTitleDaily',    subKey:'lbSubDaily',    labelKey:'lbTabDaily' },
   teams:    { titleKey:'lbTitleTeams',    subKey:'lbSubTeams',    labelKey:'lbTabTeams' }
 };
@@ -8471,17 +9412,18 @@ function LeaderboardFilters() {
 }
 
 function viewLeaderboards() {
-  // OraQuest page: the board only shows OraQuest scores (Quiz Battle + Daily
-  // Quest). Other games (OraGuess, OraWords…) live on their own pages, so no
-  // game tabs here. LBCore stays multi-game for those future boards.
-  const meta = LB_TAB_META.oraquest;
+  // Multi-game board: one page with a tab per game (LBCore.TABS). The 'all'
+  // tab shows every game (with a game column); per-game tabs filter to one
+  // gameKey. The empty-state CTA points at the selected game's page.
+  const meta = LB_TAB_META[state.lbTab] || LB_TAB_META.oraquest;
   const rows = lbActiveRows();
+  const emptyCta = { oraquest:'quiz', guessora:'guess', orawords:'words', oramath:'oramath', daily:'daily', teams:'teams' }[state.lbTab] || 'play';
   const body = rows.length
-    ? LeaderboardTable(rows, { showGame:false, showDate:true })
+    ? LeaderboardTable(rows, { showGame: state.lbTab === 'all', showDate:true })
     : `<div class="card p-8 text-center">
          <div class="text-4xl">🏆</div>
          <p class="mt-3 text-slate-600 max-w-md mx-auto text-sm">${t('lbEmptyGame')}</p>
-         <button onclick="go('quiz')" class="mt-5 btn-primary">${t('ctaQuizzes')}</button>
+         <button onclick="go('${emptyCta}')" class="mt-5 btn-primary">${t('navPlay')}</button>
        </div>`;
   return `
   <div class="min-h-screen bg-slate-50">
@@ -8491,6 +9433,7 @@ function viewLeaderboards() {
         <h1 class="font-display text-3xl md:text-4xl font-bold">${t(meta.titleKey)}</h1>
         <p class="text-slate-600">${t(meta.subKey)}</p>
       </div>
+      ${LeaderboardTabs()}
       ${LeaderboardFilters()}
       ${body}
       <p class="mt-4 text-center text-xs text-slate-400">${t('lbSub')}</p>
@@ -9522,6 +10465,7 @@ function render() {
     case 'oraquest': html = viewOraQuestHome(); break;
     case 'universe': html = viewOraUniverse(); break;
     case 'words': html = viewWords(); break;
+    case 'oramath': html = viewOraMath(); break;
     case 'quiz': html = viewQuizSetup(); break;
     case 'quiz-play': html = viewQuizPlay(); break;
     case 'quiz-results': html = viewQuizResults(); break;
@@ -9569,6 +10513,19 @@ function setupCookieBanner() {
     document.getElementById('cookie-banner').classList.add('hide');
   });
 }
+
+/* Keyboard support for OraMath (arrows for Truth-or-Trap, digits for Sprint) */
+document.addEventListener('keydown', (e) => {
+  if (state.route !== 'oramath' || !state.params.play) return;
+  if (state.params.mode === 'truth-or-trap' && state.mathTT && !state.mathTT.ended){
+    if (e.key === 'ArrowRight'){ e.preventDefault(); ttAnswer(true); }
+    else if (e.key === 'ArrowLeft'){ e.preventDefault(); ttAnswer(false); }
+  } else if (state.params.mode === 'math-sprint' && state.mathSprint && !state.mathSprint.ended){
+    if (/^[0-9]$/.test(e.key)){ msKey(e.key); }
+    else if (e.key === 'Backspace'){ e.preventDefault(); msKey('back'); }
+    else if (e.key === 'Enter'){ e.preventDefault(); msKey('ok'); }
+  }
+});
 
 /* Keyboard support for quiz */
 document.addEventListener('keydown', (e) => {
