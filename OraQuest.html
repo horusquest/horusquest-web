@@ -9374,17 +9374,18 @@ function LeaderboardFilters() {
 }
 
 function viewLeaderboards() {
-  // OraQuest page: the board only shows OraQuest scores (Quiz Battle + Daily
-  // Quest). Other games (OraGuess, OraWords…) live on their own pages, so no
-  // game tabs here. LBCore stays multi-game for those future boards.
-  const meta = LB_TAB_META.oraquest;
+  // Multi-game board: one page with a tab per game (LBCore.TABS). The 'all'
+  // tab shows every game (with a game column); per-game tabs filter to one
+  // gameKey. The empty-state CTA points at the selected game's page.
+  const meta = LB_TAB_META[state.lbTab] || LB_TAB_META.oraquest;
   const rows = lbActiveRows();
+  const emptyCta = { oraquest:'quiz', guessora:'guess', orawords:'words', oramath:'oramath', daily:'daily', teams:'teams' }[state.lbTab] || 'play';
   const body = rows.length
-    ? LeaderboardTable(rows, { showGame:false, showDate:true })
+    ? LeaderboardTable(rows, { showGame: state.lbTab === 'all', showDate:true })
     : `<div class="card p-8 text-center">
          <div class="text-4xl">🏆</div>
          <p class="mt-3 text-slate-600 max-w-md mx-auto text-sm">${t('lbEmptyGame')}</p>
-         <button onclick="go('quiz')" class="mt-5 btn-primary">${t('ctaQuizzes')}</button>
+         <button onclick="go('${emptyCta}')" class="mt-5 btn-primary">${t('navPlay')}</button>
        </div>`;
   return `
   <div class="min-h-screen bg-slate-50">
@@ -9394,6 +9395,7 @@ function viewLeaderboards() {
         <h1 class="font-display text-3xl md:text-4xl font-bold">${t(meta.titleKey)}</h1>
         <p class="text-slate-600">${t(meta.subKey)}</p>
       </div>
+      ${LeaderboardTabs()}
       ${LeaderboardFilters()}
       ${body}
       <p class="mt-4 text-center text-xs text-slate-400">${t('lbSub')}</p>
