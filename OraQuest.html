@@ -9730,7 +9730,7 @@ function aboutBody(){ return `
 `; }
 function contactBody(){ return `
   <p>${t('contactIntro')}</p>
-  <form id="contact-form" name="contact" method="POST" action="/" data-netlify="true" netlify-honeypot="bot-field" onsubmit="submitContact(event)" class="mt-4 space-y-3">
+  <form id="contact-form" name="contact" method="POST" action="${escapeHtml(pathFor('contact', state.lang))}" data-netlify="true" netlify-honeypot="bot-field" onsubmit="submitContact(event)" class="mt-4 space-y-3">
     <input type="hidden" name="form-name" value="contact" />
     <input type="hidden" name="language" value="${escapeHtml(state.lang)}" />
     <input type="hidden" name="page" value="${escapeHtml(pathFor('contact', state.lang))}" />
@@ -10520,7 +10520,7 @@ async function submitContact(event) {
   setContactStatus(statusEl, t('contactSending'), true);
 
   try {
-    const response = await fetch('/', {
+    const response = await fetch(form.getAttribute('action') || location.pathname || '/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams(formData).toString()
