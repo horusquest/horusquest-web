@@ -8058,20 +8058,11 @@ function mathActiveStreakDays(){
   return (st.last === today || st.last === MathEngine.prevDayKey(today)) ? st.days : 0;
 }
 
-/* Single funnel every OraMath game calls when a session ends: saves the score
-   to the leaderboard, updates the personal record, adds XP and advances the
-   global OraMath daily streak. Returns everything the results screen needs. */
+/* Single funnel every OraMath game calls when a session ends: updates the
+   personal record, adds XP and advances the global OraMath daily streak.
+   Leaderboard saving is NOT automatic — like Quiz/OraGuess it is an explicit,
+   optional step on the results screen via saveMathScore() (3–4 char alias). */
 function finishMathGame(args){
-  try {
-    const rec = LBCore.makeScoreRecord({
-      gameKey:'oramath', gameMode:args.gameMode, language:state.lang,
-      ageGroup:args.ageGroup, difficulty:args.difficulty,
-      score:args.score, accuracy:args.accuracy,
-      durationSeconds: args.durationMs != null ? Math.round(args.durationMs / 1000) : null
-    });
-    state.guestScores.unshift(rec);
-    LS.set(SCORES_KEY, state.guestScores);
-  } catch (e) {}
   // todayKey() is LOCAL-date based on purpose: a UTC key (toISOString) would
   // break streaks for anyone playing after local midnight.
   const today = todayKey();
@@ -8234,8 +8225,16 @@ function mathResultsHtml(opts){
     + '    </div>'
     + '    <p class="mt-4 text-sm font-semibold text-slate-700">🔥 ' + (meta.streakDays || 0) + ' ' + t('mathStreakDays') + '</p>'
     + (milestoneTxt ? '<p class="mt-2 text-sm font-bold text-amber-700">' + milestoneTxt + '</p>' : '')
-    + '    <div class="mt-6 grid sm:grid-cols-3 gap-2">'
-    + '      <button onclick="' + opts.retryFn + '" class="btn-primary">' + t('playAgain') + '</button>'
+    + '    <div class="mt-6 card p-4 text-left">'
+    + '      <label class="text-sm font-medium">' + t('guestName') + '</label>'
+    + '      <input id="guest-name" type="text" maxlength="' + MAX_ALIAS_LENGTH + '" placeholder="' + t('aliasPlaceholder') + '" style="text-transform:uppercase" class="mt-1 w-full px-3 py-2 rounded-lg border border-slate-200 focus-ring" ' + (opts.saved ? 'disabled' : '') + ' />'
+    + '      <p class="mt-2 text-xs text-slate-500">' + t('aliasHelp') + '</p>'
+    + '      <p class="mt-1 text-xs text-slate-500">' + t('guestRules') + '</p>'
+    + '      <label class="mt-2 flex items-center gap-2 text-xs text-slate-600"><input type="checkbox" id="accept-rules" class="focus-ring" ' + (opts.saved ? 'disabled' : '') + '/> ' + t('rulesAccept') + '</label>'
+    + '    </div>'
+    + '    <div class="mt-5 grid sm:grid-cols-2 lg:grid-cols-4 gap-2">'
+    + '      <button onclick="saveMathScore(\'' + opts.gameMode + '\')" class="btn-primary" ' + (opts.saved ? 'disabled' : '') + '>' + (opts.saved ? t('saved') : t('saveScore')) + '</button>'
+    + '      <button onclick="' + opts.retryFn + '" class="btn-ghost">' + t('playAgain') + '</button>'
     + '      <button onclick="mathShare(\'' + opts.gameMode + '\',' + opts.score + ')" class="btn-ghost">📤 ' + pick({en:'Share',es:'Compartir',fr:'Partager'}) + '</button>'
     + '      <button onclick="go(\'oramath\')" class="btn-ghost">← OraMath</button>'
     + '    </div>'
@@ -8254,6 +8253,43 @@ function mathShare(gameMode, score){
   const name = gameMode === 'truth-or-trap' ? t('mathTTName') : t('mathSprintName');
   shareResult(t('mathShareText').replace('{score}', score).replace('{game}', name));
 }
+/* Explicit, optional leaderboard save with a 3–4 char alias — same flow and
+   validation as Quiz/OraGuess saveScore() (rules checkbox, blocklist, empty
+   alias auto-generates one). XP/record/streak were already applied at game end. */
+function saveMathScore(gameMode){
+  const s = gameMode === 'truth-or-trap' ? state.mathTT : state.mathSprint;
+  if (!s || !s.ended || s.saved) return;
+  const rulesEl = document.getElementById('accept-rules');
+  if (!rulesEl || !rulesEl.checked) { toast(t('toastAcceptRules')); return; }
+  const nameEl = document.getElementById('guest-name');
+  const typed = nameEl ? nameEl.value : '';
+  let alias;
+  if (!typed.trim()) {
+    alias = generateGuestAlias();
+  } else {
+    alias = normalizeAlias(typed);
+    const check = validateLeaderboardAlias(alias);
+    if (!check.ok) { toast(t(check.error)); if (nameEl) nameEl.focus(); return; }
+  }
+  const acc = s.attempts ? Math.round((s.correct / s.attempts) * 100) : 0;
+  const record = LBCore.makeScoreRecord({
+    gameKey:'oramath', gameName:'OraMath', gameMode,
+    difficulty:s.difficulty, ageGroup:s.ageGroup, language:state.lang,
+    playerName: alias,
+    score: s.score, accuracy: acc,
+    durationSeconds: s.durationMs ? Math.round(s.durationMs / 1000) : null
+    // suspicious intentionally not set: Sprint legitimately has <1.5s answers
+  });
+  state.guestScores.push(record);
+  state.guestScores.sort((a, b) => b.score - a.score);
+  state.guestScores = state.guestScores.slice(0, 200);
+  LS.set(SCORES_KEY, state.guestScores);
+  state.user = { name: alias, isGuest: true };
+  LS.set('ora.user', state.user);
+  s.saved = true;
+  toast(t('saved'));
+  render();
+}
 
 /* ---- ¿Verdad o Trampa? (truth-or-trap) ---- */
 function startMathTT(){
@@ -8266,7 +8302,7 @@ function startMathTT(){
     lives: 3, score: 0, streak: 0, bestStreak: 0,
     attempts: 0, correct: 0,
     current: null, qTimeout: null, swipe: null,
-    ended: false, resultMeta: null, startedAt: Date.now()
+    ended: false, resultMeta: null, startedAt: Date.now(), durationMs: 0, saved: false
   };
   go('oramath', { mode:'truth-or-trap', play:true });
   ttNext();
@@ -8361,8 +8397,9 @@ function endMathTT(){
   if (!s || s.ended) return;
   s.ended = true;
   if (s.qTimeout){ clearTimeout(s.qTimeout); s.qTimeout = null; }
+  s.durationMs = Date.now() - s.startedAt;
   const acc = s.attempts ? Math.round((s.correct / s.attempts) * 100) : 0;
-  s.resultMeta = finishMathGame({ gameMode:'truth-or-trap', ageGroup:s.ageGroup, difficulty:s.difficulty, score:s.score, accuracy:acc, durationMs: Date.now() - s.startedAt });
+  s.resultMeta = finishMathGame({ gameMode:'truth-or-trap', ageGroup:s.ageGroup, difficulty:s.difficulty, score:s.score, accuracy:acc, durationMs: s.durationMs });
   render();
   if (s.resultMeta.leveledUp || s.resultMeta.milestone || s.resultMeta.recordIsNew) { try { confetti(); } catch (e) {} }
 }
@@ -8411,7 +8448,7 @@ function viewMathTrueFalse(){
   if (s.ended){
     const acc = s.attempts ? Math.round((s.correct / s.attempts) * 100) : 0;
     return mathResultsHtml({
-      gameMode:'truth-or-trap', score:s.score, accuracy:acc, meta:s.resultMeta, retryFn:'resetMathTT()',
+      gameMode:'truth-or-trap', score:s.score, accuracy:acc, meta:s.resultMeta, retryFn:'resetMathTT()', saved:s.saved,
       statLine: pick({en:'Best streak',es:'Mejor racha',fr:'Meilleure série'}) + ': <strong>' + s.bestStreak + '</strong> · ' + pick({en:'Answered',es:'Respondidas',fr:'Répondues'}) + ': <strong>' + s.attempts + '</strong>'
     });
   }
@@ -8446,7 +8483,7 @@ function startMathSprint(){
     endsAt: Date.now() + MATH_SPRINT_SECONDS * 1000,
     timer: null, consecutive: 0, score: 0, correct: 0, attempts: 0,
     current: null, input: '',
-    ended: false, resultMeta: null, startedAt: Date.now()
+    ended: false, resultMeta: null, startedAt: Date.now(), durationMs: 0, saved: false
   };
   msNextOp();
   go('oramath', { mode:'math-sprint', play:true });
@@ -8524,8 +8561,9 @@ function endMathSprint(){
   if (!s || s.ended) return;
   s.ended = true;
   if (s.timer){ clearInterval(s.timer); s.timer = null; }
+  s.durationMs = Date.now() - s.startedAt;
   const acc = s.attempts ? Math.round((s.correct / s.attempts) * 100) : 0;
-  s.resultMeta = finishMathGame({ gameMode:'math-sprint', ageGroup:s.ageGroup, difficulty:s.difficulty, score:s.score, accuracy:acc, durationMs: Date.now() - s.startedAt });
+  s.resultMeta = finishMathGame({ gameMode:'math-sprint', ageGroup:s.ageGroup, difficulty:s.difficulty, score:s.score, accuracy:acc, durationMs: s.durationMs });
   render();
   if (s.resultMeta.leveledUp || s.resultMeta.milestone || s.resultMeta.recordIsNew){ try { confetti(); } catch (e) {} }
 }
@@ -8539,7 +8577,7 @@ function viewMathSprint(){
   if (s.ended){
     const acc = s.attempts ? Math.round((s.correct / s.attempts) * 100) : 0;
     return mathResultsHtml({
-      gameMode:'math-sprint', score:s.score, accuracy:acc, meta:s.resultMeta, retryFn:'resetMathSprint()',
+      gameMode:'math-sprint', score:s.score, accuracy:acc, meta:s.resultMeta, retryFn:'resetMathSprint()', saved:s.saved,
       statLine: pick({en:'Solved',es:'Resueltas',fr:'Résolues'}) + ': <strong>' + s.correct + '</strong> / ' + s.attempts
     });
   }

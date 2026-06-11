@@ -94,9 +94,11 @@ block (`MathEngine` IIFE: injectable rng/date, no DOM/state/clock) — tested by
 - **Retention core:** `oramath:profile` (XP; level L→L+1 costs L×100),
   `oramath:streak` (global daily streak, **local-date** `todayKey()`, milestones
   3/7/30), `oramath:records` (per `mode|ageGroup|difficulty`, strictly-higher
-  replaces). `finishMathGame()` is the single end-of-game funnel (leaderboard
-  record with `gameKey:'oramath'` + record + XP + streak); suspicious flag is
-  intentionally NOT set (Sprint legitimately has <1.5s answers).
+  replaces). `finishMathGame()` is the end-of-game funnel for record + XP +
+  streak; the leaderboard save is a separate, optional step on the results
+  screen via `saveMathScore()` (3–4 char alias card, same validation flow as
+  Quiz/OraGuess `saveScore()`). The suspicious flag is intentionally NOT set
+  (Sprint legitimately has <1.5s answers).
 - **¿Verdad o Trampa?** (`truth-or-trap`): trap equations from `TT_TABLE`
   (engine re-checks falseness; accidental truths fall back to off-by-1 — the
   property test re-evaluates every statement independently). Time bar is a pure
