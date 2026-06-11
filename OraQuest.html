@@ -83,7 +83,7 @@
   .tt-bar { transform-origin: left; animation-name: ttShrink; animation-timing-function: linear; animation-fill-mode: forwards; }
   @keyframes ttShrink { from { transform: scaleX(1); } to { transform: scaleX(0); } }
   .tt-card { touch-action: pan-y; user-select: none; -webkit-user-select: none; cursor: grab; }
-  .ms-key { min-height: 3.5rem; font-size: 1.5rem; font-weight: 700; border-radius: 0.75rem; border: 2px solid rgb(226 232 240); background: white; }
+  .ms-key { min-height: 3.5rem; font-size: 1.5rem; font-weight: 700; border-radius: 0.75rem; border: 2px solid rgb(226 232 240); background: white; touch-action: manipulation; user-select: none; -webkit-user-select: none; }
   .ms-key:active { background: rgb(237 233 254); border-color: rgb(124 58 237); }
   @keyframes fall { to { transform: translateY(110vh) rotate(720deg); opacity:0; } }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
@@ -8435,9 +8435,143 @@ function viewMathTrueFalse(){
     + '</div>';
 }
 
+/* ---- Ora Sprint (math-sprint) ---- */
+const MATH_SPRINT_SECONDS = 60;
+function startMathSprint(){
+  const su = mathSetupOrDefault();
+  const info = MathEngine.ORAMATH_AGE_BANDS[su.ageGroup] || MathEngine.ORAMATH_AGE_BANDS.family;
+  if (state.mathSprint && state.mathSprint.timer) clearInterval(state.mathSprint.timer);
+  state.mathSprint = {
+    ageGroup: su.ageGroup, difficulty: su.difficulty, band: info.band,
+    endsAt: Date.now() + MATH_SPRINT_SECONDS * 1000,
+    timer: null, consecutive: 0, score: 0, correct: 0, attempts: 0,
+    current: null, input: '',
+    ended: false, resultMeta: null, startedAt: Date.now()
+  };
+  msNextOp();
+  go('oramath', { mode:'math-sprint', play:true });
+  msStartTimer();
+}
+function resetMathSprint(){
+  if (state.mathSprint && state.mathSprint.timer) clearInterval(state.mathSprint.timer);
+  state.mathSprint = null;
+  startMathSprint();
+}
+function msNextOp(){
+  const s = state.mathSprint;
+  if (!s || s.ended) return;
+  s.current = { op: MathEngine.genOperation(s.band, s.difficulty), askedAt: Date.now() };
+  s.input = '';
+  const opEl = document.getElementById('ms-op'); if (opEl) opEl.textContent = mathOpText(s.current.op);
+  const inEl = document.getElementById('ms-input'); if (inEl) inEl.textContent = '';
+}
+function msStartTimer(){
+  const s = state.mathSprint;
+  if (!s) return;
+  if (s.timer) clearInterval(s.timer);
+  s.timer = setInterval(() => {
+    // Guard: an interval ticking on a navigated-away / replaced session
+    // clears itself instead of touching the DOM of another page.
+    if (state.route !== 'oramath' || state.params.mode !== 'math-sprint' || state.mathSprint !== s || s.ended){ clearInterval(s.timer); return; }
+    const leftMs = s.endsAt - Date.now();
+    const el = document.getElementById('ms-time'); if (el) el.textContent = Math.max(0, Math.ceil(leftMs / 1000));
+    const bar = document.getElementById('ms-timebar'); if (bar) bar.style.width = Math.max(0, Math.min(100, (leftMs / (MATH_SPRINT_SECONDS * 1000)) * 100)) + '%';
+    if (leftMs <= 0){ clearInterval(s.timer); s.timer = null; endMathSprint(); }
+  }, 250);
+}
+function msKey(k){
+  const s = state.mathSprint;
+  if (!s || s.ended || !s.current) return;
+  if (k === 'ok'){ msSubmit(); return; }
+  if (k === 'back') s.input = s.input.slice(0, -1);
+  else if (/^[0-9]$/.test(k) && s.input.length < 4) s.input += k;
+  const inEl = document.getElementById('ms-input'); if (inEl) inEl.textContent = s.input;
+}
+function msSubmit(){
+  const s = state.mathSprint;
+  if (!s || s.ended || !s.current || s.input === '') return;
+  s.attempts++;
+  const fb = document.getElementById('ms-feedback');
+  if (Number(s.input) === s.current.op.answer){
+    const answerMs = Date.now() - s.current.askedAt;
+    const pts = MathEngine.sprintScoreFor({ consecutive: s.consecutive, difficulty: s.difficulty });
+    const bonus = MathEngine.sprintBonusMs(answerMs);
+    s.correct++;
+    s.consecutive++;
+    s.score += pts;
+    if (bonus) s.endsAt += bonus; // +2s for fast answers — endsAt-based, no counter drift
+    if (fb){
+      fb.className = 'min-h-[1.5rem] text-sm font-semibold text-emerald-600';
+      fb.textContent = '+' + pts + (bonus ? ' · +2s ⏱️' : '');
+    }
+  } else {
+    s.consecutive = 0;
+    if (fb){
+      fb.className = 'min-h-[1.5rem] text-sm font-semibold text-rose-600';
+      fb.textContent = pick({en:'Combo lost — it was ',es:'Combo perdido — era ',fr:'Combo perdu — c’était '}) + s.current.op.answer;
+    }
+  }
+  const sc = document.getElementById('ms-score'); if (sc) sc.textContent = s.score;
+  const combo = document.getElementById('ms-combo');
+  if (combo){
+    combo.textContent = '×' + MathEngine.sprintMultiplier(s.consecutive);
+    combo.classList.remove('fade-in'); void combo.offsetWidth; combo.classList.add('fade-in');
+  }
+  msNextOp();
+}
+function endMathSprint(){
+  const s = state.mathSprint;
+  if (!s || s.ended) return;
+  s.ended = true;
+  if (s.timer){ clearInterval(s.timer); s.timer = null; }
+  const acc = s.attempts ? Math.round((s.correct / s.attempts) * 100) : 0;
+  s.resultMeta = finishMathGame({ gameMode:'math-sprint', ageGroup:s.ageGroup, difficulty:s.difficulty, score:s.score, accuracy:acc, durationMs: Date.now() - s.startedAt });
+  render();
+  if (s.resultMeta.leveledUp || s.resultMeta.milestone || s.resultMeta.recordIsNew){ try { confetti(); } catch (e) {} }
+}
+function viewMathSprint(){
+  const s = state.mathSprint;
+  if (!s || !state.params.play){
+    // Setup screen: drop any stale session (back button mid-game etc.).
+    if (s){ if (s.timer) clearInterval(s.timer); state.mathSprint = null; }
+    return mathGameSetupHtml('math-sprint');
+  }
+  if (s.ended){
+    const acc = s.attempts ? Math.round((s.correct / s.attempts) * 100) : 0;
+    return mathResultsHtml({
+      gameMode:'math-sprint', score:s.score, accuracy:acc, meta:s.resultMeta, retryFn:'resetMathSprint()',
+      statLine: pick({en:'Solved',es:'Resueltas',fr:'Résolues'}) + ': <strong>' + s.correct + '</strong> / ' + s.attempts
+    });
+  }
+  const leftMs = Math.max(0, s.endsAt - Date.now());
+  const keypad = [['7','7'],['8','8'],['9','9'],['4','4'],['5','5'],['6','6'],['1','1'],['2','2'],['3','3'],['back','⌫'],['0','0'],['ok','✓']]
+    .map(k => '<button onclick="msKey(\'' + k[0] + '\')" class="ms-key focus-ring' + (k[0]==='ok' ? ' !bg-violet-600 !text-white !border-violet-600' : '') + '" aria-label="' + (k[0]==='back' ? pick({en:'Delete',es:'Borrar',fr:'Effacer'}) : k[0]==='ok' ? pick({en:'Submit',es:'Enviar',fr:'Valider'}) : k[1]) + '">' + k[1] + '</button>').join('');
+  return ''
+    + '<div class="min-h-screen bg-slate-50">'
+    + Header()
+    + '<main class="max-w-md mx-auto px-4 sm:px-6 py-8">'
+    + '  <div class="flex items-center justify-between mb-2 text-sm">'
+    + '    <span class="font-semibold text-slate-700">⏱️ <span id="ms-time">' + Math.ceil(leftMs / 1000) + '</span>s</span>'
+    + '    <span id="ms-combo" class="chip bg-violet-100 text-violet-700 font-bold">×' + MathEngine.sprintMultiplier(s.consecutive) + '</span>'
+    + '    <span class="font-semibold text-amber-700">' + pick({en:'Score',es:'Puntos',fr:'Score'}) + ': <span id="ms-score">' + s.score + '</span></span>'
+    + '  </div>'
+    + '  <div class="h-2 rounded-full bg-slate-100 overflow-hidden mb-5" aria-hidden="true"><div id="ms-timebar" class="h-full bg-gradient-to-r from-violet-500 to-fuchsia-500 transition-all" style="width:' + Math.min(100, (leftMs / (MATH_SPRINT_SECONDS * 1000)) * 100) + '%"></div></div>'
+    + '  <div class="card p-6 text-center">'
+    + '    <div id="ms-op" class="font-display text-4xl md:text-5xl font-bold tabular-nums" aria-live="polite">' + (s.current ? mathOpText(s.current.op) : '') + '</div>'
+    + '    <div id="ms-input" class="mt-4 min-h-[2.5rem] text-3xl font-bold tabular-nums text-violet-700">' + s.input + '</div>'
+    + '    <div id="ms-feedback" class="min-h-[1.5rem] text-sm font-semibold"></div>'
+    + '  </div>'
+    + '  <div class="mt-4 grid grid-cols-3 gap-2">' + keypad + '</div>'
+    + '  <p class="mt-3 text-center text-xs text-slate-500">' + pick({en:'On a keyboard: digits, Backspace and Enter.',es:'Con teclado: dígitos, Retroceso y Enter.',fr:'Au clavier : chiffres, Retour arrière et Entrée.'}) + '</p>'
+    + '  <button onclick="go(\'oramath\')" class="mt-4 block mx-auto text-sm text-slate-500 hover:underline focus-ring">' + pick({en:'Quit round',es:'Salir de la partida',fr:'Quitter la partie'}) + '</button>'
+    + '</main>'
+    + '</div>';
+}
+
 function viewOraMath(){
   const mode = state.params.mode || 'hub';
   if (mode === 'truth-or-trap') return viewMathTrueFalse();
+  if (mode === 'math-sprint') return viewMathSprint();
   const gameCards = [
     { mode:'truth-or-trap', icon:'🎭', name:t('mathTTName'), blurb:t('mathTTSub') },
     { mode:'math-sprint', icon:'⚡', name:t('mathSprintName'), blurb:t('mathSprintSub') }
