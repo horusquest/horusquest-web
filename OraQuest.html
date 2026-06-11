@@ -78,6 +78,13 @@
   .fade-in { animation: fadeIn .35s ease both; }
   @keyframes fadeIn { from { opacity:0; transform: translateY(8px);} to { opacity:1; transform: translateY(0);} }
   .confetti { position: fixed; width:10px; height:14px; top:-20px; z-index: 9999; pointer-events:none; animation: fall 2.2s linear forwards; }
+  /* OraMath · ¿Verdad o Trampa?: the time bar is a pure CSS animation; the bar
+     node is recreated with each question card so the animation restarts. */
+  .tt-bar { transform-origin: left; animation-name: ttShrink; animation-timing-function: linear; animation-fill-mode: forwards; }
+  @keyframes ttShrink { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+  .tt-card { touch-action: pan-y; user-select: none; -webkit-user-select: none; cursor: grab; }
+  .ms-key { min-height: 3.5rem; font-size: 1.5rem; font-weight: 700; border-radius: 0.75rem; border: 2px solid rgb(226 232 240); background: white; }
+  .ms-key:active { background: rgb(237 233 254); border-color: rgb(124 58 237); }
   @keyframes fall { to { transform: translateY(110vh) rotate(720deg); opacity:0; } }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
   /* Ora the owl mascot animations */
@@ -8059,7 +8066,8 @@ function finishMathGame(args){
     const rec = LBCore.makeScoreRecord({
       gameKey:'oramath', gameMode:args.gameMode, language:state.lang,
       ageGroup:args.ageGroup, difficulty:args.difficulty,
-      score:args.score, accuracy:args.accuracy, durationMs:args.durationMs
+      score:args.score, accuracy:args.accuracy,
+      durationSeconds: args.durationMs != null ? Math.round(args.durationMs / 1000) : null
     });
     state.guestScores.unshift(rec);
     LS.set(SCORES_KEY, state.guestScores);
@@ -8156,8 +8164,280 @@ function mathPlayerPanelHtml(){
     + '</section>';
 }
 
+// Localized rendering of engine equations/operations. The engine emits
+// canonical English `text`; only pct/divis/compare need language-aware parts.
+function mathEqText(eq){
+  if (eq.kind === 'pct') return eq.a + '% ' + pick({en:'of',es:'de',fr:'de'}) + ' ' + eq.b + ' = ' + eq.shown;
+  if (eq.kind === 'divis') return eq.a + ' ' + pick({en:'is divisible by',es:'es divisible entre',fr:'est divisible par'}) + ' ' + eq.b;
+  if (eq.kind === 'compare') return eq.n + '/' + eq.d + ' ' + eq.cmp + ' ' + String(eq.w).replace('.', pick({en:'.',es:',',fr:','}));
+  return eq.text;
+}
+function mathOpText(op){
+  if (op.kind === 'pct') return op.a + '% ' + pick({en:'of',es:'de',fr:'de'}) + ' ' + op.b;
+  return op.text;
+}
+
+// Shared setup screen (age + difficulty + record line) for both OraMath games.
+function mathGameSetupHtml(gameMode){
+  const isTT = gameMode === 'truth-or-trap';
+  return ''
+    + '<div class="min-h-screen bg-slate-50">'
+    + Header()
+    + '<main class="max-w-4xl mx-auto px-4 sm:px-6 py-10">'
+    + '  <div class="text-center mb-8">'
+    + '    <span class="chip bg-amber-100 text-amber-800">➗ OraMath</span>'
+    + '    <h1 class="mt-4 font-display text-3xl md:text-4xl font-bold">' + (isTT ? '🎭 ' + t('mathTTName') : '⚡ ' + t('mathSprintName')) + '</h1>'
+    + '    <p class="mt-3 text-slate-600 max-w-2xl mx-auto">' + (isTT ? t('mathTTSub') : t('mathSprintSub')) + '</p>'
+    + '  </div>'
+    + '  <div class="card p-6 md:p-8 space-y-8">'
+    + mathSetupGridsHtml()
+    + '  <div class="text-center">'
+    + mathRecordLineHtml(gameMode)
+    + '    <button onclick="' + (isTT ? 'startMathTT()' : 'startMathSprint()') + '" class="mt-4 btn-primary px-8 py-3 text-lg">▶ ' + t('mathPlayNow') + '</button>'
+    + '    <button onclick="go(\'oramath\')" class="mt-4 block mx-auto text-sm text-slate-500 hover:underline focus-ring">← OraMath</button>'
+    + '  </div>'
+    + '  </div>'
+    + '</main>'
+    + Footer()
+    + '</div>';
+}
+
+// Shared results screen. `meta` is the object returned by finishMathGame().
+function mathResultsHtml(opts){
+  const meta = opts.meta || {};
+  const lv = MathEngine.levelForXp(loadMathProfile().xp);
+  const name = opts.gameMode === 'truth-or-trap' ? t('mathTTName') : t('mathSprintName');
+  const milestoneTxt = meta.milestone ? pick({
+    en:'🏆 ' + meta.milestone + '-day streak — Ora is proud of you!',
+    es:'🏆 ¡Racha de ' + meta.milestone + ' días — Ora está orgullosa de ti!',
+    fr:'🏆 Série de ' + meta.milestone + ' jours — Ora est fière de toi !'
+  }) : '';
+  return ''
+    + '<div class="min-h-screen bg-slate-50">'
+    + Header()
+    + '<main class="max-w-3xl mx-auto px-4 sm:px-6 py-10">'
+    + '  <div class="card p-8 text-center">'
+    + '    <span class="chip bg-amber-100 text-amber-800">➗ OraMath · ' + name + '</span>'
+    + '    <h1 class="mt-4 font-display text-3xl font-bold">' + pick({en:'Round over!',es:'¡Fin de la partida!',fr:'Partie terminée !'}) + '</h1>'
+    + '    <div class="mt-6 grid grid-cols-2 gap-3">'
+    + '      <div class="stat-cell bg-amber-50 p-4"><div class="text-3xl font-bold text-amber-700">' + opts.score + '</div><div class="text-xs text-slate-600 mt-1">' + t('yourScore') + '</div></div>'
+    + '      <div class="stat-cell bg-sky-50 p-4"><div class="text-3xl font-bold text-sky-700">' + opts.accuracy + '%</div><div class="text-xs text-slate-600 mt-1">' + t('accuracy') + '</div></div>'
+    + '    </div>'
+    + (opts.statLine ? '<p class="mt-4 text-sm text-slate-600">' + opts.statLine + '</p>' : '')
+    + (meta.recordIsNew
+        ? '<p class="mt-4 text-sm font-bold text-amber-700">🏅 ' + pick({en:'New personal record!',es:'¡Nuevo récord personal!',fr:'Nouveau record personnel !'}) + '</p>'
+        : '<p class="mt-4 text-sm text-slate-500">' + mathRecordTextFor(opts.gameMode) + '</p>')
+    + '    <div class="mt-5 text-left max-w-sm mx-auto">'
+    + '      <div class="flex items-center justify-between text-sm font-semibold text-slate-700"><span>+' + (meta.xpGained || 0) + ' XP</span><span>' + t('mathLevel') + ' ' + lv.level + '</span></div>'
+    + '      <div class="mt-1 h-3 rounded-full bg-slate-100 overflow-hidden"><div class="h-full rounded-full bg-gradient-to-r from-amber-400 to-orange-500" style="width:' + lv.pct + '%"></div></div>'
+    + (meta.leveledUp ? '<p class="mt-2 text-sm font-bold text-violet-700">🎉 ' + pick({en:'Level up! You reached level ',es:'¡Subes de nivel! Llegaste al nivel ',fr:'Niveau supérieur ! Tu as atteint le niveau '}) + meta.newLevel + '</p>' : '')
+    + '    </div>'
+    + '    <p class="mt-4 text-sm font-semibold text-slate-700">🔥 ' + (meta.streakDays || 0) + ' ' + t('mathStreakDays') + '</p>'
+    + (milestoneTxt ? '<p class="mt-2 text-sm font-bold text-amber-700">' + milestoneTxt + '</p>' : '')
+    + '    <div class="mt-6 grid sm:grid-cols-3 gap-2">'
+    + '      <button onclick="' + opts.retryFn + '" class="btn-primary">' + t('playAgain') + '</button>'
+    + '      <button onclick="mathShare(\'' + opts.gameMode + '\',' + opts.score + ')" class="btn-ghost">📤 ' + pick({en:'Share',es:'Compartir',fr:'Partager'}) + '</button>'
+    + '      <button onclick="go(\'oramath\')" class="btn-ghost">← OraMath</button>'
+    + '    </div>'
+    + '  </div>'
+    + AdSlot()
+    + '</main>'
+    + Footer()
+    + '</div>';
+}
+function mathRecordTextFor(gameMode){
+  const su = mathSetupOrDefault();
+  const rec = MathEngine.bestRecord(loadMathRecords(), gameMode, su.ageGroup, su.difficulty);
+  return rec ? '🏅 ' + t('mathRecordLine').replace('{score}', rec.score) : '';
+}
+function mathShare(gameMode, score){
+  const name = gameMode === 'truth-or-trap' ? t('mathTTName') : t('mathSprintName');
+  shareResult(t('mathShareText').replace('{score}', score).replace('{game}', name));
+}
+
+/* ---- ¿Verdad o Trampa? (truth-or-trap) ---- */
+function startMathTT(){
+  const su = mathSetupOrDefault();
+  const info = MathEngine.ORAMATH_AGE_BANDS[su.ageGroup] || MathEngine.ORAMATH_AGE_BANDS.family;
+  if (state.mathTT && state.mathTT.qTimeout) clearTimeout(state.mathTT.qTimeout);
+  state.mathTT = {
+    ageGroup: su.ageGroup, difficulty: su.difficulty,
+    band: info.band, timeFactor: info.timeFactor,
+    lives: 3, score: 0, streak: 0, bestStreak: 0,
+    attempts: 0, correct: 0,
+    current: null, qTimeout: null, swipe: null,
+    ended: false, resultMeta: null, startedAt: Date.now()
+  };
+  go('oramath', { mode:'truth-or-trap', play:true });
+  ttNext();
+}
+function resetMathTT(){
+  if (state.mathTT && state.mathTT.qTimeout) clearTimeout(state.mathTT.qTimeout);
+  state.mathTT = null;
+  startMathTT();
+}
+function ttNext(){
+  const s = state.mathTT;
+  if (!s || s.ended) return;
+  if (s.qTimeout){ clearTimeout(s.qTimeout); s.qTimeout = null; }
+  const eq = MathEngine.genTrapEquation(s.band, s.difficulty);
+  const timeLimitMs = MathEngine.ttTimeLimitMs(s.band, s.streak, s.timeFactor);
+  s.current = { eq, shownAt: Date.now(), timeLimitMs, resolved: false };
+  // Replacing #tt-zone's content recreates the card AND its .tt-bar node, so
+  // the CSS shrink animation restarts cleanly on every question.
+  const zone = document.getElementById('tt-zone');
+  if (zone) zone.innerHTML = mathTTCardHtml(s);
+  s.qTimeout = setTimeout(() => {
+    // Guard: a timeout firing on a navigated-away / replaced session is a no-op.
+    if (state.route !== 'oramath' || state.params.mode !== 'truth-or-trap' || state.mathTT !== s || s.ended) return;
+    ttResolve(null);
+  }, timeLimitMs);
+}
+function mathTTCardHtml(s){
+  const cur = s.current;
+  const elapsed = Math.max(0, Date.now() - cur.shownAt);
+  return ''
+    + '<div id="tt-card" class="tt-card card p-8 text-center fade-in" onpointerdown="ttDown(event)" onpointermove="ttMove(event)" onpointerup="ttUp(event)" onpointercancel="ttCancel(event)">'
+    + '  <div class="h-2 rounded-full bg-slate-100 overflow-hidden mb-6" aria-hidden="true"><div class="tt-bar h-full bg-gradient-to-r from-amber-400 to-rose-500" style="animation-duration:' + cur.timeLimitMs + 'ms;animation-delay:-' + elapsed + 'ms"></div></div>'
+    + '  <div id="tt-eq" class="font-display text-4xl md:text-5xl font-bold tabular-nums" aria-live="polite">' + mathEqText(cur.eq) + '</div>'
+    + '  <div id="tt-feedback" class="mt-4 min-h-[1.75rem] text-base font-semibold"></div>'
+    + '</div>';
+}
+function ttAnswer(guess){
+  const s = state.mathTT;
+  if (!s || s.ended || !s.current || s.current.resolved) return;
+  ttResolve(guess);
+}
+function ttResolve(guess){
+  const s = state.mathTT;
+  if (!s || s.ended || !s.current || s.current.resolved) return;
+  if (s.qTimeout){ clearTimeout(s.qTimeout); s.qTimeout = null; }
+  const cur = s.current;
+  cur.resolved = true;
+  s.attempts++;
+  const correct = guess !== null && guess === cur.eq.isTrue;
+  const timeLeftMs = Math.max(0, cur.timeLimitMs - (Date.now() - cur.shownAt));
+  if (correct){
+    const pts = MathEngine.ttScoreFor({ correct:true, streak:s.streak, timeLeftMs, timeLimitMs:cur.timeLimitMs, difficulty:s.difficulty });
+    s.correct++;
+    s.streak++;
+    if (s.streak > s.bestStreak) s.bestStreak = s.streak;
+    s.score += pts;
+    ttFlash(true, pts, false);
+  } else {
+    s.streak = 0;
+    s.lives--;
+    ttFlash(false, 0, guess === null);
+  }
+  ttPatchStats();
+  const delay = correct ? 550 : 1100; // give a beat to read the truth on misses
+  setTimeout(() => {
+    if (state.route !== 'oramath' || state.params.mode !== 'truth-or-trap' || state.mathTT !== s || s.ended) return;
+    if (s.lives <= 0) endMathTT(); else ttNext();
+  }, delay);
+}
+function ttFlash(ok, pts, timedOut){
+  const s = state.mathTT;
+  const card = document.getElementById('tt-card');
+  const fb = document.getElementById('tt-feedback');
+  const bar = document.querySelector('#tt-card .tt-bar');
+  if (bar) bar.style.animationPlayState = 'paused';
+  if (card) card.style.background = ok ? '#ecfdf5' : '#fff1f2';
+  if (!fb) return;
+  const truth = s && s.current ? (s.current.eq.isTrue
+    ? pick({en:'It was TRUE.',es:'Era VERDADERA.',fr:'C’était VRAI.'})
+    : pick({en:'It was FALSE.',es:'Era FALSA.',fr:'C’était FAUX.'})) : '';
+  fb.className = 'mt-4 min-h-[1.75rem] text-base font-semibold ' + (ok ? 'text-emerald-600' : 'text-rose-600');
+  fb.textContent = ok ? '+' + pts : ((timedOut ? pick({en:'Time’s up! ',es:'¡Tiempo! ',fr:'Temps écoulé ! '}) : '') + truth);
+}
+function ttPatchStats(){
+  const s = state.mathTT; if (!s) return;
+  const lives = document.getElementById('tt-lives'); if (lives) lives.textContent = '❤️'.repeat(Math.max(0, s.lives)) + '🖤'.repeat(Math.max(0, 3 - s.lives));
+  const sc = document.getElementById('tt-score'); if (sc) sc.textContent = s.score;
+  const st = document.getElementById('tt-streak'); if (st) st.textContent = s.streak;
+}
+function endMathTT(){
+  const s = state.mathTT;
+  if (!s || s.ended) return;
+  s.ended = true;
+  if (s.qTimeout){ clearTimeout(s.qTimeout); s.qTimeout = null; }
+  const acc = s.attempts ? Math.round((s.correct / s.attempts) * 100) : 0;
+  s.resultMeta = finishMathGame({ gameMode:'truth-or-trap', ageGroup:s.ageGroup, difficulty:s.difficulty, score:s.score, accuracy:acc, durationMs: Date.now() - s.startedAt });
+  render();
+  if (s.resultMeta.leveledUp || s.resultMeta.milestone || s.resultMeta.recordIsNew) { try { confetti(); } catch (e) {} }
+}
+/* Swipe: pointer events with capture; vertical scroll keeps working thanks to
+   touch-action:pan-y on the card. Buttons + arrow keys remain the accessible path. */
+function ttDown(e){
+  const s = state.mathTT;
+  if (!s || s.ended || !s.current || s.current.resolved) return;
+  s.swipe = { id:e.pointerId, x:e.clientX, y:e.clientY, dx:0, dy:0 };
+  const card = document.getElementById('tt-card');
+  if (card){ try { card.setPointerCapture(e.pointerId); } catch (err) {} }
+}
+function ttMove(e){
+  const s = state.mathTT;
+  if (!s || !s.swipe || e.pointerId !== s.swipe.id) return;
+  s.swipe.dx = e.clientX - s.swipe.x;
+  s.swipe.dy = e.clientY - s.swipe.y;
+  const card = document.getElementById('tt-card');
+  if (card && Math.abs(s.swipe.dx) > Math.abs(s.swipe.dy)){
+    card.style.transform = 'translateX(' + s.swipe.dx + 'px) rotate(' + (s.swipe.dx / 20) + 'deg)';
+    card.style.background = s.swipe.dx > 30 ? '#ecfdf5' : s.swipe.dx < -30 ? '#fff1f2' : '';
+  }
+}
+function ttUp(e){
+  const s = state.mathTT;
+  if (!s || !s.swipe || e.pointerId !== s.swipe.id) return;
+  const dx = s.swipe.dx, dy = s.swipe.dy;
+  s.swipe = null;
+  const card = document.getElementById('tt-card');
+  if (card){ card.style.transform = ''; if (!s.current || !s.current.resolved) card.style.background = ''; }
+  if (Math.abs(dx) >= 60 && Math.abs(dx) > Math.abs(dy)) ttAnswer(dx > 0);
+}
+function ttCancel(){
+  const s = state.mathTT;
+  if (s) s.swipe = null;
+  const card = document.getElementById('tt-card');
+  if (card){ card.style.transform = ''; card.style.background = ''; }
+}
+function viewMathTrueFalse(){
+  const s = state.mathTT;
+  if (!s || !state.params.play){
+    // Setup screen: drop any stale session (back button mid-game etc.).
+    if (s){ if (s.qTimeout) clearTimeout(s.qTimeout); state.mathTT = null; }
+    return mathGameSetupHtml('truth-or-trap');
+  }
+  if (s.ended){
+    const acc = s.attempts ? Math.round((s.correct / s.attempts) * 100) : 0;
+    return mathResultsHtml({
+      gameMode:'truth-or-trap', score:s.score, accuracy:acc, meta:s.resultMeta, retryFn:'resetMathTT()',
+      statLine: pick({en:'Best streak',es:'Mejor racha',fr:'Meilleure série'}) + ': <strong>' + s.bestStreak + '</strong> · ' + pick({en:'Answered',es:'Respondidas',fr:'Répondues'}) + ': <strong>' + s.attempts + '</strong>'
+    });
+  }
+  return ''
+    + '<div class="min-h-screen bg-slate-50">'
+    + Header()
+    + '<main class="max-w-xl mx-auto px-4 sm:px-6 py-8">'
+    + '  <div class="flex items-center justify-between mb-4 text-sm">'
+    + '    <span id="tt-lives" class="text-base" aria-label="' + pick({en:'Lives',es:'Vidas',fr:'Vies'}) + '">' + '❤️'.repeat(s.lives) + '🖤'.repeat(3 - s.lives) + '</span>'
+    + '    <span class="font-semibold text-slate-700">🔥 <span id="tt-streak">' + s.streak + '</span></span>'
+    + '    <span class="font-semibold text-amber-700">' + pick({en:'Score',es:'Puntos',fr:'Score'}) + ': <span id="tt-score">' + s.score + '</span></span>'
+    + '  </div>'
+    + '  <div id="tt-zone">' + (s.current ? mathTTCardHtml(s) : '') + '</div>'
+    + '  <div class="mt-5 grid grid-cols-2 gap-3">'
+    + '    <button onclick="ttAnswer(false)" class="btn-ghost py-4 text-lg font-bold text-rose-600 focus-ring">✗ ' + pick({en:'False',es:'Falso',fr:'Faux'}) + '</button>'
+    + '    <button onclick="ttAnswer(true)" class="btn-primary py-4 text-lg font-bold focus-ring">✓ ' + pick({en:'True',es:'Verdadero',fr:'Vrai'}) + '</button>'
+    + '  </div>'
+    + '  <p class="mt-3 text-center text-xs text-slate-500">' + pick({en:'Swipe right = true, left = false — or use the buttons or ←/→ keys.',es:'Desliza a la derecha = verdadero, a la izquierda = falso — o usa los botones o las flechas ←/→.',fr:'Glisse à droite = vrai, à gauche = faux — ou utilise les boutons ou les flèches ←/→.'}) + '</p>'
+    + '  <button onclick="go(\'oramath\')" class="mt-5 block mx-auto text-sm text-slate-500 hover:underline focus-ring">' + pick({en:'Quit round',es:'Salir de la partida',fr:'Quitter la partie'}) + '</button>'
+    + '</main>'
+    + '</div>';
+}
+
 function viewOraMath(){
   const mode = state.params.mode || 'hub';
+  if (mode === 'truth-or-trap') return viewMathTrueFalse();
   const gameCards = [
     { mode:'truth-or-trap', icon:'🎭', name:t('mathTTName'), blurb:t('mathTTSub') },
     { mode:'math-sprint', icon:'⚡', name:t('mathSprintName'), blurb:t('mathSprintSub') }
@@ -10059,6 +10339,19 @@ function setupCookieBanner() {
     document.getElementById('cookie-banner').classList.add('hide');
   });
 }
+
+/* Keyboard support for OraMath (arrows for Truth-or-Trap, digits for Sprint) */
+document.addEventListener('keydown', (e) => {
+  if (state.route !== 'oramath' || !state.params.play) return;
+  if (state.params.mode === 'truth-or-trap' && state.mathTT && !state.mathTT.ended){
+    if (e.key === 'ArrowRight'){ e.preventDefault(); ttAnswer(true); }
+    else if (e.key === 'ArrowLeft'){ e.preventDefault(); ttAnswer(false); }
+  } else if (state.params.mode === 'math-sprint' && state.mathSprint && !state.mathSprint.ended){
+    if (/^[0-9]$/.test(e.key)){ msKey(e.key); }
+    else if (e.key === 'Backspace'){ e.preventDefault(); msKey('back'); }
+    else if (e.key === 'Enter'){ e.preventDefault(); msKey('ok'); }
+  }
+});
 
 /* Keyboard support for quiz */
 document.addEventListener('keydown', (e) => {
