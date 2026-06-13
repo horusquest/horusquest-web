@@ -213,7 +213,7 @@ const LBCore = (function () {
   // Nothing else in the leaderboard needs to change.
   const GAMES = {
     oraquest:     { key:'oraquest',     name:'OraQuest',  modes:['quiz-battle','daily-quest','general-quiz','family-quiz'] },
-    guessora:     { key:'guessora',     name:'OraGuess',  modes:['guess-challenge'] },
+    guessora:     { key:'guessora',     name:'OraGuess',  modes:['guess-challenge','daily-guess'] },
     orawords:     { key:'orawords',     name:'OraWords',  modes:['spelling-sprint','vocabulary-quest','letter-rush','anagram-challenge','daily-quest'] },
     oramath:      { key:'oramath',      name:'OraMath',   modes:['truth-or-trap','math-sprint','numdrop'] },
     'team-quest': { key:'team-quest',   name:'Team Quest', modes:['team-quest'] }
@@ -227,7 +227,7 @@ const LBCore = (function () {
     { id:'guessora', gameKeys:['guessora'] },
     { id:'orawords', gameKeys:['orawords'] },
     { id:'oramath',  gameKeys:['oramath'] },
-    { id:'daily',    gameKeys:['oraquest'], modes:['daily-quest'] },
+    { id:'daily',    gameKeys:['oraquest','guessora'], modes:['daily-quest','daily-guess'] },
     { id:'teams',    gameKeys:['team-quest'] }
   ];
 
@@ -381,6 +381,7 @@ const ROUTE_PATHS = {
   oraquest: { en:'/oraquest', es:'/es/oraquest', fr:'/fr/oraquest' },
   universe: { en:'/ora-universe', es:'/es/universo-ora', fr:'/fr/univers-ora' },
   guess: { en:'/oraguess', es:'/es/oraguess', fr:'/fr/oraguess' },
+  'daily-guess': { en:'/oraguess/daily', es:'/es/oraguess/diario', fr:'/fr/oraguess/quotidien' },
   words: { en:'/words', es:'/es/palabras', fr:'/fr/mots' },
   oramath: { en:'/oramath', es:'/es/oramath', fr:'/fr/oramath' },
   leaderboards: { en:'/leaderboards', es:'/es/clasificaciones', fr:'/fr/classements' },
@@ -712,8 +713,13 @@ const I18N = {
     itWas: 'It was',
     dailyQuizT: 'Daily Quiz',
     dailyQuizD: "10 questions about today's topic",
-    dailyGuessT: 'Daily Guess',
-    dailyGuessD: "Guess today's mystery animal",
+    dailyGuessT: 'Daily OraGuess',
+    dailyGuessD: 'One special guessing challenge every day. Keep your streak alive.',
+    dailyOraGuess: 'Daily OraGuess',
+    dailyOraGuessDesc: 'One special guessing challenge every day. Keep your streak alive.',
+    dailyOraGuessIntro: "Today's challenge uses the same mystery animal all day. Come back tomorrow for a new one.",
+    dailyGuessDone: "You've completed today's Daily OraGuess. Come back tomorrow for a new mystery.",
+    todayChallenge: "Today's challenge",
     teamHelp: 'Create a team or join with a code.',
     teamNamePh: 'e.g. Space Explorers',
     parentsWarn: 'Children should use OraQuest with a parent, guardian or teacher when creating accounts or joining teams.',
@@ -996,8 +1002,13 @@ const I18N = {
     itWas: 'Era',
     dailyQuizT: 'Quiz diario',
     dailyQuizD: 'Diez preguntas sobre el tema de hoy',
-    dailyGuessT: 'Adivina diario',
-    dailyGuessD: 'Adivina el animal misterioso de hoy',
+    dailyGuessT: 'Daily OraGuess',
+    dailyGuessD: 'Un reto especial de adivinanza cada día. Mantén viva tu racha.',
+    dailyOraGuess: 'Daily OraGuess',
+    dailyOraGuessDesc: 'Un reto especial de adivinanza cada día. Mantén viva tu racha.',
+    dailyOraGuessIntro: 'El reto de hoy usa el mismo animal misterioso durante todo el día. Vuelve mañana para uno nuevo.',
+    dailyGuessDone: 'Ya completaste el Daily OraGuess de hoy. Vuelve mañana para un nuevo misterio.',
+    todayChallenge: 'Reto de hoy',
     teamHelp: 'Crea un equipo o únete con un código.',
     teamNamePh: 'p. ej. Exploradores del espacio',
     parentsWarn: 'Los niños deben usar OraQuest con un adulto al crear cuentas o unirse a equipos.',
@@ -1280,8 +1291,13 @@ const I18N = {
     itWas: "C'était",
     dailyQuizT: 'Quiz du jour',
     dailyQuizD: 'Dix questions sur le sujet du jour',
-    dailyGuessT: 'Devine du jour',
-    dailyGuessD: 'Devine l\'animal mystère du jour',
+    dailyGuessT: 'Daily OraGuess',
+    dailyGuessD: 'Un défi de devinette spécial chaque jour. Garde ta série active.',
+    dailyOraGuess: 'Daily OraGuess',
+    dailyOraGuessDesc: 'Un défi de devinette spécial chaque jour. Garde ta série active.',
+    dailyOraGuessIntro: 'Le défi du jour utilise le même animal mystère toute la journée. Reviens demain pour un nouveau mystère.',
+    dailyGuessDone: 'Tu as terminé le Daily OraGuess du jour. Reviens demain pour un nouveau mystère.',
+    todayChallenge: 'Défi du jour',
     teamHelp: 'Crée une équipe ou rejoins avec un code.',
     teamNamePh: 'p. ex. Explorateurs de l\'espace',
     parentsWarn: 'Les enfants doivent utiliser OraQuest avec un parent, tuteur ou enseignant pour créer un compte ou rejoindre une équipe.',
@@ -1325,7 +1341,9 @@ const I18N_EXT = {
     universeTitle:'Ora Universe', universeSub:'Explore all HorusQuest educational games guided by Ora, the wise owl.',
     connectTitle:'How the games connect', connectBody:'HorusQuest is the parent brand. Ora is the shared guide. OraQuest, OraGuess and OraWords each focus on a different way to learn, and future scores, achievements and challenges can connect under one HorusQuest account.',
     playTitle:'Choose your next adventure.', playSub:'Play quizzes, guessing games, daily challenges and word games from one place.',
-    dailyQuest:'Today’s Daily Quest', playOraQuest:'Play OraQuest', playGuessOra:'Play OraGuess', playOraWords:'Play OraWords', playOraWorld:'Play OraWorld', playOraMath:'Play OraMath', exploreOraWords:'Explore OraWords', viewLeaderboards:'View Leaderboards', familyTeams:'Family & Teams',
+    dailyQuest:'Daily OraGuess', playOraQuest:'Play OraQuest', playGuessOra:'Play OraGuess', playOraWords:'Play OraWords', playOraWorld:'Play OraWorld', playOraMath:'Play OraMath', exploreOraWords:'Explore OraWords', viewLeaderboards:'View Leaderboards', familyTeams:'Family & Teams',
+    oraQuestHubDesc:'Play quizzes by age, category and difficulty.',
+    oraGuessHubDesc:'Use clues to guess the mystery animal, object or topic.',
     comingSoon:'Coming soon', altOra:'Ora, the wise owl guide for HorusQuest',
     noRealNames:'No real names required.', noChat:'No public chat.', emailsHidden:'Emails are never shown on leaderboards.', childrenAccounts:'Children should use accounts with a parent/guardian if accounts are enabled.',
     oraQuestBadge:'OraQuest · by HorusQuest',
@@ -1359,7 +1377,9 @@ const I18N_EXT = {
     universeTitle:'Universo Ora', universeSub:'Explora todos los juegos educativos de HorusQuest guiados por Ora, la búho sabia.',
     connectTitle:'Cómo se conectan los juegos', connectBody:'HorusQuest es la marca principal. Ora es la guía compartida. OraQuest, OraGuess y OraWords se centran en formas distintas de aprender, y en el futuro las puntuaciones, logros y retos podrán unirse bajo una cuenta HorusQuest.',
     playTitle:'Elige tu próxima aventura.', playSub:'Juega quizzes, adivinanzas, retos diarios y juegos de palabras desde un solo lugar.',
-    dailyQuest:'Reto diario de hoy', playOraQuest:'Jugar OraQuest', playGuessOra:'Jugar OraGuess', playOraWords:'Jugar OraWords', playOraWorld:'Jugar OraWorld', playOraMath:'Jugar OraMath', exploreOraWords:'Explorar OraWords', viewLeaderboards:'Ver clasificaciones', familyTeams:'Familia y equipos',
+    dailyQuest:'Daily OraGuess', playOraQuest:'Jugar OraQuest', playGuessOra:'Jugar OraGuess', playOraWords:'Jugar OraWords', playOraWorld:'Jugar OraWorld', playOraMath:'Jugar OraMath', exploreOraWords:'Explorar OraWords', viewLeaderboards:'Ver clasificaciones', familyTeams:'Familia y equipos',
+    oraQuestHubDesc:'Juega quizzes por edad, categoría y dificultad.',
+    oraGuessHubDesc:'Usa pistas para adivinar el animal, objeto o tema misterioso.',
     comingSoon:'Próximamente', altOra:'Ora, la búho sabia que guía HorusQuest',
     noRealNames:'No se requieren nombres reales.', noChat:'Sin chat público.', emailsHidden:'Los correos nunca se muestran en clasificaciones.', childrenAccounts:'Los menores deben usar cuentas con padre/tutor si se activan cuentas.',
     oraQuestBadge:'OraQuest · por HorusQuest',
@@ -1393,7 +1413,9 @@ const I18N_EXT = {
     universeTitle:'Univers Ora', universeSub:'Explore tous les jeux éducatifs de HorusQuest guidés par Ora, la chouette sage.',
     connectTitle:'Comment les jeux sont liés', connectBody:'HorusQuest est la marque principale. Ora est le guide commun. OraQuest, OraGuess et OraWords proposent chacun une façon différente d’apprendre, et les scores, réussites et défis pourront plus tard se rejoindre sous un compte HorusQuest.',
     playTitle:'Choisis ta prochaine aventure.', playSub:'Joue à des quiz, des devinettes, des défis quotidiens et des jeux de mots depuis un seul endroit.',
-    dailyQuest:'Défi quotidien du jour', playOraQuest:'Jouer à OraQuest', playGuessOra:'Jouer à OraGuess', playOraWords:'Jouer à OraWords', playOraWorld:'Jouer à OraWorld', playOraMath:'Jouer à OraMath', exploreOraWords:'Explorer OraWords', viewLeaderboards:'Voir les classements', familyTeams:'Famille et équipes',
+    dailyQuest:'Daily OraGuess', playOraQuest:'Jouer à OraQuest', playGuessOra:'Jouer à OraGuess', playOraWords:'Jouer à OraWords', playOraWorld:'Jouer à OraWorld', playOraMath:'Jouer à OraMath', exploreOraWords:'Explorer OraWords', viewLeaderboards:'Voir les classements', familyTeams:'Famille et équipes',
+    oraQuestHubDesc:'Joue à des quiz par âge, catégorie et difficulté.',
+    oraGuessHubDesc:'Utilise les indices pour deviner l’animal, l’objet ou le thème mystère.',
     comingSoon:'Bientôt disponible', altOra:'Ora, la chouette sage qui guide HorusQuest',
     noRealNames:'Aucun nom réel obligatoire.', noChat:'Pas de chat public.', emailsHidden:'Les e-mails ne sont jamais affichés dans les classements.', childrenAccounts:'Les mineurs doivent utiliser les comptes avec un parent/tuteur si les comptes sont activés.',
     oraQuestBadge:'OraQuest · par HorusQuest',
@@ -1446,11 +1468,11 @@ function pick(obj) { return (obj && obj[state.lang]) || (obj && obj.en) || ''; }
 const ORA_UNIVERSE_GAMES = [
   {
     key:'guessora', name:'OraGuess', status:'live', route:'guess', icon:'🔍', color:'from-violet-500 to-fuchsia-500',
-    description:{ en:'Ora guesses what you are thinking.', es:'Ora intenta adivinar lo que estás pensando.', fr:'Ora essaie de deviner ce à quoi tu penses.' }
+    description:{ en:'Use clues to guess the mystery animal, object or topic.', es:'Usa pistas para adivinar el animal, objeto o tema misterioso.', fr:'Utilise les indices pour deviner l’animal, l’objet ou le thème mystère.' }
   },
   {
-    key:'oraquest', name:'OraQuest', status:'live', route:'oraquest', icon:'✨', color:'from-sky-500 to-indigo-500',
-    description:{ en:'Daily quizzes, challenges and family learning games.', es:'Quizzes diarios, retos y juegos familiares de aprendizaje.', fr:'Quiz quotidiens, défis et jeux d’apprentissage en famille.' }
+    key:'oraquest', name:'OraQuest', status:'live', route:'quiz', icon:'✨', color:'from-sky-500 to-indigo-500',
+    description:{ en:'Play quizzes by age, category and difficulty.', es:'Juega quizzes por edad, categoría y dificultad.', fr:'Joue à des quiz par âge, catégorie et difficulté.' }
   },
   {
     key:'orawords', name:'OraWords', status:'live', route:'words', icon:'🔤', color:'from-emerald-500 to-teal-500',
@@ -6263,6 +6285,8 @@ function updateMeta() {
     },
     play: { title:{en:'Play HorusQuest Games', es:'Jugar a HorusQuest', fr:'Jouer aux jeux HorusQuest'}, desc:{en:t('playSub'), es:t('playSub'), fr:t('playSub')} },
     universe: { title:{en:'Ora Universe — HorusQuest', es:'Universo Ora — HorusQuest', fr:'Univers Ora — HorusQuest'}, desc:{en:t('universeSub'), es:t('universeSub'), fr:t('universeSub')} },
+    guess: { title:{en:'OraGuess — Guess the Animal by HorusQuest', es:'OraGuess — Adivina el animal de HorusQuest', fr:'OraGuess — Devine l’animal par HorusQuest'}, desc:{en:t('oraGuessHubDesc'), es:t('oraGuessHubDesc'), fr:t('oraGuessHubDesc')} },
+    'daily-guess': { title:{en:'Daily OraGuess — Daily Guessing Challenge', es:'Daily OraGuess — Reto diario de adivinanza', fr:'Daily OraGuess — Défi quotidien de devinette'}, desc:{en:t('dailyOraGuessDesc'), es:t('dailyOraGuessDesc'), fr:t('dailyOraGuessDesc')} },
     words: { title:{en:'OraWords — Word Games by HorusQuest', es:'OraWords — Juegos de palabras de HorusQuest', fr:'OraWords — Jeux de mots par HorusQuest'}, desc:{en:t('wordsSub'), es:t('wordsSub'), fr:t('wordsSub')} },
     oramath: { title:{en:'OraMath — Mental Maths Games by HorusQuest', es:'OraMath — Juegos de cálculo mental de HorusQuest', fr:'OraMath — Jeux de calcul mental par HorusQuest'}, desc:{en:t('mathSub'), es:t('mathSub'), fr:t('mathSub')} },
     shop: {
@@ -6273,6 +6297,7 @@ function updateMeta() {
   const sectionMap = {
     quiz: t('quizTitle'),
     guess: t('guessTitle'),
+    'daily-guess': t('dailyOraGuess'),
     daily: t('dailyTitle'),
     leaderboards: t('lbTitle'),
     teams: t('teamTitle'),
@@ -6777,9 +6802,9 @@ function viewHome() {
 
 function viewPlay() {
   const cards = [
-    { route:'daily', icon:'🔥', title:t('dailyQuest'), desc:t('dailySub') },
-    { route:'oraquest', icon:'✨', title:t('playOraQuest'), desc:t('oraQuestProductSub') },
-    { route:'guess', icon:'🔍', title:t('playGuessOra'), desc:pick(ORA_UNIVERSE_GAMES[0].description) },
+    { route:'quiz', icon:'✨', title:t('playOraQuest'), desc:t('oraQuestHubDesc') },
+    { route:'guess', icon:'🔍', title:t('playGuessOra'), desc:t('oraGuessHubDesc') },
+    { route:'daily-guess', icon:'🔥', title:t('dailyOraGuess'), desc:t('dailyOraGuessDesc') },
     { route:'words', icon:'🔤', title:t('exploreOraWords'), desc:t('wordsSub') },
     { route:'oramath', icon:'➗', title:t('mathTitle'), desc:t('mathSub') },
     { route:'leaderboards', icon:'🏆', title:t('viewLeaderboards'), desc:t('lbAllSub') },
@@ -9843,12 +9868,48 @@ function viewQuizResults() {
   </div>`;
 }
 
-function newGuessSession() {
+const DAILY_GUESS_KEY = 'oraguess:daily';
+function loadDailyGuessState() {
+  const fb = { completed:{}, lastDailyDate:'', streak:0 };
+  const raw = LS.get(DAILY_GUESS_KEY, fb) || fb;
   return {
-    animals: getRandomAnimalsForGame(MAX_ANIMAL_ROUNDS),
+    completed: raw.completed && typeof raw.completed === 'object' ? raw.completed : {},
+    lastDailyDate: typeof raw.lastDailyDate === 'string' ? raw.lastDailyDate : '',
+    streak: Number.isFinite(raw.streak) ? raw.streak : 0
+  };
+}
+function saveDailyGuessState(st) { LS.set(DAILY_GUESS_KEY, st); }
+function dailyGuessAnimal() {
+  const idx = dailySeedIndex('oraguess:' + todayKey() + ':' + state.lang, ANIMALS.length);
+  return ANIMALS[idx] || ANIMALS[0];
+}
+function completeDailyGuess(gs) {
+  if (!gs || !gs.daily) return;
+  const today = gs.dailyDate || todayKey();
+  const st = loadDailyGuessState();
+  if (st.completed[today]) return;
+  const yesterday = addDaysKey(today, -1);
+  const nextStreak = st.lastDailyDate === yesterday ? st.streak + 1 : 1;
+  st.completed[today] = {
+    score: gs.score,
+    correct: gs.correct,
+    completedAt: new Date().toISOString()
+  };
+  st.lastDailyDate = today;
+  st.streak = nextStreak;
+  saveDailyGuessState(st);
+}
+function newGuessSession(opts={}) {
+  const daily = !!opts.daily;
+  const today = todayKey();
+  return {
+    animals: daily ? [dailyGuessAnimal()] : getRandomAnimalsForGame(MAX_ANIMAL_ROUNDS),
     idx:0, revealed:0, guessed:false, shownAnswer:false,
     score:0, correct:0, failed:0, streak:0, bestStreak:0,
-    startedAt: Date.now(), durationMs:0, over:false, finishedReason:null, confettiShown:false, saved:false
+    startedAt: Date.now(), durationMs:0, over:false, finishedReason:null, confettiShown:false, saved:false,
+    daily, dailyDate: daily ? today : null,
+    gameMode: daily ? 'daily-guess' : 'guess-challenge',
+    sessionId: (daily ? 'dg_' : 'gs_') + today.replace(/-/g, '') + '_' + Date.now().toString(36)
   };
 }
 // Educational result card shown when a round is resolved (guessed or revealed).
@@ -9885,7 +9946,8 @@ function GuessEduCard(a) {
     </div>`;
 }
 function viewGuess() {
-  if (!state.guessSession) state.guessSession = newGuessSession();
+  const dailyMode = state.route === 'daily-guess';
+  if (!state.guessSession || !!state.guessSession.daily !== dailyMode) state.guessSession = newGuessSession({ daily:dailyMode });
   const gs = state.guessSession;
   if (gs.over) return viewGuessResults();
   const a = gs.animals[gs.idx];
@@ -9900,8 +9962,9 @@ function viewGuess() {
     <main class="max-w-3xl mx-auto px-4 sm:px-6 py-10">
       <div class="text-center">
         <div class="mx-auto">${OraAvatar({size:'md', mood: gs.guessed?'celebrate':gs.shownAnswer?'thinking':'happy'})}</div>
-        <h1 class="mt-4 font-display text-3xl font-bold">${t('guessTitle')}</h1>
-        <p class="mt-2 text-slate-600">${t('guessIntro')}</p>
+        ${gs.daily ? `<span class="chip bg-rose-100 text-rose-700 mt-4">🔥 ${t('todayChallenge')}</span>` : ''}
+        <h1 class="mt-4 font-display text-3xl font-bold">${gs.daily ? t('dailyOraGuess') : t('guessTitle')}</h1>
+        <p class="mt-2 text-slate-600">${gs.daily ? t('dailyOraGuessIntro') : t('guessIntro')}</p>
       </div>
       <div class="mt-6 card p-6 md:p-8">
         <div class="flex items-center justify-between mb-2">
@@ -9975,6 +10038,36 @@ function viewGuess() {
   </div>`;
 }
 
+function viewDailyGuess() {
+  const today = todayKey();
+  const st = loadDailyGuessState();
+  const done = st.completed[today];
+  if (done) {
+    return `
+    <div class="min-h-screen bg-slate-50">
+      ${Header()}
+      <main class="max-w-3xl mx-auto px-4 sm:px-6 py-10">
+        <div class="card p-8 text-center">
+          <span class="chip bg-rose-100 text-rose-700">🔥 ${t('todayChallenge')}</span>
+          <h1 class="mt-4 font-display text-3xl font-bold">${t('dailyOraGuess')}</h1>
+          <p class="mt-2 text-slate-600">${t('dailyGuessDone')}</p>
+          <div class="mt-6 grid grid-cols-2 gap-3">
+            <div class="stat-cell bg-violet-50 p-4"><div class="text-3xl font-bold text-brand-violet">${done.score || 0}</div><div class="text-xs text-slate-600 mt-1">${t('yourScore')}</div></div>
+            <div class="stat-cell bg-amber-50 p-4"><div class="text-3xl font-bold text-amber-600">${st.streak || 0}</div><div class="text-xs text-slate-600 mt-1">${t('streakDays')}</div></div>
+          </div>
+          <div class="mt-6 grid sm:grid-cols-2 gap-2">
+            <button onclick="go('guess')" class="btn-primary">${t('playGuessOra')}</button>
+            <button onclick="go('play')" class="btn-ghost">${t('backHome')}</button>
+          </div>
+        </div>
+        ${AdSlot()}
+      </main>
+      ${Footer()}
+    </div>`;
+  }
+  return viewGuess();
+}
+
 function guessPlayedCount(gs) {
   // Animals actually attempted this game (used for accuracy).
   return gs.finishedReason === 'completed' ? gs.animals.length : Math.min(gs.idx + 1, gs.animals.length);
@@ -9986,6 +10079,7 @@ function viewGuessResults() {
   const acc = calcAccuracy(gs.correct, played);
   const failed = gs.finishedReason === 'failed';
   const isGreat = !failed && acc >= 70;
+  const isDailyGuess = !!gs.daily;
   if (isGreat && !gs.confettiShown) { confetti(); gs.confettiShown = true; }
   const shareText = t('shareText').replace('{score}', gs.score);
   return `
@@ -9995,6 +10089,7 @@ function viewGuessResults() {
       <div class="card p-8 text-center slide-up">
         <div class="mx-auto">${OraAvatar({size:'lg', mood: failed?'thinking':isGreat?'celebrate':'happy'})}</div>
         ${failed?`<span class="chip bg-rose-100 text-rose-700 mt-4">${t('guessGameOver')}</span>`:''}
+        ${isDailyGuess?`<span class="chip bg-rose-100 text-rose-700 mt-4">🔥 ${t('dailyOraGuess')}</span>`:''}
         <h1 class="mt-4 font-display text-3xl font-bold">${t('resultsTitle')}</h1>
         <p class="mt-2 text-slate-600">${failed?t('gameOverMsg'):''} ${gs.correct} / ${played} ${t('correctSuffix')}</p>
         <div class="mt-6 grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -10025,9 +10120,9 @@ function viewGuessResults() {
         <div class="mt-5 grid sm:grid-cols-3 gap-2">
           <button onclick="saveScore()" class="btn-primary" ${gs.saved?'disabled':''}>${gs.saved?t('saved'):t('saveScore')}</button>
           <button onclick="shareResult('${escapeHtml(shareText)}')" class="btn-ghost">${t('shareResult')}</button>
-          <button onclick="playAgainGuess()" class="btn-ghost">${t('playAgain')}</button>
+          <button onclick="${isDailyGuess ? "go('guess')" : 'playAgainGuess()'}" class="btn-ghost">${isDailyGuess ? t('playGuessOra') : t('playAgain')}</button>
         </div>
-        <button onclick="go('home')" class="mt-3 text-sm text-slate-500 hover:underline focus-ring">${t('backHome')}</button>
+        <button onclick="go('play')" class="mt-3 text-sm text-slate-500 hover:underline focus-ring">${t('backHome')}</button>
       </div>
       ${AdSlot()}
     </main>
@@ -10037,7 +10132,7 @@ function viewGuessResults() {
 
 function viewDaily() {
   const today = todayKey();
-  const lastPlayed = LS.get('ora.lastDaily', null);
+  const lastPlayed = LS.get('oraquest:daily:lastPlayed', LS.get('ora.lastDaily', null));
   const playedToday = lastPlayed === today;
   const streak = state.streak.days || 0;
   return `
@@ -10806,7 +10901,7 @@ function nextQuestion() {
   render();
 }
 function saveScore() {
-  const isGuess = state.route === 'guess-results';
+  const isGuess = state.route === 'guess-results' || state.route === 'daily-guess-results';
   const s = isGuess ? state.guessSession : state.quizSession;
   if (!s) return;
   if (s.saved) return; // prevent duplicate score saving
@@ -10828,7 +10923,7 @@ function saveScore() {
   const record = LBCore.makeScoreRecord({
     gameKey:    isGuess ? 'guessora' : 'oraquest',
     gameName:   isGuess ? 'OraGuess' : 'OraQuest',
-    gameMode:   isGuess ? 'guess-challenge' : (s.fromDaily ? 'daily-quest' : 'quiz-battle'),
+    gameMode:   isGuess ? (s.gameMode || (s.daily ? 'daily-guess' : 'guess-challenge')) : (s.fromDaily ? 'daily-quest' : 'quiz-battle'),
     category:   isGuess ? 'animals' : s.category,
     difficulty: isGuess ? null : s.difficulty,
     ageGroup:   isGuess ? 'family' : s.age,
@@ -10848,7 +10943,7 @@ function saveScore() {
   LS.set('ora.user', state.user);
   s.saved = true;
   toast(t('saved'));
-  trackEvent('score_saved', { score:s.score, mode: isGuess ? 'guess' : 'quiz' });
+  trackEvent('score_saved', { score:s.score, mode: isGuess ? (s.gameMode || 'guess-challenge') : 'quiz' });
   render();
 }
 function shareResult(text) {
@@ -10863,12 +10958,15 @@ function shareResult(text) {
 function startDaily(cat, diff) {
   if (cat === 'guess') {
     state.guessSession = null;
-    go('guess');
+    go('daily-guess');
+    trackEvent('daily_started', { category:cat, mode:'daily-guess' });
+    return;
   } else {
     // fromDaily marks the session so its score is logged as the 'daily-quest' mode.
     state.quiz = { age:'family', category: cat, difficulty: diff, timerOn: true, fromDaily: true };
     startQuiz();
   }
+  LS.set('oraquest:daily:lastPlayed', todayKey());
   LS.set('ora.lastDaily', todayKey());
   trackEvent('daily_started', { category:cat });
 }
@@ -10947,9 +11045,10 @@ function finishGuessGame(reason) {
   gs.over = true;
   gs.finishedReason = reason; // 'completed' | 'failed'
   gs.durationMs = Date.now() - gs.startedAt;
-  state.route = 'guess-results';
+  if (gs.daily) completeDailyGuess(gs);
+  state.route = gs.daily ? 'daily-guess-results' : 'guess-results';
   render();
-  trackEvent('guess_game_over', { reason, score:gs.score, correct:gs.correct });
+  trackEvent('guess_game_over', { reason, score:gs.score, correct:gs.correct, mode:gs.gameMode || 'guess-challenge' });
 }
 function submitGuess() {
   const gs = state.guessSession;
@@ -11291,6 +11390,8 @@ function render() {
     case 'quiz-results': html = viewQuizResults(); break;
     case 'guess': html = viewGuess(); break;
     case 'guess-results': html = viewGuessResults(); break;
+    case 'daily-guess': html = viewDailyGuess(); break;
+    case 'daily-guess-results': html = viewGuessResults(); break;
     case 'daily': html = viewDaily(); break;
     case 'leaderboards': html = viewLeaderboards(); break;
     case 'teams': html = viewTeams(); break;
