@@ -116,6 +116,17 @@
   .nd-locked { filter: grayscale(0.55); }
   .nd-lock { position: absolute; top: 1px; right: 2px; font-size: 0.7rem; }
   .nd-tile-lg { width: 3.25rem; height: 3.25rem; font-size: 1.4rem; aspect-ratio: auto; }
+  /* EquaCode (daily equation) — Wordle-style cells + on-screen keyboard. */
+  .eq-row { display: grid; gap: 6px; justify-content: center; }
+  .eq-cell { width: 2.75rem; height: 2.75rem; display: flex; align-items: center; justify-content: center; border-radius: .5rem; border: 2px solid rgb(226 232 240); font-size: 1.35rem; font-weight: 800; line-height: 1; background: #fff; color: rgb(15 23 42); }
+  .eq-cell.eq-filled { border-color: rgb(148 163 184); }
+  .eq-correct { background: rgb(34 197 94); border-color: rgb(34 197 94); color: #fff; }
+  .eq-present { background: rgb(234 179 8); border-color: rgb(234 179 8); color: #fff; }
+  .eq-absent  { background: rgb(100 116 139); border-color: rgb(100 116 139); color: #fff; }
+  .eq-key { min-width: 2.1rem; height: 3rem; padding: 0 .5rem; border-radius: .5rem; border: 1px solid rgb(226 232 240); background: rgb(241 245 249); font-weight: 700; font-size: 1.05rem; cursor: pointer; touch-action: manipulation; user-select: none; -webkit-user-select: none; }
+  .eq-key.eq-correct, .eq-key.eq-present, .eq-key.eq-absent { border-color: transparent; }
+  .eq-key-wide { min-width: 3.6rem; font-size: .8rem; }
+  @media (max-width: 380px) { .eq-cell { width: 2.25rem; height: 2.25rem; font-size: 1.1rem; } .eq-key { min-width: 1.8rem; } }
   @keyframes fall { to { transform: translateY(110vh) rotate(720deg); opacity:0; } }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
   /* Ora the owl mascot animations */
@@ -215,7 +226,7 @@ const LBCore = (function () {
     oraquest:     { key:'oraquest',     name:'OraQuest',  modes:['quiz-battle','daily-quest','general-quiz','family-quiz'] },
     guessora:     { key:'guessora',     name:'OraGuess',  modes:['guess-challenge','daily-guess'] },
     orawords:     { key:'orawords',     name:'OraWords',  modes:['spelling-sprint','vocabulary-quest','letter-rush','anagram-challenge','daily-quest'] },
-    oramath:      { key:'oramath',      name:'OraMath',   modes:['truth-or-trap','math-sprint','numdrop'] },
+    oramath:      { key:'oramath',      name:'OraMath',   modes:['truth-or-trap','math-sprint','numdrop','equacode'] },
     'team-quest': { key:'team-quest',   name:'Team Quest', modes:['team-quest'] }
   };
 
@@ -1356,6 +1367,8 @@ const I18N_EXT = {
     mathTTName:'Truth or Trap?', mathTTSub:'An equation flashes on screen — swipe to call it true or false before the bar runs out. Traps look almost right!',
     mathSprintName:'Ora Sprint', mathSprintSub:'60 seconds of mental maths. Chain correct answers to grow your combo multiplier; fast answers add extra time.',
     mathNDName:'NumDrop', mathNDSub:'Drop number tiles into the grid. Any connected group that adds up to the target merges and vanishes — chain combos and climb the levels before the board fills up!',
+    mathEQName:'EquaCode', mathEQSub:'Crack today’s hidden equation in a few tries — green = right spot, yellow = wrong spot. One puzzle a day, the same for everyone your age!',
+    eqErrLen:'Fill every cell first.', eqErrEquals:'Use exactly one = sign.', eqErrRhs:'The right side must be a whole number.', eqErrZero:'No leading zeros.', eqErrExpr:'That is not a valid equation.', eqErrNotEqual:'Both sides must be equal.',
     mathLevel:'Level', mathStreakDays:'day streak', mathPlayNow:'Play',
     mathRecordLine:'Your record: {score} — can you beat it?', mathNoRecordYet:'No record for this combo yet — set the first one!',
     mathMoreSoon:'More maths games are on the way: number puzzles, estimation challenges and a daily equation.',
@@ -1392,6 +1405,8 @@ const I18N_EXT = {
     mathTTName:'¿Verdad o Trampa?', mathTTSub:'Aparece una igualdad en pantalla: desliza para decir si es verdadera o falsa antes de que se agote la barra. ¡Las trampas casi parecen correctas!',
     mathSprintName:'Ora Sprint', mathSprintSub:'60 segundos de cálculo mental. Encadena aciertos para subir tu multiplicador de combo; responder rápido añade tiempo extra.',
     mathNDName:'NumDrop', mathNDSub:'Suelta fichas de números en la cuadrícula. Cualquier grupo conectado que sume el objetivo se fusiona y desaparece: encadena combos y sube de nivel antes de que se llene el tablero.',
+    mathEQName:'EquaCode', mathEQSub:'Descifra la ecuación oculta de hoy en pocos intentos: verde = sitio correcto, amarillo = sitio equivocado. ¡Un reto al día, igual para todos los de tu edad!',
+    eqErrLen:'Completa todas las casillas.', eqErrEquals:'Usa exactamente un signo =.', eqErrRhs:'El lado derecho debe ser un número entero.', eqErrZero:'Sin ceros a la izquierda.', eqErrExpr:'Eso no es una ecuación válida.', eqErrNotEqual:'Ambos lados deben ser iguales.',
     mathLevel:'Nivel', mathStreakDays:'días de racha', mathPlayNow:'Jugar',
     mathRecordLine:'Tu récord: {score} — ¿lo superas?', mathNoRecordYet:'Aún no hay récord para esta combinación. ¡Marca el primero!',
     mathMoreSoon:'Más juegos de matemáticas en camino: puzzles numéricos, retos de estimación y una ecuación diaria.',
@@ -1428,6 +1443,8 @@ const I18N_EXT = {
     mathTTName:'Vrai ou Piège ?', mathTTSub:'Une égalité s’affiche : glisse pour dire si elle est vraie ou fausse avant la fin de la barre. Les pièges ont l’air presque corrects !',
     mathSprintName:'Ora Sprint', mathSprintSub:'60 secondes de calcul mental. Enchaîne les bonnes réponses pour augmenter ton multiplicateur de combo ; répondre vite ajoute du temps.',
     mathNDName:'NumDrop', mathNDSub:'Dépose des tuiles de nombres dans la grille. Tout groupe relié dont la somme atteint la cible fusionne et disparaît — enchaîne les combos et grimpe les niveaux avant que la grille ne se remplisse !',
+    mathEQName:'EquaCode', mathEQSub:'Déchiffre l’équation cachée du jour en quelques essais : vert = bonne place, jaune = mauvaise place. Un défi par jour, le même pour tous ceux de ton âge !',
+    eqErrLen:'Remplis toutes les cases.', eqErrEquals:'Utilise exactement un signe =.', eqErrRhs:'Le côté droit doit être un nombre entier.', eqErrZero:'Pas de zéro initial.', eqErrExpr:'Ce n’est pas une équation valide.', eqErrNotEqual:'Les deux côtés doivent être égaux.',
     mathLevel:'Niveau', mathStreakDays:'jours de série', mathPlayNow:'Jouer',
     mathRecordLine:'Ton record : {score} — tu peux le battre ?', mathNoRecordYet:'Pas encore de record pour cette combinaison. Établis le premier !',
     mathMoreSoon:'D’autres jeux de maths arrivent : puzzles numériques, défis d’estimation et une équation quotidienne.',
@@ -8649,6 +8666,201 @@ const MathEngine = (function () {
     return { over: model.over, cleared: res.cleared };
   }
 
+  /* ---- EquaCode (equacode) — the daily hidden-equation puzzle ----
+     Wordle/Nerdle for maths: guess the day's equation (e.g. 12+35=47) in N tries
+     with per-cell feedback. The puzzle is generated DETERMINISTICALLY from the
+     date so everyone in the same age band gets the same equation with no backend
+     (seed = hash("YYYY-MM-DD|band|difficulty") → a local mulberry32). Every
+     generated answer is a valid equation by construction; guesses are checked by
+     a tiny hand-rolled parser/evaluator (operator precedence, exact division,
+     NO eval). All pure: the host passes the local date key in. */
+  function equacodeSeed(str) {
+    let h = 2166136261 >>> 0;
+    for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; }
+    return h >>> 0;
+  }
+  function equacodeRng(seed) {
+    let s = seed >>> 0;
+    return function () {
+      s |= 0; s = (s + 0x6D2B79F5) | 0;
+      let t = Math.imul(s ^ (s >>> 15), 1 | s);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  // Per band/difficulty: target string length, attempts, on-screen keyboard ops,
+  // and the shapes the generator may pick. A shape is { ops:[...], dig:[...],
+  // res:N } — operand digit-counts + result digit-count, so lengths are exact.
+  const EQUACODE_TABLE = {
+    '6-8': {
+      easy:   { length: 5, attempts: 8, ops: ['+'],                shapes: [{ ops: ['+'],      dig: [1, 1],    res: 1 }] }, // 4+3=7 (no carry)
+      medium: { length: 6, attempts: 8, ops: ['+'],                shapes: [{ ops: ['+'],      dig: [1, 1],    res: 2 }] }, // 7+8=15 (carry)
+      hard:   { length: 7, attempts: 8, ops: ['+'],                shapes: [{ ops: ['+', '+'], dig: [1, 1, 1], res: 1 }] }  // 2+3+1=6 (three addends)
+    },
+    '9-12': {
+      easy:   { length: 8, attempts: 6, ops: ['+'],                shapes: [{ ops: ['+'], dig: [2, 2], res: 2 }] },
+      medium: { length: 8, attempts: 6, ops: ['+', '-'],           shapes: [{ ops: ['+'], dig: [2, 2], res: 2 }, { ops: ['-'], dig: [2, 2], res: 2 }] },
+      hard:   { length: 8, attempts: 6, ops: ['+', '-'],           shapes: [{ ops: ['+'], dig: [2, 2], res: 2 }, { ops: ['-'], dig: [2, 2], res: 2 }] }
+    },
+    '13+': {
+      easy:   { length: 8, attempts: 6, ops: ['+', '-', '*', '/'], shapes: [{ ops: ['*'], dig: [2, 1], res: 3 }, { ops: ['*'], dig: [1, 2], res: 3 }, { ops: ['/'], dig: [3, 1], res: 2 }] },
+      medium: { length: 8, attempts: 6, ops: ['+', '-', '*', '/'], shapes: [{ ops: ['*'], dig: [2, 1], res: 3 }, { ops: ['*'], dig: [1, 2], res: 3 }, { ops: ['/'], dig: [3, 1], res: 2 }, { ops: ['+'], dig: [2, 2], res: 2 }, { ops: ['-'], dig: [2, 2], res: 2 }] },
+      hard:   { length: 9, attempts: 6, ops: ['+', '-', '*', '/'], shapes: [{ ops: ['+', '*'], dig: [2, 1, 1], res: 2 }, { ops: ['*', '+'], dig: [1, 1, 2], res: 2 }, { ops: ['-', '*'], dig: [2, 1, 1], res: 2 }, { ops: ['*', '-'], dig: [1, 1, 2], res: 2 }] }
+    }
+  };
+  function equacodeConfig(band, difficulty) {
+    const b = EQUACODE_TABLE[band] || EQUACODE_TABLE['9-12'];
+    return b[difficulty] || b.easy;
+  }
+
+  function equacodeDigits(n) { return String(Math.abs(n)).length; }
+  function equacodeRandNum(rng, d) { return d <= 1 ? ri(rng, 1, 9) : ri(rng, Math.pow(10, d - 1), Math.pow(10, d) - 1); }
+
+  // Evaluate number/operator arrays with ×÷ before +−, left to right. Returns an
+  // integer, or null on inexact/zero division — used for both generation and
+  // checking player guesses, so they can never disagree.
+  function equacodeEval(nums, ops) {
+    const n = [nums[0]], o = [];
+    for (let i = 0; i < ops.length; i++) {
+      if (ops[i] === '*') n[n.length - 1] = n[n.length - 1] * nums[i + 1];
+      else if (ops[i] === '/') { const a = n[n.length - 1], b = nums[i + 1]; if (b === 0 || a % b !== 0) return null; n[n.length - 1] = a / b; }
+      else { o.push(ops[i]); n.push(nums[i + 1]); }
+    }
+    let v = n[0];
+    for (let i = 0; i < o.length; i++) v = o[i] === '+' ? v + n[i + 1] : v - n[i + 1];
+    return v;
+  }
+
+  function equacodeGenOne(shape, rng) {
+    if (shape.ops.length === 1) {
+      const op = shape.ops[0], dx = shape.dig[0], dy = shape.dig[1], dz = shape.res;
+      if (op === '/') {
+        const Y = Math.max(1, equacodeRandNum(rng, dy)), Z = equacodeRandNum(rng, dz), X = Y * Z;
+        if (equacodeDigits(X) !== dx) return null;
+        return { nums: [X, Y], ops: ['/'], value: Z };
+      }
+      let X = equacodeRandNum(rng, dx), Y = equacodeRandNum(rng, dy), Z;
+      if (op === '-') { if (Y > X) { const t = X; X = Y; Y = t; } Z = X - Y; }
+      else if (op === '+') Z = X + Y;
+      else Z = X * Y;
+      if (Z < 0 || equacodeDigits(Z) !== dz) return null;
+      return { nums: [X, Y], ops: [op], value: Z };
+    }
+    const nums = shape.dig.map(function (d) { return equacodeRandNum(rng, d); });
+    const value = equacodeEval(nums, shape.ops);
+    if (value == null || value < 0 || equacodeDigits(value) !== shape.res) return null;
+    return { nums: nums, ops: shape.ops, value: value };
+  }
+  function equacodeToString(gen) {
+    let s = String(gen.nums[0]);
+    for (let i = 0; i < gen.ops.length; i++) s += gen.ops[i] + String(gen.nums[i + 1]);
+    return s + '=' + String(gen.value);
+  }
+  function equacodeDailyPuzzle(dateKey, band, difficulty) {
+    const cfg = equacodeConfig(band, difficulty);
+    const rng = equacodeRng(equacodeSeed(dateKey + '|' + band + '|' + difficulty));
+    for (let i = 0; i < 5000; i++) {
+      const gen = equacodeGenOne(pickFrom(rng, cfg.shapes), rng);
+      if (!gen) continue;
+      const eq = equacodeToString(gen);
+      if (eq.length === cfg.length) return { equation: eq, length: cfg.length, attempts: cfg.attempts, ops: cfg.ops, band: band, difficulty: difficulty };
+    }
+    // Deterministic fallback (should never trigger): simplest valid equation.
+    const eq = cfg.length === 5 ? '4+3=7' : '12+35=47';
+    return { equation: eq, length: eq.length, attempts: cfg.attempts, ops: ['+'], band: band, difficulty: difficulty };
+  }
+
+  // Split a side like "12+3" into numbers/ops, rejecting bad structure, leading
+  // zeros and disallowed operators. Returns null when invalid.
+  function equacodeParseSide(str, allowedOps) {
+    if (str === '') return null;
+    const nums = [], ops = []; let cur = '';
+    for (let i = 0; i < str.length; i++) {
+      const ch = str[i];
+      if (ch >= '0' && ch <= '9') cur += ch;
+      else if (ch === '+' || ch === '-' || ch === '*' || ch === '/') {
+        if (cur === '' || allowedOps.indexOf(ch) === -1) return null;
+        nums.push(cur); ops.push(ch); cur = '';
+      } else return null;
+    }
+    if (cur === '') return null;
+    nums.push(cur);
+    for (let i = 0; i < nums.length; i++) if (nums[i].length > 1 && nums[i][0] === '0') return null;
+    return { nums: nums.map(Number), ops: ops };
+  }
+  function equacodeValidateGuess(guess, cfg) {
+    if (guess.length !== cfg.length) return { ok: false, error: 'eqErrLen' };
+    const eqCount = (guess.match(/=/g) || []).length;
+    if (eqCount !== 1) return { ok: false, error: 'eqErrEquals' };
+    const parts = guess.split('='), left = parts[0], right = parts[1];
+    if (!/^[0-9]+$/.test(right)) return { ok: false, error: 'eqErrRhs' };
+    if (right.length > 1 && right[0] === '0') return { ok: false, error: 'eqErrZero' };
+    const parsed = equacodeParseSide(left, cfg.ops);
+    if (!parsed) return { ok: false, error: 'eqErrExpr' };
+    const value = equacodeEval(parsed.nums, parsed.ops);
+    if (value == null) return { ok: false, error: 'eqErrExpr' };
+    if (value !== Number(right)) return { ok: false, error: 'eqErrNotEqual' };
+    return { ok: true };
+  }
+
+  // Wordle feedback with duplicate handling: greens first, then yellows consume
+  // remaining answer chars, the rest are gray.
+  function equacodeFeedback(guess, answer) {
+    const res = new Array(guess.length).fill('absent');
+    const left = {};
+    for (let i = 0; i < answer.length; i++) {
+      if (guess[i] === answer[i]) res[i] = 'correct';
+      else left[answer[i]] = (left[answer[i]] || 0) + 1;
+    }
+    for (let i = 0; i < guess.length; i++) {
+      if (res[i] === 'correct') continue;
+      const ch = guess[i];
+      if (left[ch] > 0) { res[i] = 'present'; left[ch]--; }
+    }
+    return res;
+  }
+  function equacodeKeyStates(guesses, answer) {
+    const rank = { absent: 0, present: 1, correct: 2 }, states = {};
+    for (let g = 0; g < guesses.length; g++) {
+      const fb = equacodeFeedback(guesses[g], answer);
+      for (let i = 0; i < guesses[g].length; i++) {
+        const ch = guesses[g][i], st = fb[i];
+        if (!(ch in states) || rank[st] > rank[states[ch]]) states[ch] = st;
+      }
+    }
+    return states;
+  }
+  function equacodeGrid(guesses, answer) {
+    const map = { correct: '🟩', present: '🟨', absent: '⬜' };
+    return guesses.map(function (g) { return equacodeFeedback(g, answer).map(function (s) { return map[s]; }).join(''); }).join('\n');
+  }
+  // Streak of consecutive days SOLVED, plus play/win counts and attempt
+  // distribution. Caller passes a LOCAL date key + previous stats (pure).
+  function equacodeUpdateStats(prev, dateKey, won, tries) {
+    prev = prev || {};
+    // Coalesce each field: a stored stats object may be {} (no keys yet), so a
+    // plain Object.assign of prev.* would overwrite the defaults with undefined.
+    const s = {
+      played: (prev.played || 0) + 1,
+      wins: prev.wins || 0,
+      streak: prev.streak || 0,
+      maxStreak: prev.maxStreak || 0,
+      lastWin: prev.lastWin || null,
+      dist: Object.assign({}, prev.dist || {})
+    };
+    if (won) {
+      s.wins += 1;
+      s.streak = (s.lastWin && s.lastWin === prevDayKey(dateKey)) ? s.streak + 1 : 1;
+      s.lastWin = dateKey;
+      if (s.streak > s.maxStreak) s.maxStreak = s.streak;
+      s.dist[tries] = (s.dist[tries] || 0) + 1;
+    } else {
+      s.streak = 0;
+    }
+    return s;
+  }
+
   /* ---- XP + levels. Level L→L+1 costs L×100 XP. ---- */
   function xpForGame(args) { return Math.max(5, Math.round((args.score / 10) * diffMult(args.difficulty))); }
   function xpNeededFor(level) { return level * 100; }
@@ -8697,6 +8909,9 @@ const MathEngine = (function () {
            numdropConfig, numdropNewGame, numdropDrop, numdropPushRow, numdropResolve,
            numdropLowestEmpty, numdropIsOver, numdropScore, numdropFindGroup,
            numdropGravity, numdropTargetForLevel, numdropMergesToNext, numdropSpawnTile,
+           equacodeConfig, equacodeDailyPuzzle, equacodeEval, equacodeValidateGuess,
+           equacodeFeedback, equacodeKeyStates, equacodeGrid, equacodeUpdateStats,
+           equacodeParseSide, equacodeToString,
            xpForGame, xpNeededFor, levelForXp,
            prevDayKey, updateDailyStreak,
            recordKey, bestRecord, updateRecord };
@@ -8755,7 +8970,8 @@ function selectMathOption(key, val){ mathSetupOrDefault()[key] = val; render(); 
 const MATH_GAMES = {
   'truth-or-trap': { icon:'🎭', nameKey:'mathTTName',     subKey:'mathTTSub',     start:'startMathTT()',      state:function(){ return state.mathTT; } },
   'math-sprint':   { icon:'⚡', nameKey:'mathSprintName', subKey:'mathSprintSub', start:'startMathSprint()',  state:function(){ return state.mathSprint; } },
-  'numdrop':       { icon:'🧩', nameKey:'mathNDName',     subKey:'mathNDSub',     start:'startMathNumDrop()', state:function(){ return state.mathNumDrop; } }
+  'numdrop':       { icon:'🧩', nameKey:'mathNDName',     subKey:'mathNDSub',     start:'startMathNumDrop()', state:function(){ return state.mathNumDrop; } },
+  'equacode':      { icon:'🔐', nameKey:'mathEQName',     subKey:'mathEQSub',     start:'startMathEqua()',    state:function(){ return state.mathEqua; } }
 };
 function mathGameName(mode){ const g = MATH_GAMES[mode]; return g ? t(g.nameKey) : t('mathTitle'); }
 
@@ -9388,12 +9604,196 @@ function viewMathNumDrop(){
     + '</div>';
 }
 
+/* ---- EquaCode (equacode) — the daily hidden-equation puzzle ----
+   One puzzle per local day per age band (deterministic, no backend). Progress
+   and Wordle-style stats live in localStorage; a completed day restores its
+   board instead of replaying. */
+const EQUACODE_LS = 'oramath:equacode';
+function loadEquaStore(){ const v = LS.get(EQUACODE_LS, null); return (v && typeof v === 'object') ? { stats: v.stats || {}, progress: v.progress || {} } : { stats:{}, progress:{} }; }
+function saveEquaStore(v){ LS.set(EQUACODE_LS, v); }
+function equaProgressKey(dateKey, band, difficulty){ return dateKey + '|' + band + '|' + difficulty; }
+function eqCellDisplay(ch){ return ch === '*' ? '×' : ch === '/' ? '÷' : ch === '-' ? '−' : ch; }
+
+function startMathEqua(){
+  const su = mathSetupOrDefault();
+  const info = MathEngine.ORAMATH_AGE_BANDS[su.ageGroup] || MathEngine.ORAMATH_AGE_BANDS.family;
+  const dateKey = todayKey();
+  const puzzle = MathEngine.equacodeDailyPuzzle(dateKey, info.band, su.difficulty);
+  const store = loadEquaStore();
+  const prog = store.progress[equaProgressKey(dateKey, info.band, su.difficulty)];
+  state.mathEqua = {
+    ageGroup: su.ageGroup, difficulty: su.difficulty, band: info.band, dateKey: dateKey,
+    cfg: { length: puzzle.length, attempts: puzzle.attempts, ops: puzzle.ops },
+    answer: puzzle.equation,
+    guesses: (prog && prog.guesses) ? prog.guesses.slice() : [],
+    input: '', msg: '',
+    status: (prog && prog.status) || 'playing',          // playing | won | lost
+    score: (prog && typeof prog.score === 'number') ? prog.score : 0,
+    resultMeta: (prog && prog.resultMeta) || null,
+    saved: false, ended: false
+  };
+  if (state.mathEqua.status !== 'playing') state.mathEqua.ended = true; // already finished today
+  go('oramath', { mode:'equacode', play:true });
+}
+function persistEqua(){
+  const s = state.mathEqua, store = loadEquaStore();
+  store.progress[equaProgressKey(s.dateKey, s.band, s.difficulty)] = { guesses: s.guesses.slice(), status: s.status, score: s.score, resultMeta: s.resultMeta };
+  saveEquaStore(store);
+}
+function eqComplete(){
+  const s = state.mathEqua;
+  s.ended = true;
+  const won = s.status === 'won', tries = s.guesses.length;
+  const store = loadEquaStore();
+  store.stats = MathEngine.equacodeUpdateStats(store.stats, s.dateKey, won, tries);
+  saveEquaStore(store);
+  s.score = won ? (s.cfg.attempts - tries + 1) * 100 : 0; // fewer tries → higher
+  // Global OraMath parity: XP, daily streak and personal record (idempotent/day).
+  s.resultMeta = finishMathGame({ gameMode:'equacode', ageGroup:s.ageGroup, difficulty:s.difficulty, score:s.score, accuracy: won ? 100 : 0, durationMs: 0 });
+}
+function eqKey(k){
+  const s = state.mathEqua;
+  if (!s || s.status !== 'playing') return;
+  if (k === 'enter'){ eqSubmit(); return; }
+  if (k === 'back'){ s.input = s.input.slice(0, -1); eqRenderInput(); return; }
+  if (s.input.length >= s.cfg.length) return;
+  if (/^[0-9]$/.test(k) || k === '=' || s.cfg.ops.indexOf(k) !== -1){ s.input += k; eqRenderInput(); }
+}
+function eqSubmit(){
+  const s = state.mathEqua;
+  if (!s || s.status !== 'playing') return;
+  const v = MathEngine.equacodeValidateGuess(s.input, s.cfg);
+  if (!v.ok){ s.msg = t(v.error); toast(t(v.error)); eqRenderMsg(); return; }
+  s.guesses.push(s.input);
+  const won = s.input === s.answer;
+  s.input = ''; s.msg = '';
+  if (won) s.status = 'won';
+  else if (s.guesses.length >= s.cfg.attempts) s.status = 'lost';
+  if (s.status !== 'playing') eqComplete();
+  persistEqua();
+  render();
+  if (s.status === 'won'){ try { confetti(); } catch (e) {} }
+}
+function eqShare(){
+  const s = state.mathEqua;
+  const tries = s.status === 'won' ? s.guesses.length : 'X';
+  const header = 'EquaCode ' + s.dateKey + ' ' + tries + '/' + s.cfg.attempts;
+  shareResult(header + '\n' + MathEngine.equacodeGrid(s.guesses, s.answer) + '\nhorusquest.com');
+}
+function eqActiveRowHtml(s){
+  let cells = '';
+  for (let i = 0; i < s.cfg.length; i++){ const ch = s.input[i] || ''; cells += '<div class="eq-cell' + (ch ? ' eq-filled' : '') + '">' + (ch ? eqCellDisplay(ch) : '') + '</div>'; }
+  return cells;
+}
+function eqRenderInput(){ const row = document.getElementById('eq-active-row'); if (row) row.innerHTML = eqActiveRowHtml(state.mathEqua); }
+function eqRenderMsg(){ const el = document.getElementById('eq-msg'); if (el) el.textContent = state.mathEqua.msg || ''; }
+function eqBoardHtml(s){
+  const cols = 'grid-template-columns:repeat(' + s.cfg.length + ',1fr)';
+  let rows = '';
+  for (let r = 0; r < s.cfg.attempts; r++){
+    if (r < s.guesses.length){
+      const g = s.guesses[r], fb = MathEngine.equacodeFeedback(g, s.answer);
+      let cells = '';
+      for (let i = 0; i < g.length; i++) cells += '<div class="eq-cell eq-' + fb[i] + '">' + eqCellDisplay(g[i]) + '</div>';
+      rows += '<div class="eq-row" style="' + cols + '">' + cells + '</div>';
+    } else if (r === s.guesses.length && s.status === 'playing'){
+      rows += '<div id="eq-active-row" class="eq-row" style="' + cols + '">' + eqActiveRowHtml(s) + '</div>';
+    } else {
+      let cells = '';
+      for (let i = 0; i < s.cfg.length; i++) cells += '<div class="eq-cell"></div>';
+      rows += '<div class="eq-row" style="' + cols + '">' + cells + '</div>';
+    }
+  }
+  return '<div class="space-y-1.5">' + rows + '</div>';
+}
+function eqKeyboardHtml(s){
+  const states = MathEngine.equacodeKeyStates(s.guesses, s.answer);
+  function key(ch, label, wide){
+    const st = states[ch] ? ' eq-' + states[ch] : '';
+    return '<button onclick="eqKey(\'' + (ch === "'" ? "\\'" : ch) + '\')" class="eq-key' + (wide ? ' eq-key-wide' : '') + st + ' focus-ring">' + label + '</button>';
+  }
+  const digitsTop = ['1','2','3','4','5'].map(d => key(d, d)).join('');
+  const digitsBot = ['6','7','8','9','0'].map(d => key(d, d)).join('');
+  const symbols = s.cfg.ops.map(op => key(op, eqCellDisplay(op))).join('') + key('=', '=');
+  return ''
+    + '<div class="mt-5 space-y-2">'
+    + '  <div class="flex justify-center gap-1.5 flex-wrap">' + digitsTop + '</div>'
+    + '  <div class="flex justify-center gap-1.5 flex-wrap">' + digitsBot + '</div>'
+    + '  <div class="flex justify-center gap-1.5 flex-wrap">' + symbols + '</div>'
+    + '  <div class="flex justify-center gap-1.5">'
+    + '    <button onclick="eqKey(\'back\')" class="eq-key eq-key-wide focus-ring" aria-label="' + pick({en:'Delete',es:'Borrar',fr:'Effacer'}) + '">⌫</button>'
+    + '    <button onclick="eqKey(\'enter\')" class="eq-key eq-key-wide !bg-violet-600 !text-white focus-ring">' + pick({en:'Enter',es:'Enviar',fr:'Valider'}) + '</button>'
+    + '  </div>'
+    + '</div>';
+}
+function eqStatsPanelHtml(s){
+  const store = loadEquaStore(), st = store.stats || {};
+  const winPct = st.played ? Math.round((st.wins / st.played) * 100) : 0;
+  const won = s.status === 'won';
+  const headline = won
+    ? pick({en:'Solved in ' + s.guesses.length + '!', es:'¡Resuelto en ' + s.guesses.length + '!', fr:'Résolu en ' + s.guesses.length + ' !'})
+    : pick({en:'Out of tries — it was', es:'Sin intentos — era', fr:'Plus d’essais — c’était'}) + ' <span class="font-mono">' + s.answer.split('').map(eqCellDisplay).join('') + '</span>';
+  // attempt distribution bars
+  let dist = '';
+  const maxCount = Math.max(1, ...Object.keys(st.dist || {}).map(k => st.dist[k] || 0));
+  for (let i = 1; i <= s.cfg.attempts; i++){
+    const c = (st.dist && st.dist[i]) || 0;
+    const w = Math.round((c / maxCount) * 100);
+    const here = won && s.guesses.length === i;
+    dist += '<div class="flex items-center gap-2 text-xs">'
+      + '<span class="w-4 text-right text-slate-500">' + i + '</span>'
+      + '<div class="flex-1 bg-slate-100 rounded"><div class="h-5 rounded ' + (here ? 'bg-emerald-500' : 'bg-slate-400') + ' text-white text-right pr-1.5 leading-5" style="min-width:1.5rem;width:' + Math.max(w, c ? 12 : 0) + '%">' + (c || '') + '</div></div>'
+      + '</div>';
+  }
+  return ''
+    + '<div class="mt-6 card p-5 text-center">'
+    + '  <p class="font-display text-xl font-bold">' + (won ? '🎉 ' : '🔓 ') + headline + '</p>'
+    + '  <div class="mt-4 grid grid-cols-4 gap-2 text-center">'
+    + '    <div><div class="text-2xl font-bold text-slate-900">' + (st.played || 0) + '</div><div class="text-[11px] text-slate-500">' + pick({en:'Played',es:'Jugados',fr:'Parties'}) + '</div></div>'
+    + '    <div><div class="text-2xl font-bold text-slate-900">' + winPct + '</div><div class="text-[11px] text-slate-500">' + pick({en:'Win %',es:'% Aciertos',fr:'% Gagné'}) + '</div></div>'
+    + '    <div><div class="text-2xl font-bold text-amber-600">' + (st.streak || 0) + '</div><div class="text-[11px] text-slate-500">' + pick({en:'Streak',es:'Racha',fr:'Série'}) + '</div></div>'
+    + '    <div><div class="text-2xl font-bold text-amber-600">' + (st.maxStreak || 0) + '</div><div class="text-[11px] text-slate-500">' + pick({en:'Best',es:'Máxima',fr:'Record'}) + '</div></div>'
+    + '  </div>'
+    + '  <div class="mt-4 text-left max-w-xs mx-auto space-y-1">'
+    + '    <p class="text-xs font-semibold text-slate-600 mb-1">' + pick({en:'Guess distribution',es:'Distribución de intentos',fr:'Répartition des essais'}) + '</p>'
+    + dist
+    + '  </div>'
+    + (s.resultMeta ? '  <p class="mt-4 text-sm font-semibold text-slate-700">+' + (s.resultMeta.xpGained || 0) + ' XP · 🔥 ' + (s.resultMeta.streakDays || 0) + ' ' + t('mathStreakDays') + '</p>' : '')
+    + '  <p class="mt-3 text-xs text-slate-500">' + pick({en:'Come back tomorrow for a new equation.',es:'Vuelve mañana para una nueva ecuación.',fr:'Reviens demain pour une nouvelle équation.'}) + '</p>'
+    + '  <div class="mt-4 flex flex-wrap justify-center gap-2">'
+    + '    <button onclick="eqShare()" class="btn-primary">📤 ' + pick({en:'Share',es:'Compartir',fr:'Partager'}) + '</button>'
+    + '    <button onclick="go(\'oramath\')" class="btn-ghost">← OraMath</button>'
+    + '  </div>'
+    + '</div>';
+}
+function viewMathEquaCode(){
+  const s = state.mathEqua;
+  if (!s || !state.params.play){ state.mathEqua = null; return mathGameSetupHtml('equacode'); }
+  const dateLabel = s.dateKey;
+  return ''
+    + '<div class="min-h-screen bg-slate-50">'
+    + Header()
+    + '<main class="max-w-md mx-auto px-4 sm:px-6 py-6">'
+    + '  <div class="text-center mb-4">'
+    + '    <span class="chip bg-amber-100 text-amber-800">🔐 EquaCode · ' + dateLabel + '</span>'
+    + '    <p class="mt-2 text-sm text-slate-600">' + pick({en:'Guess the hidden equation. 🟩 right spot · 🟨 wrong spot · ⬜ not used.',es:'Adivina la ecuación oculta. 🟩 sitio correcto · 🟨 sitio equivocado · ⬜ no está.',fr:'Devine l’équation cachée. 🟩 bonne place · 🟨 mauvaise place · ⬜ absente.'}) + '</p>'
+    + '  </div>'
+    + eqBoardHtml(s)
+    + '  <p id="eq-msg" class="mt-3 text-center text-sm font-semibold text-rose-600 min-h-[1.25rem]">' + (s.msg || '') + '</p>'
+    + (s.status === 'playing' ? eqKeyboardHtml(s) : eqStatsPanelHtml(s))
+    + (s.status === 'playing' ? '  <button onclick="go(\'oramath\')" class="mt-5 block mx-auto text-sm text-slate-500 hover:underline focus-ring">' + pick({en:'Back',es:'Volver',fr:'Retour'}) + '</button>' : '')
+    + '</main>'
+    + Footer()
+    + '</div>';
+}
+
 function viewOraMath(){
   const mode = state.params.mode || 'hub';
   if (mode === 'truth-or-trap') return viewMathTrueFalse();
   if (mode === 'math-sprint') return viewMathSprint();
   if (mode === 'numdrop') return viewMathNumDrop();
-  const gameCards = ['truth-or-trap','math-sprint','numdrop'].map(m => {
+  if (mode === 'equacode') return viewMathEquaCode();
+  const gameCards = ['truth-or-trap','math-sprint','numdrop','equacode'].map(m => {
     const g = MATH_GAMES[m];
     return ''
     + '<button onclick="go(\'oramath\',{mode:\'' + m + '\'})" class="card card-hover p-5 text-left focus-ring">'
@@ -9414,7 +9814,7 @@ function viewOraMath(){
     + '    <p class="mt-4 text-slate-600 leading-relaxed">' + t('mathBody') + '</p>'
     + '  </section>'
     + '  <div class="mt-8">' + mathPlayerPanelHtml() + '</div>'
-    + '  <div class="mt-6 grid sm:grid-cols-2 lg:grid-cols-3 gap-5">'
+    + '  <div class="mt-6 grid sm:grid-cols-2 gap-5">'
     + gameCards
     + '  </div>'
     + '</main>'
@@ -11448,6 +11848,10 @@ document.addEventListener('keydown', (e) => {
   } else if (state.params.mode === 'numdrop' && state.mathNumDrop && !state.mathNumDrop.ended){
     const n = parseInt(e.key, 10);
     if (n >= 1 && n <= state.mathNumDrop.cfg.cols){ e.preventDefault(); numdropDropCol(n - 1); }
+  } else if (state.params.mode === 'equacode' && state.mathEqua && state.mathEqua.status === 'playing'){
+    if (e.key === 'Enter'){ e.preventDefault(); eqKey('enter'); }
+    else if (e.key === 'Backspace'){ e.preventDefault(); eqKey('back'); }
+    else if (/^[0-9]$/.test(e.key) || e.key === '+' || e.key === '-' || e.key === '*' || e.key === '/' || e.key === '='){ eqKey(e.key); }
   }
 });
 

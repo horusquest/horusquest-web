@@ -86,8 +86,8 @@ and any later tests/UX polish.
 Route `oramath` (`/oramath` + es/fr, indexable), modes via `state.params.mode`
 like OraWords. Pure logic lives in the `__MATHENGINE_START__/END__` sentinel
 block (`MathEngine` IIFE: injectable rng/date, no DOM/state/clock) — tested by
-`tests/oramath-engine.test.js` (46 tests incl. NumDrop, seeded mulberry32
-property tests).
+`tests/oramath-engine.test.js` (56 tests incl. NumDrop + EquaCode, seeded
+mulberry32 property tests).
 
 - **Age mapping:** UI uses the site's 6 `AGE_GROUPS`; `ORAMATH_AGE_BANDS`
   collapses them to the spec's 3 bands (`6-8`/`9-12`/`13+`) + `timeFactor`.
@@ -126,11 +126,28 @@ property tests).
   model is plain data → tests drive full games headlessly. Tap columns or number
   keys 1–N. The 3 games share one `MATH_GAMES` registry (icon/name/sub/start/
   state) consumed by the hub cards, setup, results, share and save flows.
+- **EquaCode** (`equacode`): the daily hidden-equation puzzle (Wordle/Nerdle for
+  maths). Engine generates ONE puzzle per local day per age band, deterministic
+  from `equacodeSeed("YYYY-MM-DD|band|difficulty")` → a local mulberry32 (no
+  backend; rolls at local midnight via host `todayKey()`). Shape-based generator
+  (`EQUACODE_TABLE` → operand/result digit-counts so the string length is exact);
+  every generated answer is a valid equation by construction. Guesses are checked
+  by a hand-rolled parser/evaluator (`equacodeParseSide` + `equacodeEval`:
+  ×÷-before-+−, exact division, **no `eval`**) — same evaluator used for
+  generation so they can't disagree. `equacodeFeedback` is Wordle two-pass with
+  duplicate handling; `equacodeKeyStates` colours the on-screen keyboard;
+  `equacodeGrid` builds the 🟩🟨⬜ share text (via `shareResult`). Host stores
+  per-day progress + Wordle stats (streak of days solved, win%, attempt
+  distribution) in `oramath:equacode`; a finished day restores its board instead
+  of replaying. Completion calls `finishMathGame` once (XP/global streak/record).
+  Scaling: 6-8 = 5 chars, addition, 8 tries; 9-12 = 8 chars, +/−, 6 tries; 13+ =
+  8 chars ×÷ (hard = 9 chars, two operators with precedence). Keyboard: on-screen
+  + physical digits/operators/Enter/Backspace.
 - **Leaderboards page** now renders `LeaderboardTabs()` (was locked to the
   OraQuest tab); OraMath has its own tab via `LB_TAB_META`.
-- The OraMath hub now ships all 3 games (no "coming soon" card). Pending (spec
-  approved, NOT built): Camino Mágico, EquaCode (daily), Ojo de Ora,
-  achievements/badges, OraMath share emoji-grids.
+- The OraMath hub now ships all 4 games (no "coming soon" card). Pending (spec
+  approved, NOT built): Camino Mágico, Ojo de Ora, achievements/badges,
+  OraMath share emoji-grids.
 
 ## Validation
 - `npm run lint` — lints the inline `<script>` block
