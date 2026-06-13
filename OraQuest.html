@@ -6003,6 +6003,122 @@ function expandGeneratedSpellingBank() {
 }
 expandGeneratedSpellingBank();
 
+const VOCAB_DIFFICULTY_SEEDS = {
+  en: {
+    medium: [
+      ['calm','peaceful','noisy','angry','empty','Calm and peaceful both describe quiet steadiness.'],
+      ['choose','select','forget','break','hide','Choose and select both mean to pick something.'],
+      ['finish','complete','begin','open','delay','Finish and complete both mean to bring something to an end.'],
+      ['honest','truthful','false','silent','lazy','Honest and truthful both mean telling the truth.'],
+      ['repair','mend','damage','ignore','drop','Repair and mend both mean to fix something.'],
+      ['rapid','swift','slow','heavy','dull','Rapid and swift both mean very fast.'],
+      ['ancient','historic','modern','future','fresh','Ancient and historic both point to the distant past.'],
+      ['create','produce','erase','lose','sleep','Create and produce both mean to make something.'],
+      ['protect','defend','attack','forget','waste','Protect and defend both mean to keep safe.'],
+      ['gather','collect','scatter','divide','refuse','Gather and collect both mean to bring things together.'],
+      ['fragile','delicate','strong','rough','giant','Fragile and delicate both mean easily damaged.'],
+      ['silent','hushed','loud','bright','quick','Silent and hushed both mean very quiet.']
+    ],
+    hard: [
+      ['brief','concise','lengthy','careless','ordinary','Brief and concise both mean using few words.'],
+      ['evident','obvious','hidden','uncertain','distant','Evident and obvious both mean easy to see or understand.'],
+      ['scarce','rare','common','simple','steady','Scarce and rare both mean not found in large amounts.'],
+      ['complex','intricate','plain','empty','weak','Complex and intricate both mean made of many connected parts.'],
+      ['predict','forecast','remember','invent','repair','Predict and forecast both mean to say what may happen.'],
+      ['reluctant','hesitant','eager','careless','certain','Reluctant and hesitant both mean not fully willing.'],
+      ['vivid','brilliant','dull','silent','brief','Vivid and brilliant both describe strong, clear color or detail.'],
+      ['accurate','precise','wrong','vague','rapid','Accurate and precise both mean exact and correct.'],
+      ['observe','notice','ignore','damage','borrow','Observe and notice both mean to pay attention to something.'],
+      ['expand','enlarge','shrink','hide','delay','Expand and enlarge both mean to make bigger.'],
+      ['essential','vital','optional','minor','distant','Essential and vital both mean very important.'],
+      ['contrast','compare','repeat','accept','finish','Contrast and compare both involve examining differences or similarities.']
+    ]
+  },
+  es: {
+    medium: [
+      ['tranquilo','sereno','ruidoso','furioso','vacío','Tranquilo y sereno indican calma.'],
+      ['elegir','seleccionar','olvidar','romper','esconder','Elegir y seleccionar significan escoger algo.'],
+      ['terminar','completar','empezar','abrir','retrasar','Terminar y completar significan llegar al final.'],
+      ['honesto','sincero','falso','callado','perezoso','Honesto y sincero significan decir la verdad.'],
+      ['reparar','arreglar','dañar','ignorar','soltar','Reparar y arreglar significan corregir un problema.'],
+      ['rápido','veloz','lento','pesado','apagado','Rápido y veloz indican mucha velocidad.'],
+      ['antiguo','histórico','moderno','futuro','nuevo','Antiguo e histórico se relacionan con el pasado.'],
+      ['crear','producir','borrar','perder','dormir','Crear y producir significan hacer algo.'],
+      ['proteger','defender','atacar','olvidar','gastar','Proteger y defender significan mantener a salvo.'],
+      ['reunir','juntar','dispersar','dividir','rechazar','Reunir y juntar significan poner cosas en grupo.'],
+      ['frágil','delicado','fuerte','áspero','enorme','Frágil y delicado indican que se rompe con facilidad.'],
+      ['silencioso','callado','ruidoso','brillante','rápido','Silencioso y callado indican poco ruido.']
+    ],
+    hard: [
+      ['breve','conciso','largo','descuidado','normal','Breve y conciso significan con pocas palabras.'],
+      ['evidente','obvio','oculto','incierto','lejano','Evidente y obvio significan fácil de entender.'],
+      ['escaso','raro','común','simple','estable','Escaso y raro indican poca cantidad o frecuencia.'],
+      ['complejo','intrincado','sencillo','vacío','débil','Complejo e intrincado significan con muchas partes.'],
+      ['predecir','pronosticar','recordar','inventar','reparar','Predecir y pronosticar significan anticipar algo.'],
+      ['reacio','dudoso','entusiasta','descuidado','seguro','Reacio y dudoso indican poca disposición.'],
+      ['vívido','brillante','apagado','silencioso','breve','Vívido y brillante describen algo claro e intenso.'],
+      ['exacto','preciso','erróneo','vago','rápido','Exacto y preciso significan correcto y definido.'],
+      ['observar','notar','ignorar','dañar','tomar','Observar y notar significan prestar atención.'],
+      ['ampliar','agrandar','reducir','ocultar','retrasar','Ampliar y agrandar significan hacer más grande.'],
+      ['esencial','vital','opcional','menor','lejano','Esencial y vital significan muy importante.'],
+      ['contrastar','comparar','repetir','aceptar','finalizar','Contrastar y comparar implican examinar semejanzas o diferencias.']
+    ]
+  },
+  fr: {
+    medium: [
+      ['calme','paisible','bruyant','fâché','vide','Calme et paisible indiquent la tranquillité.'],
+      ['choisir','sélectionner','oublier','casser','cacher','Choisir et sélectionner veulent dire prendre une option.'],
+      ['terminer','compléter','commencer','ouvrir','retarder','Terminer et compléter veulent dire arriver à la fin.'],
+      ['honnête','sincère','faux','silencieux','paresseux','Honnête et sincère veulent dire dire la vérité.'],
+      ['réparer','arranger','abîmer','ignorer','lâcher','Réparer et arranger veulent dire corriger un problème.'],
+      ['rapide','vif','lent','lourd','terne','Rapide et vif indiquent beaucoup de vitesse.'],
+      ['ancien','historique','moderne','futur','neuf','Ancien et historique se rapportent au passé.'],
+      ['créer','produire','effacer','perdre','dormir','Créer et produire veulent dire faire quelque chose.'],
+      ['protéger','défendre','attaquer','oublier','gaspiller','Protéger et défendre veulent dire garder en sécurité.'],
+      ['réunir','rassembler','disperser','diviser','refuser','Réunir et rassembler veulent dire mettre ensemble.'],
+      ['fragile','délicat','solide','rugueux','énorme','Fragile et délicat indiquent quelque chose qui casse facilement.'],
+      ['silencieux','muet','bruyant','brillant','rapide','Silencieux et muet indiquent très peu de bruit.']
+    ],
+    hard: [
+      ['bref','concis','long','négligent','ordinaire','Bref et concis veulent dire avec peu de mots.'],
+      ['évident','manifeste','caché','incertain','lointain','Évident et manifeste veulent dire facile à comprendre.'],
+      ['rare','peu fréquent','commun','simple','stable','Rare et peu fréquent indiquent que cela arrive peu.'],
+      ['complexe','intriqué','simple','vide','faible','Complexe et intriqué veulent dire composé de nombreuses parties.'],
+      ['prédire','prévoir','oublier','inventer','réparer','Prédire et prévoir veulent dire annoncer ce qui peut arriver.'],
+      ['réticent','hésitant','enthousiaste','négligent','certain','Réticent et hésitant indiquent peu d’envie ou de certitude.'],
+      ['vif','éclatant','terne','silencieux','bref','Vif et éclatant décrivent une couleur ou un détail intense.'],
+      ['exact','précis','faux','vague','rapide','Exact et précis veulent dire correct et défini.'],
+      ['observer','remarquer','ignorer','abîmer','emprunter','Observer et remarquer veulent dire faire attention.'],
+      ['élargir','agrandir','réduire','cacher','retarder','Élargir et agrandir veulent dire rendre plus grand.'],
+      ['essentiel','vital','facultatif','mineur','lointain','Essentiel et vital veulent dire très important.'],
+      ['contraster','comparer','répéter','accepter','finir','Contraster et comparer impliquent d’examiner des différences ou ressemblances.']
+    ]
+  }
+};
+const ANAGRAM_DIFFICULTY_SEEDS = {
+  en: {
+    medium: [['JOURNEY','A trip from one place to another'],['WEATHER','Rain, wind and sunshine'],['LIBRARY','A place full of books'],['SCIENCE','Learning how the world works'],['HISTORY','Stories and events from the past'],['COUNTRY','A nation on the map'],['PICTURE','An image or drawing'],['KITCHEN','Where meals are prepared'],['ISLAND','Land surrounded by water'],['MARKET','A place to buy and sell'],['ROCKET','A vehicle that launches into space'],['GARDEN','A place where plants grow']],
+    hard: [['KNOWLEDGE','Things you understand or remember'],['ADVENTURE','An exciting journey'],['COMPUTER','A machine for digital work'],['QUESTION','Something you ask'],['DINOSAUR','A prehistoric reptile'],['TELESCOPE','A tool for seeing far away'],['LANGUAGE','A system of words'],['MOUNTAIN','A very high natural place'],['FESTIVAL','A celebration or event'],['CALENDAR','Tracks days and months'],['EXPLORER','Someone who discovers places'],['UNIVERSE','Everything in space']]
+  },
+  es: {
+    medium: [['FAMILIA','Personas cercanas en casa'],['ESCUELA','Lugar para aprender'],['VENTANA','Sirve para mirar afuera'],['CAMINO','Ruta para pasar'],['JARDIN','Lugar con plantas'],['MUSICA','Arte de sonidos'],['CUADERNO','Lo usas para escribir'],['NARANJA','Fruta redonda'],['COCINA','Donde se prepara la comida'],['CABALLO','Animal que puede montarse'],['VERANO','Estación calurosa'],['INVIERNO','Estación fría']],
+    hard: [['BIBLIOTECA','Lugar con muchos libros'],['MARIPOSA','Insecto con alas de colores'],['TELEFONO','Sirve para llamar'],['DINOSAURIO','Reptil prehistórico'],['PLANETA','La Tierra es uno'],['UNIVERSO','Todo lo que existe en el espacio'],['AVENTURA','Viaje emocionante'],['PREGUNTA','Algo que quieres saber'],['HISTORIA','Hechos del pasado'],['CIENCIA','Estudia cómo funciona el mundo'],['DEPORTE','Actividad física con reglas'],['LOGICA','Ayuda a razonar']]
+  },
+  fr: {
+    medium: [['FAMILLE','Personnes proches à la maison'],['BONJOUR','Mot pour saluer'],['MAISON','Lieu où l’on habite'],['JARDIN','Lieu où poussent les plantes'],['OISEAU','Animal qui vole'],['VOITURE','On roule avec elle'],['FENETRE','On regarde dehors par elle'],['SOLEIL','Il brille le jour'],['MUSIQUE','Art des sons'],['CUISINE','On y prépare les repas'],['MONTAGNE','Relief très haut'],['CRAYON','On écrit avec lui']],
+    hard: [['BIBLIOTHEQUE','Lieu avec beaucoup de livres'],['DINOSAURE','Reptile préhistorique'],['PLANETE','La Terre en est une'],['UNIVERS','Tout ce qui existe dans l’espace'],['AVENTURE','Voyage excitant'],['QUESTION','Ce que l’on demande'],['HISTOIRE','Événements du passé'],['SCIENCE','Étudie le fonctionnement du monde'],['LOGIQUE','Aide à raisonner'],['CALENDRIER','Suit les jours et les mois'],['TELEPHONE','Sert à appeler'],['EXPLORATEUR','Personne qui découvre des lieux']]
+  }
+};
+function expandWordDifficultyBanks() {
+  Object.keys(VOCAB_DIFFICULTY_SEEDS).forEach(language => {
+    ['medium','hard'].forEach(difficulty => {
+      ORAWORDS_BANK['vocabulary-quest'].push(...makeVocabSet('vocab-' + language + '-everyday-family-' + difficulty, language, 'everyday', 'family', difficulty, VOCAB_DIFFICULTY_SEEDS[language][difficulty]));
+      ORAWORDS_BANK['anagram-challenge'].push(...makeAnagramSet('anagram-' + language + '-everyday-family-' + difficulty, language, 'everyday', 'family', difficulty, ANAGRAM_DIFFICULTY_SEEDS[language][difficulty]));
+    });
+  });
+}
+expandWordDifficultyBanks();
+
 const ORAWORDS_ROUND_SIZE = 10;
 const ORAWORDS_RECENT_MAX = 80;
 const ORAWORDS_RECENT_KEY = 'orawords_recent_items';
@@ -7583,7 +7699,9 @@ const ORAWORDS_LETTER_SETS = {
     { id:'en-lr-003', t:{en:'Garden mix',es:'Mezcla de jardín',fr:'Mélange jardin'}, letters:'GARDENS', ages:['family','8-10','11-13','teens','adults'], category:'everyday', difficulty:'easy',
       words:'garden gardens grand grade grades danger anger range ranges sedan snare sand reads dares' },
     { id:'en-lr-004', t:{en:'Friendly mix',es:'Mezcla amistosa',fr:'Mélange amical'}, letters:'FRIENDS', ages:['family','8-10','11-13','teens','adults'], category:'everyday', difficulty:'easy',
-      words:'friend friends finds fired fries diner diners rinse rinsed rides finer nerds dines dries' }
+      words:'friend friends finds fired fries diner diners rinse rinsed rides finer nerds dines dries' },
+    { id:'en-lr-005', t:{en:'Relations',es:'Relaciones',fr:'Relations'}, letters:'RELATIONS', ages:['family','8-10','11-13','teens','adults'], category:'everyday', difficulty:'hard',
+      words:'relation relations ration rations salon sailor tailor trail trails train trains stone notes tones alien aliens linear rental salt stare staler' }
   ],
   es: [
     { id:'es-lr-001', t:{en:'Oceans',es:'Océanos',fr:'Océans'}, letters:'OCÉANOS', ages:['family','8-10','11-13','teens','adults'], category:'everyday', difficulty:'easy',
@@ -7595,7 +7713,9 @@ const ORAWORDS_LETTER_SETS = {
     { id:'es-lr-004', t:{en:'Space',es:'Espacio',fr:'Espace'}, letters:'PLANETAS', ages:['family','8-10','11-13','teens','adults'], category:'everyday', difficulty:'easy',
       words:'planta plantas planeta planetas plata pena penal sala nata lata pala lana tela' },
     { id:'es-lr-005', t:{en:'Routes',es:'Rutas',fr:'Routes'}, letters:'CAMINOS', ages:['family','8-10','11-13','teens','adults'], category:'everyday', difficulty:'easy',
-      words:'camino caminos cima cosa mano manos mina mona mosca caos coma saco mico anis' }
+      words:'camino caminos cima cosa mano manos mina mona mosca caos coma saco mico anis' },
+    { id:'es-lr-006', t:{en:'Butterfly',es:'Mariposa',fr:'Papillon'}, letters:'MARIPOSA', ages:['family','8-10','11-13','teens','adults'], category:'everyday', difficulty:'hard',
+      words:'mariposa amor rosa risa misa ramo mapa para sapo sopa piso rima arma mora ropa prosa prisa' }
   ],
   fr: [
     { id:'fr-lr-001', t:{en:'Planets',es:'Planètes',fr:'Planètes'}, letters:'PLANÈTES', ages:['family','8-10','11-13','teens','adults'], category:'everyday', difficulty:'easy',
@@ -7605,7 +7725,9 @@ const ORAWORDS_LETTER_SETS = {
     { id:'fr-lr-003', t:{en:'Reading',es:'Lectura',fr:'Lecture'}, letters:'LIVRES', ages:['family','8-10','11-13','teens','adults'], category:'everyday', difficulty:'easy',
       words:'livre livres lire vire vires rive rives sel les lis ver vers vil vile ire' },
     { id:'fr-lr-004', t:{en:'Nature',es:'Naturaleza',fr:'Nature'}, letters:'RACINES', ages:['family','8-10','11-13','teens','adults'], category:'everyday', difficulty:'easy',
-      words:'racine racines carie caries crâne scie scier nacre ancre ancres rance crise aine' }
+      words:'racine racines carie caries crâne scie scier nacre ancre ancres rance crise aine' },
+    { id:'fr-lr-005', t:{en:'Reading hard',es:'Lectura difícil',fr:'Lecture avancée'}, letters:'LECTURES', ages:['family','8-10','11-13','teens','adults'], category:'everyday', difficulty:'hard',
+      words:'lecture lectures recule recules sucre cruel cruels reste leste celte celtes cure cures recul lustre sert rue rues' }
   ]
 };
 
