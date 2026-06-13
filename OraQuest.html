@@ -7532,7 +7532,8 @@ function startAnagramChallenge() {
   pushOraWordsRecentIds(combo, items.map(x => x.id));
   state.anagramSession = {
     ...combo, items, idx:0, attempts:0, answered:false, lastResult:null,
-    score:0, correct:0, startedAt:Date.now(), durationMs:0, saved:false
+    score:0, correct:0, startedAt:Date.now(), durationMs:0, saved:false,
+    sessionId: 'ana_' + Date.now().toString(36) + Math.random().toString(36).slice(2,6)
   };
   go('words', { mode:'anagram-challenge', play:true }, { keepScroll:true });
 }
@@ -7580,20 +7581,42 @@ function nextAnagramItem() {
   s.idx++; s.attempts = 0; s.answered = false; s.lastResult = null;
   if (s.idx >= s.items.length) {
     s.durationMs = Date.now() - s.startedAt;
-    if (!s.saved) {
-      try {
-        const rec = LBCore.makeScoreRecord({
-          gameKey:'orawords', gameMode:'anagram-challenge', language:s.language,
-          category:s.category, ageGroup:s.ageGroup, difficulty:s.difficulty,
-          score:s.score, accuracy:calcAccuracy(s.correct, s.items.length),
-          durationSeconds: s.durationMs ? Math.round(s.durationMs / 1000) : null
-        });
-        state.guestScores.unshift(rec);
-        LS.set(SCORES_KEY, state.guestScores);
-        s.saved = true;
-      } catch (e) {}
-    }
   }
+  render();
+}
+function saveAnagramScore() {
+  const s = state.anagramSession;
+  if (!s || s.idx < s.items.length || s.saved) return;
+  const rulesEl = document.getElementById('accept-rules');
+  if (!rulesEl || !rulesEl.checked) { toast(t('toastAcceptRules')); return; }
+  const nameEl = document.getElementById('guest-name');
+  const typed = nameEl ? nameEl.value : '';
+  let alias;
+  if (!typed.trim()) {
+    alias = generateGuestAlias();
+  } else {
+    alias = normalizeAlias(typed);
+    const check = validateLeaderboardAlias(alias);
+    if (!check.ok) { toast(t(check.error)); if (nameEl) nameEl.focus(); return; }
+  }
+  const rec = LBCore.makeScoreRecord({
+    gameKey:'orawords', gameMode:'anagram-challenge', language:s.language,
+    category:s.category, ageGroup:s.ageGroup, difficulty:s.difficulty,
+    playerName:alias,
+    score:s.score, accuracy:calcAccuracy(s.correct, s.items.length),
+    durationSeconds:s.durationMs ? Math.round(s.durationMs / 1000) : null,
+    sessionId:s.sessionId || null,
+    suspicious:isSuspicious({ durationMs:s.durationMs, total:s.items.length })
+  });
+  state.guestScores.push(rec);
+  state.guestScores.sort((a, b) => b.score - a.score);
+  state.guestScores = state.guestScores.slice(0, 200);
+  LS.set(SCORES_KEY, state.guestScores);
+  state.user = { name:alias, isGuest:true };
+  LS.set('ora.user', state.user);
+  s.saved = true;
+  toast(t('saved'));
+  trackEvent('score_saved', { score:s.score, mode:'anagram-challenge' });
   render();
 }
 function viewAnagramChallenge() {
@@ -7632,7 +7655,15 @@ function viewAnagramChallenge() {
             <div class="stat-cell bg-emerald-50 p-4"><div class="text-3xl font-bold text-emerald-700">${s.score}</div><div class="text-xs text-slate-600 mt-1">${t('yourScore')}</div></div>
             <div class="stat-cell bg-sky-50 p-4"><div class="text-3xl font-bold text-sky-700">${acc}%</div><div class="text-xs text-slate-600 mt-1">${t('accuracy')}</div></div>
           </div>
-          <div class="mt-6 grid sm:grid-cols-2 gap-2">
+          <div class="mt-6 card p-4 text-left">
+            <label class="text-sm font-medium">${t('guestName')}</label>
+            <input id="guest-name" type="text" maxlength="${MAX_ALIAS_LENGTH}" placeholder="${t('aliasPlaceholder')}" style="text-transform:uppercase" class="mt-1 w-full px-3 py-2 rounded-lg border border-slate-200 focus-ring" ${s.saved?'disabled':''} />
+            <p class="mt-2 text-xs text-slate-500">${t('aliasHelp')}</p>
+            <p class="mt-1 text-xs text-slate-500">${t('guestRules')}</p>
+            <label class="mt-2 flex items-center gap-2 text-xs text-slate-600"><input type="checkbox" id="accept-rules" class="focus-ring" ${s.saved?'disabled':''}/> ${t('rulesAccept')}</label>
+          </div>
+          <div class="mt-6 grid sm:grid-cols-3 gap-2">
+            <button onclick="saveAnagramScore()" class="btn-primary" ${s.saved?'disabled':''}>${s.saved?t('saved'):t('saveScore')}</button>
             <button onclick="resetAnagramChallenge()" class="btn-primary">${t('playAgain')}</button>
             <button onclick="go('words')" class="btn-ghost">${t('backHome')}</button>
           </div>
@@ -7674,7 +7705,7 @@ function viewAnagramChallenge() {
     </main>
   </div>`;
 }
-try { if (typeof window !== 'undefined'){ window.startAnagramChallenge = startAnagramChallenge; window.viewAnagramChallenge = viewAnagramChallenge; window.scrambleLetters = scrambleLetters; window.makeAnagramSet = makeAnagramSet; } } catch (e) {}
+try { if (typeof window !== 'undefined'){ window.startAnagramChallenge = startAnagramChallenge; window.viewAnagramChallenge = viewAnagramChallenge; window.saveAnagramScore = saveAnagramScore; window.scrambleLetters = scrambleLetters; window.makeAnagramSet = makeAnagramSet; } } catch (e) {}
 /* ====== ANAGRAM CHALLENGE END ====== */
 
 /* ====== LETTER RUSH (data + engine + ui) START ====== */
