@@ -7075,7 +7075,8 @@ function startSpellingSprint() {
   pushOraWordsRecentIds(combo, items.map(x => x.id));
   state.wordsSession = {
     ...combo, items, idx:0, selectedOptionId:null, answeredOptionId:null,
-    score:0, correct:0, wrong:0, startedAt:Date.now(), durationMs:0
+    score:0, correct:0, wrong:0, startedAt:Date.now(), durationMs:0, saved:false,
+    sessionId: 'spell_' + Date.now().toString(36) + Math.random().toString(36).slice(2,6)
   };
   go('words', { mode:'spelling-sprint', play:true }, { keepScroll:true });
 }
@@ -7142,7 +7143,9 @@ function viewSpellingSprint() {
             <div class="stat-cell bg-emerald-50 p-4"><div class="text-3xl font-bold text-emerald-700">${s.score}</div><div class="text-xs text-slate-600 mt-1">${t('yourScore')}</div></div>
             <div class="stat-cell bg-sky-50 p-4"><div class="text-3xl font-bold text-sky-700">${acc}%</div><div class="text-xs text-slate-600 mt-1">${t('accuracy')}</div></div>
           </div>
-          <div class="mt-6 grid sm:grid-cols-2 gap-2">
+          ${leaderboardAliasPanelHtml(s.saved)}
+          <div class="mt-6 grid sm:grid-cols-3 gap-2">
+            <button onclick="saveCurrentWordScore()" class="btn-primary" ${s.saved?'disabled':''}>${s.saved?t('saved'):t('saveScore')}</button>
             <button onclick="resetSpellingSprint()" class="btn-primary">${t('playAgain')}</button>
             <button onclick="go('words')" class="btn-ghost">${t('backHome')}</button>
           </div>
@@ -7217,21 +7220,57 @@ function defaultVocabCombo() {
   return Object.assign({ language: state.lang }, byLang[state.lang] || byLang.en);
 }
 
-// Shared finish-time leaderboard save for word quizzes (vocab; spelling could
-// opt in later). Privacy-safe: no alias prompt, no PII.
+function leaderboardAliasPanelHtml(saved) {
+  return `
+          <div class="mt-6 card p-4 text-left">
+            <label class="text-sm font-medium">${t('guestName')}</label>
+            <input id="guest-name" type="text" maxlength="${MAX_ALIAS_LENGTH}" placeholder="${t('aliasPlaceholder')}" style="text-transform:uppercase" class="mt-1 w-full px-3 py-2 rounded-lg border border-slate-200 focus-ring" ${saved?'disabled':''} />
+            <p class="mt-2 text-xs text-slate-500">${t('aliasHelp')}</p>
+            <p class="mt-1 text-xs text-slate-500">${t('guestRules')}</p>
+            <label class="mt-2 flex items-center gap-2 text-xs text-slate-600"><input type="checkbox" id="accept-rules" class="focus-ring" ${saved?'disabled':''}/> ${t('rulesAccept')}</label>
+          </div>`;
+}
+function readLeaderboardAliasFromForm() {
+  const rulesEl = document.getElementById('accept-rules');
+  if (!rulesEl || !rulesEl.checked) { toast(t('toastAcceptRules')); return null; }
+  const nameEl = document.getElementById('guest-name');
+  const typed = nameEl ? nameEl.value : '';
+  if (!typed.trim()) return generateGuestAlias();
+  const alias = normalizeAlias(typed);
+  const check = validateLeaderboardAlias(alias);
+  if (!check.ok) { toast(t(check.error)); if (nameEl) nameEl.focus(); return null; }
+  return alias;
+}
+// Explicit leaderboard save for shared word quizzes. Results screens ask for a
+// short anonymous alias instead of silently saving scores.
 function saveWordQuizScore(s) {
-  if (!s || s.saved) return;
+  if (!s || s.saved || s.idx < s.items.length) return;
+  const alias = readLeaderboardAliasFromForm();
+  if (!alias) return;
   try {
     const rec = LBCore.makeScoreRecord({
       gameKey:'orawords', gameMode:s.gameMode, language:s.language,
       category:s.category, ageGroup:s.ageGroup, difficulty:s.difficulty,
+      playerName:alias,
       score:s.score, accuracy:calcAccuracy(s.correct, s.items.length),
-      durationSeconds: s.durationMs ? Math.round(s.durationMs / 1000) : null
+      durationSeconds: s.durationMs ? Math.round(s.durationMs / 1000) : null,
+      sessionId:s.sessionId || null,
+      suspicious:isSuspicious({ durationMs:s.durationMs, total:s.items.length })
     });
-    state.guestScores.unshift(rec);
+    state.guestScores.push(rec);
+    state.guestScores.sort((a, b) => b.score - a.score);
+    state.guestScores = state.guestScores.slice(0, 200);
     LS.set(SCORES_KEY, state.guestScores);
+    state.user = { name:alias, isGuest:true };
+    LS.set('ora.user', state.user);
     s.saved = true;
+    toast(t('saved'));
+    trackEvent('score_saved', { score:s.score, mode:s.gameMode });
+    render();
   } catch (e) {}
+}
+function saveCurrentWordScore() {
+  saveWordQuizScore(state.wordsSession);
 }
 
 function startVocabQuest() {
@@ -7248,7 +7287,8 @@ function startVocabQuest() {
   pushOraWordsRecentIds(combo, items.map(x => x.id));
   state.wordsSession = {
     ...combo, items, idx:0, selectedOptionId:null, answeredOptionId:null,
-    score:0, correct:0, wrong:0, startedAt:Date.now(), durationMs:0, saved:false
+    score:0, correct:0, wrong:0, startedAt:Date.now(), durationMs:0, saved:false,
+    sessionId: 'vocab_' + Date.now().toString(36) + Math.random().toString(36).slice(2,6)
   };
   go('words', { mode:'vocabulary-quest', play:true }, { keepScroll:true });
 }
@@ -7258,7 +7298,7 @@ function nextVocabItem() {
   s.idx++;
   s.selectedOptionId = null;
   s.answeredOptionId = null;
-  if (s.idx >= s.items.length) { s.durationMs = Date.now() - s.startedAt; saveWordQuizScore(s); }
+  if (s.idx >= s.items.length) s.durationMs = Date.now() - s.startedAt;
   render();
 }
 function resetVocabQuest() {
@@ -7301,7 +7341,9 @@ function viewVocabQuest() {
             <div class="stat-cell bg-emerald-50 p-4"><div class="text-3xl font-bold text-emerald-700">${s.score}</div><div class="text-xs text-slate-600 mt-1">${t('yourScore')}</div></div>
             <div class="stat-cell bg-sky-50 p-4"><div class="text-3xl font-bold text-sky-700">${acc}%</div><div class="text-xs text-slate-600 mt-1">${t('accuracy')}</div></div>
           </div>
-          <div class="mt-6 grid sm:grid-cols-2 gap-2">
+          ${leaderboardAliasPanelHtml(s.saved)}
+          <div class="mt-6 grid sm:grid-cols-3 gap-2">
+            <button onclick="saveCurrentWordScore()" class="btn-primary" ${s.saved?'disabled':''}>${s.saved?t('saved'):t('saveScore')}</button>
             <button onclick="resetVocabQuest()" class="btn-primary">${t('playAgain')}</button>
             <button onclick="go('words')" class="btn-ghost">${t('backHome')}</button>
           </div>
@@ -7349,7 +7391,7 @@ function viewVocabQuest() {
     </main>
   </div>`;
 }
-try { if (typeof window !== 'undefined'){ window.startVocabQuest = startVocabQuest; window.viewVocabQuest = viewVocabQuest; window.makeVocabSet = makeVocabSet; } } catch (e) {}
+try { if (typeof window !== 'undefined'){ window.startVocabQuest = startVocabQuest; window.viewVocabQuest = viewVocabQuest; window.saveCurrentWordScore = saveCurrentWordScore; window.makeVocabSet = makeVocabSet; } } catch (e) {}
 /* ====== VOCABULARY QUEST END ====== */
 
 /* ====== DAILY WORD QUEST (engine + ui) START ====== */
@@ -7358,8 +7400,8 @@ try { if (typeof window !== 'undefined'){ window.startVocabQuest = startVocabQue
    everyone on the same date+locale gets the same word. The bonus and streak are
    awarded ONCE per date (streak farming blocked): replaying after completion
    does not change the score or streak. Missing a day resets the streak.
-   Progress is local-only under DAILY_WORD_KEY (no PII). A completed day still
-   records a leaderboard entry with gameKey:'orawords', gameMode:'daily-quest'. */
+   Progress is local-only under DAILY_WORD_KEY (no PII). A completed day can be
+   saved to the local leaderboard with gameKey:'orawords', gameMode:'daily-quest'. */
 const DAILY_WORD_KEY = 'orawords:daily';
 const DAILY_WORD_COMBO = { gameMode:'vocabulary-quest', category:'everyday', ageGroup:'family', difficulty:'easy' };
 
@@ -7431,22 +7473,41 @@ function answerDailyWord(selected) {
   const yesterday = addDaysKey(today, -1);
   const nextStreak = st.lastDailyDate === yesterday ? st.streak + 1 : 1;
   const score = 100 + Math.min(50, nextStreak * 10);
-  st.completed[today] = { score, word: item.correctWord };
+  st.completed[today] = { score, word: item.correctWord, saved:false };
   st.lastDailyDate = today;
   st.streak = nextStreak;
   saveDailyWordState(st);
   state.dailyWordResult = 'correct';
+  if (typeof confetti === 'function') confetti();
+  render();
+}
+function saveDailyWordScore() {
+  const st = loadDailyWordState();
+  const today = todayKey();
+  const done = st.completed[today];
+  if (!done || done.saved) return;
+  const alias = readLeaderboardAliasFromForm();
+  if (!alias) return;
   try {
     const rec = LBCore.makeScoreRecord({
       gameKey:'orawords', gameMode:'daily-quest', language:state.lang,
       category:DAILY_WORD_COMBO.category, ageGroup:DAILY_WORD_COMBO.ageGroup,
-      difficulty:DAILY_WORD_COMBO.difficulty, score, accuracy:100
+      difficulty:DAILY_WORD_COMBO.difficulty, playerName:alias,
+      score:done.score, accuracy:100,
+      sessionId:'daily_' + today + '_' + state.lang
     });
-    state.guestScores.unshift(rec);
+    state.guestScores.push(rec);
+    state.guestScores.sort((a, b) => b.score - a.score);
+    state.guestScores = state.guestScores.slice(0, 200);
     LS.set(SCORES_KEY, state.guestScores);
+    state.user = { name:alias, isGuest:true };
+    LS.set('ora.user', state.user);
+    done.saved = true;
+    saveDailyWordState(st);
+    toast(t('saved'));
+    trackEvent('score_saved', { score:done.score, mode:'daily-quest' });
+    render();
   } catch (e) {}
-  if (typeof confetti === 'function') confetti();
-  render();
 }
 function viewDailyWordQuest() {
   const st = loadDailyWordState();
@@ -7484,6 +7545,8 @@ function viewDailyWordQuest() {
           <h1 class="font-display text-2xl font-bold">${pick({en:'Completed today',es:'Completado hoy',fr:'Terminé aujourd’hui'})}</h1>
           <p class="mt-2 text-slate-600">${pick({en:'You earned',es:'Ganaste',fr:'Tu as gagné'})} <strong>${st.completed[today].score}</strong> ${pick({en:'points. Come back tomorrow — replays don’t change your streak.',es:'puntos. Vuelve mañana: repetir no cambia tu racha.',fr:'points. Reviens demain — rejouer ne change pas ta série.'})}</p>
           <div class="mt-5 rounded-xl bg-emerald-50 p-4 text-sm text-emerald-800">${pick({en:'Today’s word',es:'Palabra de hoy',fr:'Mot du jour'})}: <strong>${escapeHtml(item.word)}</strong> → <strong>${escapeHtml(st.completed[today].word)}</strong></div>
+          ${leaderboardAliasPanelHtml(!!st.completed[today].saved)}
+          <button onclick="saveDailyWordScore()" class="mt-5 btn-primary w-full sm:w-auto" ${st.completed[today].saved?'disabled':''}>${st.completed[today].saved?t('saved'):t('saveScore')}</button>
         ` : `
           <h1 class="font-display text-2xl font-bold">${pick(item.prompt)}</h1>
           <p class="mt-2 text-sm text-slate-500">${pick({en:'One challenge per day. A correct answer adds to your streak.',es:'Un reto por día. Una respuesta correcta suma a tu racha.',fr:'Un défi par jour. Une bonne réponse augmente ta série.'})}</p>
@@ -7502,7 +7565,7 @@ function viewDailyWordQuest() {
     ${Footer()}
   </div>`;
 }
-try { if (typeof window !== 'undefined'){ window.viewDailyWordQuest = viewDailyWordQuest; window.answerDailyWord = answerDailyWord; window.getDailyWordChallenge = getDailyWordChallenge; window.dailyWordOptions = dailyWordOptions; window.loadDailyWordState = loadDailyWordState; window.DAILY_WORD_KEY = DAILY_WORD_KEY; } } catch (e) {}
+try { if (typeof window !== 'undefined'){ window.viewDailyWordQuest = viewDailyWordQuest; window.answerDailyWord = answerDailyWord; window.saveDailyWordScore = saveDailyWordScore; window.getDailyWordChallenge = getDailyWordChallenge; window.dailyWordOptions = dailyWordOptions; window.loadDailyWordState = loadDailyWordState; window.DAILY_WORD_KEY = DAILY_WORD_KEY; } } catch (e) {}
 /* ====== DAILY WORD QUEST END ====== */
 
 /* ====== ANAGRAM CHALLENGE (engine + ui) START ====== */
@@ -7853,7 +7916,8 @@ function startLetterRush(){
     activeSet:set, letterOrder:lrInitialLetterOrder(set.letters),
     timeLeft: LR_TIMER_BY_AGE[combo.ageGroup] || 120,
     score:0, words:[], streak:0, longestWord:'', attempts:0, validAttempts:0,
-    shufflesLeft:3, saved:false, startedAt:Date.now(), timer:null
+    shufflesLeft:3, saved:false, startedAt:Date.now(), durationMs:0, timer:null,
+    sessionId: 'lr_' + Date.now().toString(36) + Math.random().toString(36).slice(2,6)
   });
   lrPushRecent(combo.language, set.id);
   go('words', { mode:'letter-rush', play:true }, { keepScroll:true });
@@ -7977,19 +8041,37 @@ function endLetterRush(){
   const s = state.lrSession;
   if (!s || s.ended) return;
   s.ended = true;
+  s.durationMs = Date.now() - s.startedAt;
   if (s.timer){ clearInterval(s.timer); s.timer = null; }
+  render();
+}
+function saveLetterRushScore(){
+  const s = state.lrSession;
+  if (!s || !s.ended || s.saved) return;
+  const alias = readLeaderboardAliasFromForm();
+  if (!alias) return;
   try {
     const acc = s.attempts ? Math.round((s.validAttempts/s.attempts)*100) : 0;
     const rec = LBCore.makeScoreRecord({
       gameKey:'orawords', gameMode:'letter-rush', language:s.language,
       category:s.category, ageGroup:s.ageGroup, difficulty:s.difficulty,
-      score:s.score, accuracy:acc, durationMs: Date.now() - s.startedAt
+      playerName:alias,
+      score:s.score, accuracy:acc,
+      durationSeconds:s.durationMs ? Math.round(s.durationMs / 1000) : null,
+      sessionId:s.sessionId || null,
+      suspicious:isSuspicious({ durationMs:s.durationMs, total:Math.max(1, s.attempts || s.words.length || 1) })
     });
-    state.guestScores.unshift(rec);
+    state.guestScores.push(rec);
+    state.guestScores.sort((a, b) => b.score - a.score);
+    state.guestScores = state.guestScores.slice(0, 200);
     LS.set(SCORES_KEY, state.guestScores);
+    state.user = { name:alias, isGuest:true };
+    LS.set('ora.user', state.user);
     s.saved = true;
+    toast(t('saved'));
+    trackEvent('score_saved', { score:s.score, mode:'letter-rush' });
+    render();
   } catch (e) {}
-  render();
 }
 function viewLetterRush(){
   const s = state.lrSession;
@@ -8028,7 +8110,9 @@ function viewLetterRush(){
       + '      <div class="stat-cell bg-sky-50 p-4"><div class="text-3xl font-bold text-sky-700">' + pct + '%</div><div class="text-xs text-slate-600 mt-1">' + t('accuracy') + '</div></div>'
       + '    </div>'
       + '    <p class="mt-4 text-sm text-slate-600">' + pick({en:'Words',es:'Palabras',fr:'Mots'}) + ': <strong>' + s.words.length + '</strong>' + (s.longestWord ? ' · ' + pick({en:'Longest',es:'Más larga',fr:'Plus long'}) + ': <strong>' + escapeHtml(s.longestWord) + '</strong>' : '') + '</p>'
-      + '    <div class="mt-6 grid sm:grid-cols-2 gap-2">'
+      + leaderboardAliasPanelHtml(s.saved)
+      + '    <div class="mt-6 grid sm:grid-cols-3 gap-2">'
+      + '      <button onclick="saveLetterRushScore()" class="btn-primary" ' + (s.saved ? 'disabled' : '') + '>' + (s.saved ? t('saved') : t('saveScore')) + '</button>'
       + '      <button onclick="resetLetterRush()" class="btn-primary">' + t('playAgain') + '</button>'
       + '      <button onclick="go(\'words\')" class="btn-ghost">' + t('backHome') + '</button>'
       + '    </div>'
@@ -8065,7 +8149,7 @@ function viewLetterRush(){
 }
 
 // Expose for browser checks + node tests.
-try { if (typeof window !== 'undefined'){ window.validateLetterRushWord = validateLetterRushWord; window.ORAWORDS_LETTER_SETS = ORAWORDS_LETTER_SETS; window.getLetterRushSets = getLetterRushSets; window.pickLetterRushSet = pickLetterRushSet; } } catch (e) {}
+try { if (typeof window !== 'undefined'){ window.validateLetterRushWord = validateLetterRushWord; window.saveLetterRushScore = saveLetterRushScore; window.ORAWORDS_LETTER_SETS = ORAWORDS_LETTER_SETS; window.getLetterRushSets = getLetterRushSets; window.pickLetterRushSet = pickLetterRushSet; } } catch (e) {}
 try { if (typeof module !== 'undefined' && module.exports){ module.exports.validateLetterRushWord = validateLetterRushWord; module.exports.ORAWORDS_LETTER_SETS = ORAWORDS_LETTER_SETS; module.exports.getLetterRushSets = getLetterRushSets; module.exports.pickLetterRushSet = pickLetterRushSet; } } catch (e) {}
 /* ====== LETTER RUSH END ====== */
 
