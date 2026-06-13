@@ -65,6 +65,27 @@
 </script>
 <link rel="icon" type="image/png" href="/assets/ora.png" />
 <link rel="apple-touch-icon" href="/assets/ora.png" />
+<!-- Component classes the precompiled Tailwind build does not ship. Declared
+     BEFORE tailwind.css on purpose (Tailwind's components→utilities layering) so
+     co-applied utilities like `bg-amber-50`, `shadow-lg` or `px-8` still override
+     these defaults. Without them `.card`/`.btn-*` render transparent and
+     unstyled — e.g. the fixed cookie banner showed through to the page content
+     behind it (just like the previously-patched `.glass` header and `.hide`). -->
+<style>
+  .card { background:#fff; border:1px solid rgb(241 245 249); border-radius:1rem; box-shadow:0 1px 2px rgba(15,23,42,.06), 0 4px 12px rgba(15,23,42,.05); }
+  .card-hover { transition: transform .2s ease, box-shadow .2s ease; }
+  .card-hover:hover { transform: translateY(-3px); box-shadow:0 10px 24px rgba(15,23,42,.12); }
+  .game-surface { display:block; border-radius:1rem; overflow:hidden; }
+  .btn-primary { display:inline-flex; align-items:center; justify-content:center; gap:.5rem; padding:.625rem 1.25rem; border-radius:.75rem; background:rgb(124 58 237); color:#fff; font-weight:600; border:1px solid transparent; cursor:pointer; transition:background .15s ease; }
+  .btn-primary:hover { background:rgb(109 40 217); }
+  .btn-ghost { display:inline-flex; align-items:center; justify-content:center; gap:.5rem; padding:.625rem 1.25rem; border-radius:.75rem; background:#fff; color:rgb(51 65 85); font-weight:600; border:1px solid rgb(226 232 240); cursor:pointer; transition:background .15s ease, border-color .15s ease; }
+  .btn-ghost:hover { background:rgb(248 250 252); border-color:rgb(203 213 225); }
+  .chip { display:inline-flex; align-items:center; gap:.35rem; padding:.25rem .7rem; border-radius:9999px; font-size:.8rem; font-weight:600; line-height:1.2; }
+  .stat-cell { border-radius:.75rem; text-align:center; }
+  .select-cell { border-width:2px; border-style:solid; border-color:rgb(226 232 240); border-radius:.75rem; background:#fff; cursor:pointer; transition:border-color .15s ease, background .15s ease; }
+  .focus-ring { outline:none; }
+  .focus-ring:focus-visible { box-shadow:0 0 0 3px rgba(124,58,237,.45); }
+</style>
 <!-- Pre-compiled Tailwind CSS — no CDN JS needed, loads instantly -->
 <link rel="stylesheet" href="/tailwind.css" />
 <!-- Fonts (non-blocking) -->
@@ -85,6 +106,16 @@
   .tt-card { touch-action: pan-y; user-select: none; -webkit-user-select: none; cursor: grab; }
   .ms-key { min-height: 3.5rem; font-size: 1.5rem; font-weight: 700; border-radius: 0.75rem; border: 2px solid rgb(226 232 240); background: white; touch-action: manipulation; user-select: none; -webkit-user-select: none; }
   .ms-key:active { background: rgb(237 233 254); border-color: rgb(124 58 237); }
+  .nd-board { display: grid; gap: 4px; }
+  .nd-col { display: grid; gap: 4px; padding: 4px; border-radius: 0.6rem; background: rgb(248 250 252); border: 2px solid transparent; touch-action: manipulation; cursor: pointer; }
+  .nd-col:hover:not(:disabled) { border-color: rgb(196 181 253); background: rgb(245 243 255); }
+  .nd-col-full { opacity: 0.6; cursor: not-allowed; }
+  .nd-cell { aspect-ratio: 1 / 1; display: flex; align-items: center; justify-content: center; border-radius: 0.5rem; font-weight: 800; font-size: 1.1rem; position: relative; line-height: 1; }
+  .nd-empty { background: rgb(241 245 249); }
+  .nd-wild { background: linear-gradient(135deg, #f59e0b, #ec4899, #8b5cf6); color: white; }
+  .nd-locked { filter: grayscale(0.55); }
+  .nd-lock { position: absolute; top: 1px; right: 2px; font-size: 0.7rem; }
+  .nd-tile-lg { width: 3.25rem; height: 3.25rem; font-size: 1.4rem; aspect-ratio: auto; }
   @keyframes fall { to { transform: translateY(110vh) rotate(720deg); opacity:0; } }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
   /* Ora the owl mascot animations */
@@ -184,7 +215,7 @@ const LBCore = (function () {
     oraquest:     { key:'oraquest',     name:'OraQuest',  modes:['quiz-battle','daily-quest','general-quiz','family-quiz'] },
     guessora:     { key:'guessora',     name:'OraGuess',  modes:['guess-challenge'] },
     orawords:     { key:'orawords',     name:'OraWords',  modes:['spelling-sprint','vocabulary-quest','letter-rush','anagram-challenge','daily-quest'] },
-    oramath:      { key:'oramath',      name:'OraMath',   modes:['truth-or-trap','math-sprint'] },
+    oramath:      { key:'oramath',      name:'OraMath',   modes:['truth-or-trap','math-sprint','numdrop'] },
     'team-quest': { key:'team-quest',   name:'Team Quest', modes:['team-quest'] }
   };
 
@@ -1306,6 +1337,7 @@ const I18N_EXT = {
     mathBody:'OraMath is the maths corner of HorusQuest. Pick an age group and a difficulty, and train your number sense in short rounds guided by Ora — no account needed, and every game lasts under two minutes. Playing any OraMath game keeps your daily streak alive, earns XP and can beat your personal records.',
     mathTTName:'Truth or Trap?', mathTTSub:'An equation flashes on screen — swipe to call it true or false before the bar runs out. Traps look almost right!',
     mathSprintName:'Ora Sprint', mathSprintSub:'60 seconds of mental maths. Chain correct answers to grow your combo multiplier; fast answers add extra time.',
+    mathNDName:'NumDrop', mathNDSub:'Drop number tiles into the grid. Any connected group that adds up to the target merges and vanishes — chain combos and climb the levels before the board fills up!',
     mathLevel:'Level', mathStreakDays:'day streak', mathPlayNow:'Play',
     mathRecordLine:'Your record: {score} — can you beat it?', mathNoRecordYet:'No record for this combo yet — set the first one!',
     mathMoreSoon:'More maths games are on the way: number puzzles, estimation challenges and a daily equation.',
@@ -1339,6 +1371,7 @@ const I18N_EXT = {
     mathBody:'OraMath es el rincón de matemáticas de HorusQuest. Elige grupo de edad y dificultad y entrena tu sentido numérico en rondas cortas guiadas por Ora: sin cuenta y con partidas de menos de dos minutos. Jugar a cualquier juego de OraMath mantiene viva tu racha diaria, suma XP y puede batir tus récords personales.',
     mathTTName:'¿Verdad o Trampa?', mathTTSub:'Aparece una igualdad en pantalla: desliza para decir si es verdadera o falsa antes de que se agote la barra. ¡Las trampas casi parecen correctas!',
     mathSprintName:'Ora Sprint', mathSprintSub:'60 segundos de cálculo mental. Encadena aciertos para subir tu multiplicador de combo; responder rápido añade tiempo extra.',
+    mathNDName:'NumDrop', mathNDSub:'Suelta fichas de números en la cuadrícula. Cualquier grupo conectado que sume el objetivo se fusiona y desaparece: encadena combos y sube de nivel antes de que se llene el tablero.',
     mathLevel:'Nivel', mathStreakDays:'días de racha', mathPlayNow:'Jugar',
     mathRecordLine:'Tu récord: {score} — ¿lo superas?', mathNoRecordYet:'Aún no hay récord para esta combinación. ¡Marca el primero!',
     mathMoreSoon:'Más juegos de matemáticas en camino: puzzles numéricos, retos de estimación y una ecuación diaria.',
@@ -1372,6 +1405,7 @@ const I18N_EXT = {
     mathBody:'OraMath est le coin maths de HorusQuest. Choisis un groupe d’âge et une difficulté et entraîne ton sens du nombre en manches courtes guidées par Ora — sans compte, et chaque partie dure moins de deux minutes. Jouer à n’importe quel jeu OraMath entretient ta série quotidienne, rapporte de l’XP et peut battre tes records personnels.',
     mathTTName:'Vrai ou Piège ?', mathTTSub:'Une égalité s’affiche : glisse pour dire si elle est vraie ou fausse avant la fin de la barre. Les pièges ont l’air presque corrects !',
     mathSprintName:'Ora Sprint', mathSprintSub:'60 secondes de calcul mental. Enchaîne les bonnes réponses pour augmenter ton multiplicateur de combo ; répondre vite ajoute du temps.',
+    mathNDName:'NumDrop', mathNDSub:'Dépose des tuiles de nombres dans la grille. Tout groupe relié dont la somme atteint la cible fusionne et disparaît — enchaîne les combos et grimpe les niveaux avant que la grille ne se remplisse !',
     mathLevel:'Niveau', mathStreakDays:'jours de série', mathPlayNow:'Jouer',
     mathRecordLine:'Ton record : {score} — tu peux le battre ?', mathNoRecordYet:'Pas encore de record pour cette combinaison. Établis le premier !',
     mathMoreSoon:'D’autres jeux de maths arrivent : puzzles numériques, défis d’estimation et une équation quotidienne.',
@@ -8013,6 +8047,219 @@ const MathEngine = (function () {
   function sprintScoreFor(args) { return Math.round(10 * sprintMultiplier(args.consecutive) * diffMult(args.difficulty)); }
   function sprintBonusMs(answerMs) { return answerMs <= 3000 ? 2000 : 0; }
 
+  /* ---- NumDrop (numdrop) — number-fusion puzzle ----
+     A pure board model: tiles drop into columns, gravity settles them, and any
+     connected group of orthogonally-adjacent tiles summing to the level target
+     clears, cascading after gravity (not just pairs — a whole connected region
+     like [2,1,2,2]=7 clears). Locked tiles can't merge until a clear beside them;
+     wild tiles pair with any neighbour; negative tiles let pairs overshoot the
+     target. Everything is plain data + injectable rng so tests can drive whole
+     games headlessly. Grid is grid[row][col], row 0 = top, gravity pulls down. */
+  const NUMDROP_TABLE = {
+    '6-8': {
+      cols: 4, rows: 6,
+      easy:   { target: [5, 7],   mergesPerLevel: 6,  lockedFromLevel: Infinity, wildChance: 0,    neg: false },
+      medium: { target: [6, 9],   mergesPerLevel: 8,  lockedFromLevel: Infinity, wildChance: 0,    neg: false },
+      hard:   { target: [8, 10],  mergesPerLevel: 8,  lockedFromLevel: Infinity, wildChance: 0,    neg: false }
+    },
+    '9-12': {
+      cols: 5, rows: 7,
+      easy:   { target: [10, 12], mergesPerLevel: 8,  lockedFromLevel: Infinity, wildChance: 0,    neg: false },
+      medium: { target: [10, 16], mergesPerLevel: 10, lockedFromLevel: 5,        wildChance: 0.07, neg: false },
+      hard:   { target: [12, 20], mergesPerLevel: 10, lockedFromLevel: 3,        wildChance: 0.09, neg: false }
+    },
+    '13+': {
+      cols: 5, rows: 7,
+      easy:   { target: [12, 16], mergesPerLevel: 10, lockedFromLevel: Infinity, wildChance: 0.05, neg: false },
+      medium: { target: [12, 20], mergesPerLevel: 12, lockedFromLevel: 4,        wildChance: 0.09, neg: true  },
+      hard:   { target: [14, 24], mergesPerLevel: 12, lockedFromLevel: 2,        wildChance: 0.10, neg: true, pressure: true }
+    }
+  };
+
+  function numdropConfig(band, difficulty) {
+    const b = NUMDROP_TABLE[band] || NUMDROP_TABLE['9-12'];
+    const cell = b[difficulty] || b.easy;
+    return Object.assign({ cols: b.cols, rows: b.rows }, cell);
+  }
+  function numdropTargetForLevel(cfg, level, rng) { return ri(rng, cfg.target[0], cfg.target[1]); }
+  function numdropMergesToNext(cfg, level) { return cfg.mergesPerLevel + Math.floor((level - 1) / 3) * 2; }
+  function numdropSpawnTile(cfg, target, level, rng, nextId) {
+    if (cfg.wildChance && rng() < cfg.wildChance) return { id: nextId(), v: 0, wild: true, locked: false };
+    const locked = level >= cfg.lockedFromLevel && rng() < 0.12;
+    let v;
+    if (cfg.neg && rng() < 0.12) v = -ri(rng, 1, Math.min(5, Math.max(1, target - 1)));
+    else v = ri(rng, 1, Math.max(1, target - 1));
+    return { id: nextId(), v: v, wild: false, locked: locked };
+  }
+
+  function numdropLowestEmpty(grid, c) {
+    for (let r = grid.length - 1; r >= 0; r--) if (!grid[r][c]) return r;
+    return -1;
+  }
+  function numdropGravity(grid) {
+    const rows = grid.length, cols = grid[0].length;
+    for (let c = 0; c < cols; c++) {
+      let write = rows - 1;
+      for (let r = rows - 1; r >= 0; r--) {
+        if (grid[r][c]) { const tile = grid[r][c]; grid[r][c] = null; grid[write][c] = tile; write--; }
+      }
+    }
+  }
+  // Find ONE connected group (≥2 non-locked tiles) containing `root` whose
+  // values can sum to target, or null. A wild tile counts as any positive
+  // integer, so a group with non-wild sum S and w wilds clears when S === target
+  // (w = 0) or S + w <= target (w ≥ 1 — each wild absorbs ≥1 of the remainder).
+  // Connected subsets containing root are enumerated exactly once (ordered-
+  // extension method), pruned by partial sum (when no negatives are in play) and
+  // bounded by a shared visit budget so a full board can never hang.
+  function numdropFindGroup(grid, target, root, hasNeg, budget) {
+    const rows = grid.length, cols = grid[0].length;
+    const rootCell = grid[root[0]][root[1]];
+    if (!rootCell || rootCell.locked) return null;
+    const maxSize = hasNeg ? 12 : Math.max(2, target);
+    let result = null;
+    function inList(list, r, c) { for (let i = 0; i < list.length; i++) if (list[i][0] === r && list[i][1] === c) return true; return false; }
+    function rec(chosen, ext, S, w, size) {
+      if (budget.n <= 0) return true; // budget spent — abort the whole search
+      budget.n--;
+      if (size >= 2 && (w === 0 ? S === target : S + w <= target)) { result = Object.keys(chosen); return true; }
+      if (size >= maxSize) return false;
+      if (!hasNeg && S > target) return false; // safe prune only without negatives
+      for (let i = 0; i < ext.length; i++) {
+        const r = ext[i][0], c = ext[i][1], tile = grid[r][c];
+        chosen[r + ',' + c] = 1;
+        const newExt = ext.slice(i + 1);
+        const nb = [[r - 1, c], [r + 1, c], [r, c - 1], [r, c + 1]];
+        for (let k = 0; k < nb.length; k++) {
+          const nr = nb[k][0], nc = nb[k][1];
+          if (nr < 0 || nc < 0 || nr >= rows || nc >= cols) continue;
+          const t = grid[nr][nc];
+          if (!t || t.locked || chosen[nr + ',' + nc]) continue;
+          if (inList(newExt, nr, nc)) continue;
+          let prior = false;
+          for (let m = 0; m <= i; m++) if (ext[m][0] === nr && ext[m][1] === nc) { prior = true; break; }
+          if (!prior) newExt.push([nr, nc]);
+        }
+        const stop = rec(chosen, newExt, S + (tile.wild ? 0 : tile.v), w + (tile.wild ? 1 : 0), size + 1);
+        delete chosen[r + ',' + c];
+        if (stop) return true;
+      }
+      return false;
+    }
+    const chosen = {}; chosen[root[0] + ',' + root[1]] = 1;
+    const ext = [];
+    const rnb = [[root[0] - 1, root[1]], [root[0] + 1, root[1]], [root[0], root[1] - 1], [root[0], root[1] + 1]];
+    for (let k = 0; k < rnb.length; k++) {
+      const nr = rnb[k][0], nc = rnb[k][1];
+      if (nr < 0 || nc < 0 || nr >= rows || nc >= cols) continue;
+      const t = grid[nr][nc];
+      if (t && !t.locked) ext.push([nr, nc]);
+    }
+    rec(chosen, ext, rootCell.wild ? 0 : rootCell.v, rootCell.wild ? 1 : 0, 1);
+    return result;
+  }
+  function numdropResolve(grid, target) {
+    const rows = grid.length, cols = grid[0].length;
+    let cleared = 0, chains = 0;
+    const budget = { n: 12000 }; // shared across the whole cascade; bounds worst-case search
+    while (true) {
+      let hasNeg = false;
+      for (let r = 0; r < rows && !hasNeg; r++) for (let c = 0; c < cols; c++) { const t = grid[r][c]; if (t && !t.wild && t.v < 0) { hasNeg = true; break; } }
+      let passCleared = 0;
+      // Scan for groups and clear them greedily (gravity is deferred to pass end).
+      for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+        const t = grid[r][c];
+        if (!t || t.locked) continue;
+        const group = numdropFindGroup(grid, target, [r, c], hasNeg, budget);
+        if (!group) continue;
+        for (let g = 0; g < group.length; g++) {
+          const p = group[g].split(','), gr = +p[0], gc = +p[1];
+          const nb = [[gr - 1, gc], [gr + 1, gc], [gr, gc - 1], [gr, gc + 1]];
+          for (let k = 0; k < nb.length; k++) { // a clear beside a locked tile frees it
+            const nr = nb[k][0], nc = nb[k][1];
+            if (nr < 0 || nc < 0 || nr >= rows || nc >= cols) continue;
+            const tt = grid[nr][nc];
+            if (tt && tt.locked) tt.locked = false;
+          }
+        }
+        for (let g = 0; g < group.length; g++) { const p = group[g].split(','); grid[+p[0]][+p[1]] = null; cleared++; passCleared++; }
+      }
+      if (passCleared === 0) break;
+      chains++;
+      numdropGravity(grid);
+    }
+    return { cleared: cleared, chains: chains };
+  }
+  function numdropIsOver(grid) {
+    const cols = grid[0].length;
+    for (let c = 0; c < cols; c++) if (numdropLowestEmpty(grid, c) >= 0) return false;
+    return true;
+  }
+  function numdropScore(res, target, difficulty) {
+    if (!res.cleared) return 0;
+    const base = res.cleared * 5 + Math.max(0, res.chains - 1) * 10; // cascade bonus
+    return Math.round(base * (1 + target / 50) * diffMult(difficulty));
+  }
+
+  function numdropNewGame(band, difficulty, rng) {
+    rng = rng || Math.random;
+    const cfg = numdropConfig(band, difficulty);
+    const grid = [];
+    for (let r = 0; r < cfg.rows; r++) grid.push(new Array(cfg.cols).fill(null));
+    const model = { band: band, difficulty: difficulty, cfg: cfg, grid: grid,
+                    level: 1, target: 0, merges: 0, mergesToNext: 0,
+                    score: 0, over: false, _id: 0, current: null, next: null };
+    const nextId = function () { return ++model._id; };
+    model.target = numdropTargetForLevel(cfg, 1, rng);
+    model.mergesToNext = numdropMergesToNext(cfg, 1);
+    model.current = numdropSpawnTile(cfg, model.target, 1, rng, nextId);
+    model.next = numdropSpawnTile(cfg, model.target, 1, rng, nextId);
+    return model;
+  }
+  function numdropDrop(model, col, rng) {
+    rng = rng || Math.random;
+    if (model.over || !model.current) return { ok: false };
+    const r = numdropLowestEmpty(model.grid, col);
+    if (r < 0) return { ok: false, full: true }; // column full — illegal, caller ignores
+    const nextId = function () { return ++model._id; };
+    model.grid[r][col] = model.current;
+    const res = numdropResolve(model.grid, model.target);
+    const gained = numdropScore(res, model.target, model.difficulty);
+    model.score += gained;
+    let leveledUp = false;
+    if (res.cleared > 0) {
+      model.merges += res.cleared;
+      while (model.merges >= model.mergesToNext) {
+        model.merges -= model.mergesToNext;
+        model.level += 1;
+        leveledUp = true;
+        model.target = numdropTargetForLevel(model.cfg, model.level, rng);
+        model.mergesToNext = numdropMergesToNext(model.cfg, model.level);
+      }
+    }
+    model.current = model.next;
+    model.next = numdropSpawnTile(model.cfg, model.target, model.level, rng, nextId);
+    model.over = numdropIsOver(model.grid);
+    return { ok: true, placed: { r: r, c: col }, cleared: res.cleared, chains: res.chains,
+             gained: gained, leveledUp: leveledUp, over: model.over };
+  }
+  // Pressure mode: a new partial row rises from the bottom, pushing the stack
+  // up. If the top row already held a tile, the overflow ends the game.
+  function numdropPushRow(model, rng) {
+    rng = rng || Math.random;
+    const grid = model.grid, rows = grid.length, cols = grid[0].length;
+    for (let c = 0; c < cols; c++) if (grid[0][c]) { model.over = true; return { over: true, cleared: 0 }; }
+    for (let r = 0; r < rows - 1; r++) grid[r] = grid[r + 1];
+    const nextId = function () { return ++model._id; };
+    const row = new Array(cols).fill(null);
+    for (let c = 0; c < cols; c++) if (rng() < 0.7) row[c] = numdropSpawnTile(model.cfg, model.target, model.level, rng, nextId);
+    grid[rows - 1] = row;
+    const res = numdropResolve(grid, model.target);
+    model.score += numdropScore(res, model.target, model.difficulty);
+    model.over = numdropIsOver(grid);
+    return { over: model.over, cleared: res.cleared };
+  }
+
   /* ---- XP + levels. Level L→L+1 costs L×100 XP. ---- */
   function xpForGame(args) { return Math.max(5, Math.round((args.score / 10) * diffMult(args.difficulty))); }
   function xpNeededFor(level) { return level * 100; }
@@ -8058,6 +8305,9 @@ const MathEngine = (function () {
            genOperation, genTrapEquation,
            ttTimeLimitMs, ttScoreFor,
            sprintMultiplier, sprintScoreFor, sprintBonusMs,
+           numdropConfig, numdropNewGame, numdropDrop, numdropPushRow, numdropResolve,
+           numdropLowestEmpty, numdropIsOver, numdropScore, numdropFindGroup,
+           numdropGravity, numdropTargetForLevel, numdropMergesToNext, numdropSpawnTile,
            xpForGame, xpNeededFor, levelForXp,
            prevDayKey, updateDailyStreak,
            recordKey, bestRecord, updateRecord };
@@ -8110,6 +8360,15 @@ function mathSetupOrDefault(){
 // Full render() on every change so the record line always reflects the
 // currently selected mode|ageGroup|difficulty combo (never a cached one).
 function selectMathOption(key, val){ mathSetupOrDefault()[key] = val; render(); }
+
+// One registry the hub, setup, results, share and save flows all read so a new
+// OraMath game only needs a single entry here plus its view/start functions.
+const MATH_GAMES = {
+  'truth-or-trap': { icon:'🎭', nameKey:'mathTTName',     subKey:'mathTTSub',     start:'startMathTT()',      state:function(){ return state.mathTT; } },
+  'math-sprint':   { icon:'⚡', nameKey:'mathSprintName', subKey:'mathSprintSub', start:'startMathSprint()',  state:function(){ return state.mathSprint; } },
+  'numdrop':       { icon:'🧩', nameKey:'mathNDName',     subKey:'mathNDSub',     start:'startMathNumDrop()', state:function(){ return state.mathNumDrop; } }
+};
+function mathGameName(mode){ const g = MATH_GAMES[mode]; return g ? t(g.nameKey) : t('mathTitle'); }
 
 function mathRecordLineHtml(gameMode){
   const su = mathSetupOrDefault();
@@ -8192,21 +8451,21 @@ function mathOpText(op){
 
 // Shared setup screen (age + difficulty + record line) for both OraMath games.
 function mathGameSetupHtml(gameMode){
-  const isTT = gameMode === 'truth-or-trap';
+  const g = MATH_GAMES[gameMode] || MATH_GAMES['truth-or-trap'];
   return ''
     + '<div class="min-h-screen bg-slate-50">'
     + Header()
     + '<main class="max-w-4xl mx-auto px-4 sm:px-6 py-10">'
     + '  <div class="text-center mb-8">'
     + '    <span class="chip bg-amber-100 text-amber-800">➗ OraMath</span>'
-    + '    <h1 class="mt-4 font-display text-3xl md:text-4xl font-bold">' + (isTT ? '🎭 ' + t('mathTTName') : '⚡ ' + t('mathSprintName')) + '</h1>'
-    + '    <p class="mt-3 text-slate-600 max-w-2xl mx-auto">' + (isTT ? t('mathTTSub') : t('mathSprintSub')) + '</p>'
+    + '    <h1 class="mt-4 font-display text-3xl md:text-4xl font-bold">' + g.icon + ' ' + t(g.nameKey) + '</h1>'
+    + '    <p class="mt-3 text-slate-600 max-w-2xl mx-auto">' + t(g.subKey) + '</p>'
     + '  </div>'
     + '  <div class="card p-6 md:p-8 space-y-8">'
     + mathSetupGridsHtml()
     + '  <div class="text-center">'
     + mathRecordLineHtml(gameMode)
-    + '    <button onclick="' + (isTT ? 'startMathTT()' : 'startMathSprint()') + '" class="mt-4 btn-primary px-8 py-3 text-lg">▶ ' + t('mathPlayNow') + '</button>'
+    + '    <button onclick="' + g.start + '" class="mt-4 btn-primary px-8 py-3 text-lg">▶ ' + t('mathPlayNow') + '</button>'
     + '    <button onclick="go(\'oramath\')" class="mt-4 block mx-auto text-sm text-slate-500 hover:underline focus-ring">← OraMath</button>'
     + '  </div>'
     + '  </div>'
@@ -8219,7 +8478,7 @@ function mathGameSetupHtml(gameMode){
 function mathResultsHtml(opts){
   const meta = opts.meta || {};
   const lv = MathEngine.levelForXp(loadMathProfile().xp);
-  const name = opts.gameMode === 'truth-or-trap' ? t('mathTTName') : t('mathSprintName');
+  const name = mathGameName(opts.gameMode);
   const milestoneTxt = meta.milestone ? pick({
     en:'🏆 ' + meta.milestone + '-day streak — Ora is proud of you!',
     es:'🏆 ¡Racha de ' + meta.milestone + ' días — Ora está orgullosa de ti!',
@@ -8272,14 +8531,14 @@ function mathRecordTextFor(gameMode){
   return rec ? '🏅 ' + t('mathRecordLine').replace('{score}', rec.score) : '';
 }
 function mathShare(gameMode, score){
-  const name = gameMode === 'truth-or-trap' ? t('mathTTName') : t('mathSprintName');
-  shareResult(t('mathShareText').replace('{score}', score).replace('{game}', name));
+  shareResult(t('mathShareText').replace('{score}', score).replace('{game}', mathGameName(gameMode)));
 }
 /* Explicit, optional leaderboard save with a 3–4 char alias — same flow and
    validation as Quiz/OraGuess saveScore() (rules checkbox, blocklist, empty
    alias auto-generates one). XP/record/streak were already applied at game end. */
 function saveMathScore(gameMode){
-  const s = gameMode === 'truth-or-trap' ? state.mathTT : state.mathSprint;
+  const meta = MATH_GAMES[gameMode];
+  const s = meta ? meta.state() : null;
   if (!s || !s.ended || s.saved) return;
   const rulesEl = document.getElementById('accept-rules');
   if (!rulesEl || !rulesEl.checked) { toast(t('toastAcceptRules')); return; }
@@ -8628,20 +8887,133 @@ function viewMathSprint(){
     + '</div>';
 }
 
+/* ---- NumDrop (numdrop) — number-fusion puzzle ---- */
+const NUMDROP_PRESSURE_MS = 15000;
+function startMathNumDrop(){
+  const su = mathSetupOrDefault();
+  const info = MathEngine.ORAMATH_AGE_BANDS[su.ageGroup] || MathEngine.ORAMATH_AGE_BANDS.family;
+  if (state.mathNumDrop && state.mathNumDrop.timer) clearInterval(state.mathNumDrop.timer);
+  // numdropNewGame returns the plain board model; we add the session fields the
+  // shared results/save flow needs (ageGroup, accuracy counters, timing…).
+  const model = MathEngine.numdropNewGame(info.band, su.difficulty);
+  state.mathNumDrop = Object.assign(model, {
+    ageGroup: su.ageGroup, difficulty: su.difficulty, band: info.band, timeFactor: info.timeFactor,
+    timer: null, attempts: 0, correct: 0,
+    ended: false, resultMeta: null, startedAt: Date.now(), durationMs: 0, saved: false
+  });
+  go('oramath', { mode:'numdrop', play:true });
+  if (model.cfg.pressure) ndStartPressure();
+}
+function resetMathNumDrop(){
+  if (state.mathNumDrop && state.mathNumDrop.timer) clearInterval(state.mathNumDrop.timer);
+  state.mathNumDrop = null;
+  startMathNumDrop();
+}
+function ndStartPressure(){
+  const s = state.mathNumDrop;
+  if (!s) return;
+  if (s.timer) clearInterval(s.timer);
+  s.timer = setInterval(() => {
+    // Same guard pattern as Sprint: a tick on a navigated-away/replaced session
+    // clears itself instead of pushing rows onto another page.
+    if (state.route !== 'oramath' || state.params.mode !== 'numdrop' || state.mathNumDrop !== s || s.ended){ clearInterval(s.timer); return; }
+    const res = MathEngine.numdropPushRow(s);
+    if (res.over){ endMathNumDrop(); return; }
+    render();
+  }, NUMDROP_PRESSURE_MS);
+}
+function numdropDropCol(c){
+  const s = state.mathNumDrop;
+  if (!s || s.ended) return;
+  const res = MathEngine.numdropDrop(s, c);
+  if (!res.ok) return; // full column — ignore the tap
+  s.attempts++;
+  if (res.cleared > 0) s.correct++;
+  if (res.over){ endMathNumDrop(); return; }
+  render();
+}
+function endMathNumDrop(){
+  const s = state.mathNumDrop;
+  if (!s || s.ended) return;
+  s.ended = true;
+  if (s.timer){ clearInterval(s.timer); s.timer = null; }
+  s.durationMs = Date.now() - s.startedAt;
+  const acc = s.attempts ? Math.round((s.correct / s.attempts) * 100) : 0;
+  s.resultMeta = finishMathGame({ gameMode:'numdrop', ageGroup:s.ageGroup, difficulty:s.difficulty, score:s.score, accuracy:acc, durationMs:s.durationMs });
+  render();
+  if (s.resultMeta.leveledUp || s.resultMeta.milestone || s.resultMeta.recordIsNew){ try { confetti(); } catch (e) {} }
+}
+function numdropTileHtml(tile, big){
+  const sz = big ? ' nd-tile-lg' : '';
+  if (!tile) return '<div class="nd-cell nd-empty' + sz + '"></div>';
+  if (tile.wild) return '<div class="nd-cell nd-wild fade-in' + sz + '" title="' + pick({en:'Wild — pairs with anything',es:'Comodín — combina con todo',fr:'Joker — se combine avec tout'}) + '">★</div>';
+  const hue = (((tile.v * 47) % 360) + 360) % 360;
+  const style = 'background:hsl(' + hue + ',72%,90%);color:hsl(' + hue + ',60%,26%)';
+  const lock = tile.locked ? '<span class="nd-lock">🔒</span>' : '';
+  return '<div class="nd-cell fade-in' + sz + (tile.locked ? ' nd-locked' : '') + '" style="' + style + '">' + tile.v + lock + '</div>';
+}
+function numdropBoardHtml(s){
+  let cols = '';
+  for (let c = 0; c < s.cfg.cols; c++){
+    let cells = '';
+    for (let r = 0; r < s.cfg.rows; r++) cells += numdropTileHtml(s.grid[r][c], false);
+    const full = MathEngine.numdropLowestEmpty(s.grid, c) < 0;
+    cols += '<button onclick="numdropDropCol(' + c + ')" ' + (full ? 'disabled ' : '') + 'class="nd-col focus-ring' + (full ? ' nd-col-full' : '') + '" aria-label="' + pick({en:'Drop in column ',es:'Soltar en la columna ',fr:'Déposer dans la colonne '}) + (c + 1) + '">' + cells + '</button>';
+  }
+  return '<div class="nd-board" style="grid-template-columns:repeat(' + s.cfg.cols + ',1fr)">' + cols + '</div>';
+}
+function viewMathNumDrop(){
+  const s = state.mathNumDrop;
+  if (!s || !state.params.play){
+    if (s){ if (s.timer) clearInterval(s.timer); state.mathNumDrop = null; }
+    return mathGameSetupHtml('numdrop');
+  }
+  if (s.ended){
+    const acc = s.attempts ? Math.round((s.correct / s.attempts) * 100) : 0;
+    return mathResultsHtml({
+      gameMode:'numdrop', score:s.score, accuracy:acc, meta:s.resultMeta, retryFn:'resetMathNumDrop()', saved:s.saved,
+      statLine: pick({en:'Level reached',es:'Nivel alcanzado',fr:'Niveau atteint'}) + ': <strong>' + s.level + '</strong>'
+    });
+  }
+  const pct = Math.min(100, Math.round((s.merges / s.mergesToNext) * 100));
+  return ''
+    + '<div class="min-h-screen bg-slate-50">'
+    + Header()
+    + '<main class="max-w-md mx-auto px-4 sm:px-6 py-6">'
+    + '  <div class="flex items-center justify-between mb-2 text-sm">'
+    + '    <span class="font-semibold text-slate-700">' + pick({en:'Level',es:'Nivel',fr:'Niveau'}) + ' <span class="text-violet-700">' + s.level + '</span></span>'
+    + '    <span class="chip bg-amber-100 text-amber-800 font-bold">' + pick({en:'Make',es:'Suma',fr:'Fais'}) + ' ' + s.target + '</span>'
+    + '    <span class="font-semibold text-amber-700">' + pick({en:'Score',es:'Puntos',fr:'Score'}) + ': ' + s.score + '</span>'
+    + '  </div>'
+    + '  <div class="h-2 rounded-full bg-slate-100 overflow-hidden mb-3" aria-hidden="true"><div class="h-full bg-gradient-to-r from-violet-500 to-fuchsia-500 transition-all" style="width:' + pct + '%"></div></div>'
+    + (s.cfg.pressure ? '  <p class="mb-2 text-center text-xs font-semibold text-rose-600">⏫ ' + pick({en:'Pressure: a new row rises every 15s',es:'Presión: sube una fila cada 15s',fr:'Pression : une rangée monte toutes les 15s'}) + '</p>' : '')
+    + '  <div class="card p-3">' + numdropBoardHtml(s) + '</div>'
+    + '  <div class="mt-4 flex items-center justify-center gap-5">'
+    + '    <div class="text-center"><div class="text-xs text-slate-500 mb-1">' + pick({en:'Drop',es:'Sueltas',fr:'À poser'}) + '</div>' + numdropTileHtml(s.current, true) + '</div>'
+    + '    <div class="text-center opacity-70"><div class="text-xs text-slate-500 mb-1">' + pick({en:'Next',es:'Siguiente',fr:'Suivant'}) + '</div>' + numdropTileHtml(s.next, true) + '</div>'
+    + '  </div>'
+    + '  <p class="mt-3 text-center text-xs text-slate-500">' + pick({en:'Tap a column to drop. Connected tiles that add up to ' + s.target + ' clear!',es:'Toca una columna para soltar. ¡Las fichas conectadas que suman ' + s.target + ' desaparecen!',fr:'Touche une colonne pour déposer. Les tuiles reliées dont la somme fait ' + s.target + ' disparaissent !'}) + '</p>'
+    + '  <p class="mt-1 text-center text-xs text-slate-400">' + pick({en:'On a keyboard: number keys 1–' + s.cfg.cols + '.',es:'Con teclado: teclas 1–' + s.cfg.cols + '.',fr:'Au clavier : touches 1–' + s.cfg.cols + '.'}) + '</p>'
+    + '  <button onclick="go(\'oramath\')" class="mt-4 block mx-auto text-sm text-slate-500 hover:underline focus-ring">' + pick({en:'Quit round',es:'Salir de la partida',fr:'Quitter la partie'}) + '</button>'
+    + '</main>'
+    + '</div>';
+}
+
 function viewOraMath(){
   const mode = state.params.mode || 'hub';
   if (mode === 'truth-or-trap') return viewMathTrueFalse();
   if (mode === 'math-sprint') return viewMathSprint();
-  const gameCards = [
-    { mode:'truth-or-trap', icon:'🎭', name:t('mathTTName'), blurb:t('mathTTSub') },
-    { mode:'math-sprint', icon:'⚡', name:t('mathSprintName'), blurb:t('mathSprintSub') }
-  ].map(g => ''
-    + '<button onclick="go(\'oramath\',{mode:\'' + g.mode + '\'})" class="card card-hover p-5 text-left focus-ring">'
+  if (mode === 'numdrop') return viewMathNumDrop();
+  const gameCards = ['truth-or-trap','math-sprint','numdrop'].map(m => {
+    const g = MATH_GAMES[m];
+    return ''
+    + '<button onclick="go(\'oramath\',{mode:\'' + m + '\'})" class="card card-hover p-5 text-left focus-ring">'
     + '  <div class="text-3xl" aria-hidden="true">' + g.icon + '</div>'
-    + '  <h2 class="mt-3 font-display text-xl font-bold">' + g.name + '</h2>'
-    + '  <p class="mt-2 text-sm text-slate-600">' + g.blurb + '</p>'
+    + '  <h2 class="mt-3 font-display text-xl font-bold">' + t(g.nameKey) + '</h2>'
+    + '  <p class="mt-2 text-sm text-slate-600">' + t(g.subKey) + '</p>'
     + '  <span class="mt-3 inline-block text-sm font-semibold text-brand-violet">▶ ' + t('mathPlayNow') + '</span>'
-    + '</button>').join('');
+    + '</button>';
+  }).join('');
   return ''
     + '<div class="min-h-screen bg-slate-50">'
     + Header()
@@ -8653,13 +9025,8 @@ function viewOraMath(){
     + '    <p class="mt-4 text-slate-600 leading-relaxed">' + t('mathBody') + '</p>'
     + '  </section>'
     + '  <div class="mt-8">' + mathPlayerPanelHtml() + '</div>'
-    + '  <div class="mt-6 grid sm:grid-cols-2 gap-5">'
+    + '  <div class="mt-6 grid sm:grid-cols-2 lg:grid-cols-3 gap-5">'
     + gameCards
-    + '    <div class="card p-5 opacity-70" aria-disabled="true">'
-    + '      <div class="text-3xl" aria-hidden="true">🧩</div>'
-    + '      <h2 class="mt-3 font-display text-xl font-bold">' + t('comingSoon') + '</h2>'
-    + '      <p class="mt-2 text-sm text-slate-600">' + t('mathMoreSoon') + '</p>'
-    + '    </div>'
     + '  </div>'
     + '</main>'
     + Footer()
@@ -10613,6 +10980,9 @@ document.addEventListener('keydown', (e) => {
     if (/^[0-9]$/.test(e.key)){ msKey(e.key); }
     else if (e.key === 'Backspace'){ e.preventDefault(); msKey('back'); }
     else if (e.key === 'Enter'){ e.preventDefault(); msKey('ok'); }
+  } else if (state.params.mode === 'numdrop' && state.mathNumDrop && !state.mathNumDrop.ended){
+    const n = parseInt(e.key, 10);
+    if (n >= 1 && n <= state.mathNumDrop.cfg.cols){ e.preventDefault(); numdropDropCol(n - 1); }
   }
 });
 

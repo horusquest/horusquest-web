@@ -86,7 +86,8 @@ and any later tests/UX polish.
 Route `oramath` (`/oramath` + es/fr, indexable), modes via `state.params.mode`
 like OraWords. Pure logic lives in the `__MATHENGINE_START__/END__` sentinel
 block (`MathEngine` IIFE: injectable rng/date, no DOM/state/clock) — tested by
-`tests/oramath-engine.test.js` (34 tests, seeded mulberry32 property tests).
+`tests/oramath-engine.test.js` (46 tests incl. NumDrop, seeded mulberry32
+property tests).
 
 - **Age mapping:** UI uses the site's 6 `AGE_GROUPS`; `ORAMATH_AGE_BANDS`
   collapses them to the spec's 3 bands (`6-8`/`9-12`/`13+`) + `timeFactor`.
@@ -109,10 +110,27 @@ block (`MathEngine` IIFE: injectable rng/date, no DOM/state/clock) — tested by
 - **Ora Sprint** (`math-sprint`): 60s, `endsAt`-based (+2s bonus = `endsAt +=
   2000`), 250ms interval that self-clears via guards, custom on-screen keypad
   (no `<input>` → OS keyboard never opens), combo ×(1+⌊n/3⌋) cap ×5.
+- **NumDrop** (`numdrop`): number-fusion puzzle. Tap a column to drop the current
+  tile; gravity settles it (`grid[row][col]`, row 0 = top), then any **connected
+  group** of orthogonally-adjacent tiles summing to the level `target` clears and
+  cascades after gravity (`numdropResolve` greedily clears groups found by
+  `numdropFindGroup`, an ordered-extension connected-subset search pruned by sum +
+  a shared visit budget so a full board never hangs — not just pairs, so a row
+  like [2,1,2,2]=7 clears). Clearing enough tiles advances the level (re-rolls the
+  target + raises `mergesToNext`); a full board ends the game. Special tiles:
+  **locked** (can't merge until a clear happens beside it, then unlocks),
+  **wild** ★ (pairs with any neighbour), **negative** (lets pairs overshoot the
+  target, 13+ only). 13+ hard adds **pressure mode** — `numdropPushRow` raises a
+  new bottom row every 15s (same self-clearing-interval guard as Sprint;
+  overflow = game over). Sizes/specials scale by band in `NUMDROP_TABLE`. Whole
+  model is plain data → tests drive full games headlessly. Tap columns or number
+  keys 1–N. The 3 games share one `MATH_GAMES` registry (icon/name/sub/start/
+  state) consumed by the hub cards, setup, results, share and save flows.
 - **Leaderboards page** now renders `LeaderboardTabs()` (was locked to the
   OraQuest tab); OraMath has its own tab via `LB_TAB_META`.
-- Pending (spec approved, NOT built): NumDrop, Camino Mágico, EquaCode (daily),
-  Ojo de Ora, achievements/badges, OraMath share emoji-grids.
+- The OraMath hub now ships all 3 games (no "coming soon" card). Pending (spec
+  approved, NOT built): Camino Mágico, EquaCode (daily), Ojo de Ora,
+  achievements/badges, OraMath share emoji-grids.
 
 ## Validation
 - `npm run lint` — lints the inline `<script>` block
