@@ -1325,7 +1325,7 @@ const I18N_EXT = {
     universeTitle:'Ora Universe', universeSub:'Explore all HorusQuest educational games guided by Ora, the wise owl.',
     connectTitle:'How the games connect', connectBody:'HorusQuest is the parent brand. Ora is the shared guide. OraQuest, OraGuess and OraWords each focus on a different way to learn, and future scores, achievements and challenges can connect under one HorusQuest account.',
     playTitle:'Choose your next adventure.', playSub:'Play quizzes, guessing games, daily challenges and word games from one place.',
-    dailyQuest:'Today’s Daily Quest', playOraQuest:'Play OraQuest', playGuessOra:'Play OraGuess', exploreOraWords:'Explore OraWords', viewLeaderboards:'View Leaderboards', familyTeams:'Family & Teams',
+    dailyQuest:'Today’s Daily Quest', playOraQuest:'Play OraQuest', playGuessOra:'Play OraGuess', playOraWords:'Play OraWords', playOraWorld:'Play OraWorld', playOraMath:'Play OraMath', exploreOraWords:'Explore OraWords', viewLeaderboards:'View Leaderboards', familyTeams:'Family & Teams',
     comingSoon:'Coming soon', altOra:'Ora, the wise owl guide for HorusQuest',
     noRealNames:'No real names required.', noChat:'No public chat.', emailsHidden:'Emails are never shown on leaderboards.', childrenAccounts:'Children should use accounts with a parent/guardian if accounts are enabled.',
     oraQuestBadge:'OraQuest · by HorusQuest',
@@ -1359,7 +1359,7 @@ const I18N_EXT = {
     universeTitle:'Universo Ora', universeSub:'Explora todos los juegos educativos de HorusQuest guiados por Ora, la búho sabia.',
     connectTitle:'Cómo se conectan los juegos', connectBody:'HorusQuest es la marca principal. Ora es la guía compartida. OraQuest, OraGuess y OraWords se centran en formas distintas de aprender, y en el futuro las puntuaciones, logros y retos podrán unirse bajo una cuenta HorusQuest.',
     playTitle:'Elige tu próxima aventura.', playSub:'Juega quizzes, adivinanzas, retos diarios y juegos de palabras desde un solo lugar.',
-    dailyQuest:'Reto diario de hoy', playOraQuest:'Jugar OraQuest', playGuessOra:'Jugar OraGuess', exploreOraWords:'Explorar OraWords', viewLeaderboards:'Ver clasificaciones', familyTeams:'Familia y equipos',
+    dailyQuest:'Reto diario de hoy', playOraQuest:'Jugar OraQuest', playGuessOra:'Jugar OraGuess', playOraWords:'Jugar OraWords', playOraWorld:'Jugar OraWorld', playOraMath:'Jugar OraMath', exploreOraWords:'Explorar OraWords', viewLeaderboards:'Ver clasificaciones', familyTeams:'Familia y equipos',
     comingSoon:'Próximamente', altOra:'Ora, la búho sabia que guía HorusQuest',
     noRealNames:'No se requieren nombres reales.', noChat:'Sin chat público.', emailsHidden:'Los correos nunca se muestran en clasificaciones.', childrenAccounts:'Los menores deben usar cuentas con padre/tutor si se activan cuentas.',
     oraQuestBadge:'OraQuest · por HorusQuest',
@@ -1393,7 +1393,7 @@ const I18N_EXT = {
     universeTitle:'Univers Ora', universeSub:'Explore tous les jeux éducatifs de HorusQuest guidés par Ora, la chouette sage.',
     connectTitle:'Comment les jeux sont liés', connectBody:'HorusQuest est la marque principale. Ora est le guide commun. OraQuest, OraGuess et OraWords proposent chacun une façon différente d’apprendre, et les scores, réussites et défis pourront plus tard se rejoindre sous un compte HorusQuest.',
     playTitle:'Choisis ta prochaine aventure.', playSub:'Joue à des quiz, des devinettes, des défis quotidiens et des jeux de mots depuis un seul endroit.',
-    dailyQuest:'Défi quotidien du jour', playOraQuest:'Jouer à OraQuest', playGuessOra:'Jouer à OraGuess', exploreOraWords:'Explorer OraWords', viewLeaderboards:'Voir les classements', familyTeams:'Famille et équipes',
+    dailyQuest:'Défi quotidien du jour', playOraQuest:'Jouer à OraQuest', playGuessOra:'Jouer à OraGuess', playOraWords:'Jouer à OraWords', playOraWorld:'Jouer à OraWorld', playOraMath:'Jouer à OraMath', exploreOraWords:'Explorer OraWords', viewLeaderboards:'Voir les classements', familyTeams:'Famille et équipes',
     comingSoon:'Bientôt disponible', altOra:'Ora, la chouette sage qui guide HorusQuest',
     noRealNames:'Aucun nom réel obligatoire.', noChat:'Pas de chat public.', emailsHidden:'Les e-mails ne sont jamais affichés dans les classements.', childrenAccounts:'Les mineurs doivent utiliser les comptes avec un parent/tuteur si les comptes sont activés.',
     oraQuestBadge:'OraQuest · par HorusQuest',
@@ -6622,7 +6622,13 @@ function seoLongHtml() { return t('seoLongHtml'); }
 function UniverseGameCard(game, { compact=false }={}) {
   const soon = game.status !== 'live';
   const href = pathFor(game.route, state.lang) + (game.anchor ? '#' + game.anchor : '');
-  const cta = game.key === 'oraquest' ? t('playOraQuest') : game.key === 'guessora' ? t('playGuessOra') : game.key === 'orawords' ? t('exploreOraWords') : t('learnMore');
+  const cta = ({
+    oraquest: t('playOraQuest'),
+    guessora: t('playGuessOra'),
+    orawords: t('playOraWords'),
+    oraworld: t('playOraWorld'),
+    oramath: t('playOraMath')
+  })[game.key] || t('learnMore');
   return `
     <article id="${game.key}" class="card p-5 md:p-6 flex flex-col ${compact?'':'card-hover'}">
       <div class="flex items-start justify-between gap-4">
@@ -6632,7 +6638,7 @@ function UniverseGameCard(game, { compact=false }={}) {
       <h3 class="mt-4 font-display text-xl font-bold">${game.name}</h3>
       <p class="mt-2 text-sm text-slate-600 flex-1">${pick(game.description)}</p>
       ${soon
-        ? `<a href="${href}" onclick="navGo(event,'universe')" class="mt-5 btn-ghost text-sm self-start" aria-label="${game.name} — ${t('comingSoon')}">${t('learnMore')}</a>`
+        ? `<a href="${href}" onclick="navGo(event,'universe')" class="mt-5 btn-ghost text-sm self-start" aria-label="${game.name} — ${t('comingSoon')}">${cta}</a>`
         : `<a href="${href}" onclick="navGo(event,'${game.route}')" class="mt-5 btn-primary text-sm self-start">${cta}</a>`}
     </article>`;
 }
