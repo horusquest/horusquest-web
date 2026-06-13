@@ -5495,23 +5495,37 @@ const ORAWORDS_GAME_MODES = [
   { id:'daily-word-quest', en:'Daily Word Quest', es:'Reto diario de palabras', fr:'Défi mot du jour', icon:'📅', active:true }
 ];
 const ORAWORDS_CATEGORIES = [
-  { id:'animals', en:'Animals', es:'Animales', fr:'Animaux' },
-  { id:'nature', en:'Nature', es:'Naturaleza', fr:'Nature' },
-  { id:'space', en:'Space', es:'Espacio', fr:'Espace' },
-  { id:'food', en:'Food', es:'Comida', fr:'Nourriture' },
-  { id:'school', en:'School', es:'Escuela', fr:'École' },
-  { id:'sports', en:'Sports', es:'Deportes', fr:'Sports' },
-  { id:'countries', en:'Countries', es:'Países', fr:'Pays' },
-  { id:'history', en:'History', es:'Historia', fr:'Histoire' },
-  { id:'science', en:'Science', es:'Ciencia', fr:'Science' },
-  { id:'everyday', en:'Everyday Words', es:'Palabras cotidianas', fr:'Mots du quotidien' },
-  { id:'advanced', en:'Advanced Vocabulary', es:'Vocabulario avanzado', fr:'Vocabulaire avancé' },
-  { id:'english-vocabulary', en:'English Vocabulary', es:'Vocabulario inglés', fr:'Vocabulaire anglais' },
-  { id:'spanish-vocabulary', en:'Spanish Vocabulary', es:'Vocabulario español', fr:'Vocabulaire espagnol' },
-  { id:'french-vocabulary', en:'French Vocabulary', es:'Vocabulario francés', fr:'Vocabulaire français' }
+  { id:'everyday', icon:'📝', en:'Everyday Words', es:'Palabras cotidianas', fr:'Mots du quotidien' },
+  { id:'animals', icon:'🦁', en:'Animals', es:'Animales', fr:'Animaux' },
+  { id:'geography', icon:'🌍', en:'Geography', es:'Geografía', fr:'Géographie' },
+  { id:'science', icon:'🔬', en:'Science', es:'Ciencia', fr:'Science' },
+  { id:'space', icon:'🚀', en:'Space', es:'Espacio', fr:'Espace' },
+  { id:'history', icon:'🏛️', en:'History', es:'Historia', fr:'Histoire' },
+  { id:'dinosaurs', icon:'🦕', en:'Dinosaurs', es:'Dinosaurios', fr:'Dinosaures' },
+  { id:'sports', icon:'⚽', en:'Sports', es:'Deportes', fr:'Sports' },
+  { id:'logic', icon:'🧩', en:'Logic', es:'Lógica', fr:'Logique' },
+  { id:'general', icon:'📚', en:'General Knowledge', es:'Cultura general', fr:'Culture générale' },
+  { id:'advanced', icon:'🎓', en:'Advanced Vocabulary', es:'Vocabulario avanzado', fr:'Vocabulaire avancé' },
+  { id:'english-vocabulary', icon:'🇬🇧', en:'English Vocabulary', es:'Vocabulario inglés', fr:'Vocabulaire anglais' },
+  { id:'spanish-vocabulary', icon:'🇪🇸', en:'Spanish Vocabulary', es:'Vocabulario español', fr:'Vocabulaire espagnol' },
+  { id:'french-vocabulary', icon:'🇫🇷', en:'French Vocabulary', es:'Vocabulario francés', fr:'Vocabulaire français' }
+];
+const ORAWORDS_SETUP_CATEGORY_IDS = ['animals','geography','science','space','history','dinosaurs','sports','logic','general'];
+const SPELLING_SETUP_CATEGORY_IDS = ['everyday'].concat(ORAWORDS_SETUP_CATEGORY_IDS);
+const ORAWORDS_DIFFICULTIES = [
+  { id:'easy', emoji:'🌱', en:'Easy', es:'Fácil', fr:'Facile' },
+  { id:'medium', emoji:'⚡', en:'Medium', es:'Medio', fr:'Moyen' },
+  { id:'hard', emoji:'🔥', en:'Hard', es:'Difícil', fr:'Difficile' }
 ];
 function wordModeName(mode) { const m = ORAWORDS_GAME_MODES.find(x => x.id === mode); return m ? pick(m) : mode; }
 function wordCatName(cat) { const c = ORAWORDS_CATEGORIES.find(x => x.id === cat); return c ? pick(c) : cat; }
+function wordCatIcon(cat) { const c = ORAWORDS_CATEGORIES.find(x => x.id === cat); return c ? c.icon : ''; }
+function setupCategoriesForMode(mode) {
+  if (mode === 'spelling-sprint') {
+    return SPELLING_SETUP_CATEGORY_IDS.map(id => ORAWORDS_CATEGORIES.find(c => c.id === id)).filter(Boolean);
+  }
+  return ORAWORDS_CATEGORIES;
+}
 function makeSpellingSet(prefix, language, category, ageGroup, difficulty, entries) {
   return entries.map((entry, i) => ({
     id: `${prefix}-${String(i + 1).padStart(3, '0')}`,
@@ -5894,6 +5908,100 @@ const ORAWORDS_BANK = {
   'synonyms-antonyms': [],
   'daily-word-quest': []
 };
+
+const ORAWORDS_AGE_IDS = ['5-7','8-10','11-13','teens','adults','family'];
+const SPELLING_GENERATED_MIN = 20;
+const SPELLING_WORD_SEEDS = {
+  en: {
+    everyday:['because','friend','family','school','people','answer','minute','orange','window','picture','travel','garden','morning','evening','weather','butter','yellow','pencil','summer','winter','kitchen','water','bicycle','birthday'],
+    animals:['rabbit','turtle','monkey','dolphin','penguin','giraffe','elephant','hamster','butterfly','chicken','octopus','kangaroo','squirrel','leopard','flamingo','gorilla','cheetah','alligator','crocodile','hedgehog','seahorse','jellyfish','raccoon','parrot'],
+    geography:['country','capital','island','mountain','desert','valley','river','ocean','continent','village','harbour','forest','border','climate','glacier','volcano','peninsula','waterfall','latitude','longitude','rainforest','savanna','territory','landmark'],
+    science:['energy','matter','planet','gravity','magnet','oxygen','carbon','crystal','biology','physics','chemistry','weather','organism','laboratory','microscope','experiment','temperature','electricity','molecule','ecosystem','photosynthesis','reaction','density','friction'],
+    space:['rocket','planet','galaxy','comet','orbit','meteor','astronaut','telescope','satellite','universe','asteroid','gravity','nebula','eclipse','constellation','spacecraft','atmosphere','moonlight','starlight','launchpad','supernova','cosmos','mission','explorer'],
+    history:['castle','empire','ancient','museum','kingdom','pyramid','battle','voyage','dynasty','archive','century','artifact','revolution','monument','civilization','chronicle','archaeology','heritage','medieval','renaissance','explorer','tradition','territory','manuscript'],
+    dinosaurs:['fossil','raptor','dinosaur','jurassic','cretaceous','triceratops','stegosaurus','tyrannosaur','sauropod','pterosaur','ankylosaurus','velociraptor','brachiosaurus','allosaurus','iguanodon','diplodocus','spinosaur','paleontology','extinction','prehistoric','footprint','herbivore','carnivore','excavation'],
+    sports:['soccer','tennis','basketball','baseball','athlete','stadium','referee','trophy','training','cycling','swimming','gymnastics','volleyball','marathon','skateboard','goalkeeper','champion','tournament','scoreboard','badminton','wrestling','archery','sprinting','exercise'],
+    logic:['puzzle','reason','pattern','sequence','riddle','symbol','number','answer','strategy','mystery','compare','deduce','binary','matrix','triangle','equation','solution','clue','cipher','balance','diagram','estimate','logic','proof'],
+    general:['library','calendar','holiday','machine','journey','language','community','festival','instrument','computer','airport','restaurant','telephone','umbrella','medicine','newspaper','adventure','question','knowledge','creative','important','different','excellent','curious']
+  },
+  es: {
+    everyday:['corazon','familia','escuela','ventana','manana','telefono','zapato','amigo','camino','jardin','lapiz','musica','cuaderno','biblioteca','naranja','cocina','caballo','verano','invierno','playa','montana','pajaro','comida','bicicleta'],
+    animals:['conejo','tortuga','mono','delfin','pinguino','jirafa','elefante','hamster','mariposa','gallina','pulpo','canguro','ardilla','leopardo','flamenco','gorila','guepardo','aligador','cocodrilo','erizo','caballito','medusa','loro','ballena'],
+    geography:['pais','capital','isla','montana','desierto','valle','rio','oceano','continente','pueblo','puerto','bosque','frontera','clima','glaciar','volcan','peninsula','cascada','latitud','longitud','selva','sabana','territorio','monumento'],
+    science:['energia','materia','planeta','gravedad','iman','oxigeno','carbono','cristal','biologia','fisica','quimica','tiempo','organismo','laboratorio','microscopio','experimento','temperatura','electricidad','molecula','ecosistema','fotosintesis','reaccion','densidad','friccion'],
+    space:['cohete','planeta','galaxia','cometa','orbita','meteoro','astronauta','telescopio','satelite','universo','asteroide','gravedad','nebulosa','eclipse','constelacion','nave','atmosfera','luna','estrella','lanzamiento','supernova','cosmos','mision','explorador'],
+    history:['castillo','imperio','antiguo','museo','reino','piramide','batalla','viaje','dinastia','archivo','siglo','artefacto','revolucion','monumento','civilizacion','cronica','arqueologia','herencia','medieval','renacimiento','explorador','tradicion','territorio','manuscrito'],
+    dinosaurs:['fosil','raptor','dinosaurio','jurasico','cretacico','triceratops','estegosaurio','tiranosaurio','sauropodo','pterosaurio','anquilosaurio','velociraptor','braquiosaurio','alosaurio','iguanodon','diplodocus','espinosaurio','paleontologia','extincion','prehistorico','huella','herbivoro','carnivoro','excavacion'],
+    sports:['futbol','tenis','baloncesto','beisbol','atleta','estadio','arbitro','trofeo','entrenamiento','ciclismo','natacion','gimnasia','voleibol','maraton','patineta','portero','campeon','torneo','marcador','badminton','lucha','tiro','carrera','ejercicio'],
+    logic:['rompecabezas','razon','patron','secuencia','acertijo','simbolo','numero','respuesta','estrategia','misterio','comparar','deducir','binario','matriz','triangulo','ecuacion','solucion','pista','cifrado','balance','diagrama','estimar','logica','prueba'],
+    general:['biblioteca','calendario','vacaciones','maquina','viaje','idioma','comunidad','festival','instrumento','computadora','aeropuerto','restaurante','telefono','paraguas','medicina','periodico','aventura','pregunta','conocimiento','creativo','importante','diferente','excelente','curioso']
+  },
+  fr: {
+    everyday:['ecole','famille','bonjour','maison','fromage','jardin','oiseau','chateau','francais','eleve','voiture','gateau','fenetre','chien','soleil','fleur','arbre','livre','table','banane','poisson','cheval','lumiere','musique'],
+    animals:['lapin','tortue','singe','dauphin','manchot','girafe','elephant','hamster','papillon','poule','pieuvre','kangourou','ecureuil','leopard','flamant','gorille','guepard','alligator','crocodile','herisson','hippocampe','meduse','perroquet','baleine'],
+    geography:['pays','capitale','ile','montagne','desert','vallee','riviere','ocean','continent','village','port','foret','frontiere','climat','glacier','volcan','peninsule','cascade','latitude','longitude','jungle','savane','territoire','monument'],
+    science:['energie','matiere','planete','gravite','aimant','oxygene','carbone','cristal','biologie','physique','chimie','meteo','organisme','laboratoire','microscope','experience','temperature','electricite','molecule','ecosysteme','photosynthese','reaction','densite','friction'],
+    space:['fusee','planete','galaxie','comete','orbite','meteore','astronaute','telescope','satellite','univers','asteroide','gravite','nebuleuse','eclipse','constellation','vaisseau','atmosphere','lumiere','etoile','lancement','supernova','cosmos','mission','explorateur'],
+    history:['chateau','empire','ancien','musee','royaume','pyramide','bataille','voyage','dynastie','archive','siecle','artefact','revolution','monument','civilisation','chronique','archeologie','heritage','medieval','renaissance','explorateur','tradition','territoire','manuscrit'],
+    dinosaurs:['fossile','raptor','dinosaure','jurassique','cretace','triceratops','stegosaure','tyrannosaure','sauropode','pterosaure','ankylosaure','velociraptor','brachiosaure','allosaure','iguanodon','diplodocus','spinosaure','paleontologie','extinction','prehistorique','empreinte','herbivore','carnivore','excavation'],
+    sports:['football','tennis','basketball','baseball','athlete','stade','arbitre','trophee','entrainement','cyclisme','natation','gymnastique','volleyball','marathon','skateboard','gardien','champion','tournoi','tableau','badminton','lutte','tir','sprint','exercice'],
+    logic:['puzzle','raison','motif','sequence','enigme','symbole','nombre','reponse','strategie','mystere','comparer','deduire','binaire','matrice','triangle','equation','solution','indice','chiffre','balance','diagramme','estimer','logique','preuve'],
+    general:['bibliotheque','calendrier','vacances','machine','voyage','langue','communaute','festival','instrument','ordinateur','aeroport','restaurant','telephone','parapluie','medecine','journal','aventure','question','connaissance','creatif','important','different','excellent','curieux']
+  }
+};
+function spellingExplanation(word, lang) {
+  if (lang === 'es') return 'La forma correcta es "' + word + '". Observa el orden de sus letras.';
+  if (lang === 'fr') return 'La bonne orthographe est « ' + word + ' ». Observe l’ordre des lettres.';
+  return 'The correct spelling is "' + word + '". Notice the order of the letters.';
+}
+function spellingVariantCandidates(word) {
+  const s = String(word);
+  const variants = [];
+  if (s.length > 3) variants.push(s.slice(0, 1) + s.slice(2), s.slice(0, -1), s.slice(0, 2) + s[1] + s.slice(2));
+  if (s.length > 4) variants.push(s.slice(0, 2) + s[3] + s[2] + s.slice(4));
+  variants.push(s.replace(/c/g, 'k'), s.replace(/k/g, 'c'), s.replace(/s/g, 'z'), s.replace(/z/g, 's'), s.replace(/ph/g, 'f'), s.replace(/f/g, 'ph'));
+  variants.push(s + 'e', s + 's', s.replace(/[aeiou]/, 'a'), s.replace(/[aeiou]/, 'e'), s.replace(/[aeiou]/, 'o'));
+  return variants;
+}
+function spellingGeneratedEntry(word, language) {
+  const correct = String(word).trim();
+  const normCorrect = normalizeWord(correct, language);
+  const variants = [];
+  spellingVariantCandidates(correct).forEach(v => {
+    v = String(v || '').trim();
+    const n = normalizeWord(v, language);
+    if (v && v !== correct && n && n !== normCorrect && variants.map(x => normalizeWord(x, language)).indexOf(n) === -1) variants.push(v);
+  });
+  let suffix = 1;
+  while (variants.length < 3) {
+    const v = correct + String(suffix++);
+    if (normalizeWord(v, language) !== normCorrect) variants.push(v);
+  }
+  return [correct, variants[0], variants[1], variants[2], spellingExplanation(correct, language)];
+}
+function buildGeneratedSpellingEntries(language, category, ageGroup, difficulty) {
+  const words = ((SPELLING_WORD_SEEDS[language] || SPELLING_WORD_SEEDS.en)[category] || SPELLING_WORD_SEEDS.en.everyday).slice();
+  return words.slice(0, SPELLING_GENERATED_MIN).map(w => spellingGeneratedEntry(w, language));
+}
+function expandGeneratedSpellingBank() {
+  const existing = {};
+  (ORAWORDS_BANK['spelling-sprint'] || []).forEach(item => {
+    existing[[item.language, item.category, item.ageGroup, item.difficulty].join('|')] = true;
+  });
+  Object.keys(SPELLING_WORD_SEEDS).forEach(language => {
+    SPELLING_SETUP_CATEGORY_IDS.forEach(category => {
+      ORAWORDS_AGE_IDS.forEach(ageGroup => {
+        ORAWORDS_DIFFICULTIES.forEach(diff => {
+          const key = [language, category, ageGroup, diff.id].join('|');
+          if (existing[key]) return;
+          const prefix = ['spell-gen', language, category, ageGroup, diff.id].join('-').replace(/[^a-z0-9-]/gi, '-');
+          ORAWORDS_BANK['spelling-sprint'].push(...makeSpellingSet(prefix, language, category, ageGroup, diff.id, buildGeneratedSpellingEntries(language, category, ageGroup, diff.id)));
+        });
+      });
+    });
+  });
+}
+expandGeneratedSpellingBank();
 
 const ORAWORDS_ROUND_SIZE = 10;
 const ORAWORDS_RECENT_MAX = 80;
@@ -6713,11 +6821,22 @@ function viewWords() {
 }
 
 /* -------- OraWords setup selection (OraQuest-style cards, real banks only) --------
-   Reusable across future Ora Universe word games. Options are derived straight
-   from ORAWORDS_BANK; a combo is offered only if its bank has at least
-   ORAWORDS_ROUND_SIZE active+reviewed items, so we never show a combination
-   without data. Selection cascades age -> category -> difficulty. */
+   Reusable across Ora Universe word games. Spelling Sprint now has generated,
+   reviewed banks for the complete shared setup. Smaller modes still derive
+   options from playable content, so the shared UI never starts an empty round. */
+function getAvailableLetterRushCombos(lang) {
+  if (typeof ORAWORDS_LETTER_SETS === 'undefined' || !ORAWORDS_LETTER_SETS[lang]) return [];
+  const counts = {};
+  ORAWORDS_LETTER_SETS[lang].forEach(set => {
+    (set.ages || ['family']).forEach(ageGroup => {
+      const key = ageGroup + '|' + set.category + '|' + set.difficulty;
+      (counts[key] || (counts[key] = { ageGroup, category:set.category, difficulty:set.difficulty, count:0 })).count++;
+    });
+  });
+  return Object.keys(counts).map(k => counts[k]).filter(c => c.count >= 1);
+}
 function getAvailableOraWordsCombos(mode, lang) {
+  if (mode === 'letter-rush') return getAvailableLetterRushCombos(lang);
   const counts = {};
   (ORAWORDS_BANK[mode] || []).forEach(it => {
     if (it.active === false || it.reviewed === false || it.language !== lang) return;
@@ -6732,11 +6851,11 @@ function getAvailableAgeGroups(mode, lang) {
 }
 function getAvailableCategories(mode, lang, age) {
   const combos = getAvailableOraWordsCombos(mode, lang).filter(c => c.ageGroup === age);
-  return ORAWORDS_CATEGORIES.map(c => c.id).filter(id => combos.some(c => c.category === id));
+  return setupCategoriesForMode(mode).map(c => c.id).filter(id => combos.some(c => c.category === id));
 }
 function getAvailableDifficulties(mode, lang, age, category) {
   const combos = getAvailableOraWordsCombos(mode, lang).filter(c => c.ageGroup === age && c.category === category);
-  return ['easy', 'medium', 'hard'].filter(d => combos.some(c => c.difficulty === d));
+  return ORAWORDS_DIFFICULTIES.map(d => d.id).filter(d => combos.some(c => c.difficulty === d));
 }
 // Coerce a (possibly stale/partial) selection into a fully valid combo, cascading
 // age -> category -> difficulty and picking the first valid option at each level.
@@ -6794,6 +6913,7 @@ function oraWordsSetupPanel(mode, combo) {
   const diffLabel = d => t('difficulty' + d.charAt(0).toUpperCase() + d.slice(1));
   const ageLabel = a => ageName(AGE_GROUPS.find(g => g.id === a) || AGE_GROUPS[5]);
   const ageEmoji = a => (AGE_GROUPS.find(g => g.id === a) || {}).emoji || '';
+  const diffEmoji = d => (ORAWORDS_DIFFICULTIES.find(x => x.id === d) || {}).emoji || '';
   const cur = combos.find(c => c.ageGroup === combo.ageGroup && c.category === combo.category && c.difficulty === combo.difficulty);
   const smallNote = (cur && cur.count < 30) ? `<p class="mt-4 text-xs text-amber-600 text-center">${t('metaSmallBank')}</p>` : '';
   if (combos.length <= 1) {
@@ -6805,13 +6925,13 @@ function oraWordsSetupPanel(mode, combo) {
           </div>${smallNote}`;
   }
   const ages = getAvailableAgeGroups(mode, lang).map(a => ({ value:a, label:ageLabel(a), emoji:ageEmoji(a) }));
-  const cats = getAvailableCategories(mode, lang, combo.ageGroup).map(c => ({ value:c, label:wordCatName(c) }));
-  const diffs = getAvailableDifficulties(mode, lang, combo.ageGroup, combo.category).map(d => ({ value:d, label:diffLabel(d) }));
+  const cats = getAvailableCategories(mode, lang, combo.ageGroup).map(c => ({ value:c, label:wordCatName(c), emoji:wordCatIcon(c) }));
+  const diffs = getAvailableDifficulties(mode, lang, combo.ageGroup, combo.category).map(d => ({ value:d, label:diffLabel(d), emoji:diffEmoji(d) }));
   return `
           <div class="mt-6 card p-5 md:p-6 space-y-6 text-left">
-            ${renderChoiceCardGroup(t('metaAge'), ages, combo.ageGroup, mode, 'ageGroup', 'grid-cols-2 sm:grid-cols-4')}
-            ${renderChoiceCardGroup(t('metaCategory'), cats, combo.category, mode, 'category', 'grid-cols-2 sm:grid-cols-4')}
-            ${renderChoiceCardGroup(t('metaDifficulty'), diffs, combo.difficulty, mode, 'difficulty', 'grid-cols-3')}
+            ${renderChoiceCardGroup(t('pickAge'), ages, combo.ageGroup, mode, 'ageGroup', 'grid-cols-2 sm:grid-cols-3 md:grid-cols-6')}
+            ${renderChoiceCardGroup(t('pickCat'), cats, combo.category, mode, 'category', 'grid-cols-2 sm:grid-cols-3 md:grid-cols-5')}
+            ${renderChoiceCardGroup(t('pickDiff'), diffs, combo.difficulty, mode, 'difficulty', 'grid-cols-3')}
             <p class="text-xs text-slate-400">${t('onlyAvailableBanks')}</p>
           </div>${smallNote}`;
 }
@@ -7545,7 +7665,7 @@ function defaultLetterRushCombo(){
     es: { ageGroup:'family', category:'everyday', difficulty:'easy' },
     fr: { ageGroup:'family', category:'everyday', difficulty:'easy' }
   };
-  return Object.assign({ language: state.lang }, byLang[state.lang] || byLang.en);
+  return resolveWordsCombo('letter-rush', Object.assign({ language: state.lang }, byLang[state.lang] || byLang.en));
 }
 function lrLettersHtml(s){
   const arr = s.activeSet.letters.split('');
@@ -7731,6 +7851,7 @@ function viewLetterRush(){
       + '    <span class="chip bg-emerald-100 text-emerald-800">⚡ ' + wordModeName('letter-rush') + '</span>'
       + '    <h1 class="mt-4 font-display text-3xl md:text-4xl font-bold">' + wordModeName('letter-rush') + '</h1>'
       + '    <p class="mt-3 text-slate-600">' + pick({en:'Build as many valid words as you can from the letters before the timer ends.',es:'Forma todas las palabras válidas que puedas con las letras antes de que acabe el tiempo.',fr:'Forme un maximum de mots valides avec les lettres avant la fin du temps.'}) + '</p>'
+      + oraWordsSetupPanel('letter-rush', combo)
       + (sets.length
           ? '    <button onclick="startLetterRush()" class="mt-7 btn-primary">▶ ' + pick({en:'Start',es:'Empezar',fr:'Commencer'}) + '</button>'
           : '    <div class="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">' + pick({en:'No letter sets for this combo yet.',es:'Aún no hay sets de letras para esta combinación.',fr:'Pas encore de grilles pour cette combinaison.'}) + '</div>')
