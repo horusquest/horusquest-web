@@ -213,7 +213,7 @@ const LBCore = (function () {
   // Nothing else in the leaderboard needs to change.
   const GAMES = {
     oraquest:     { key:'oraquest',     name:'OraQuest',  modes:['quiz-battle','daily-quest','general-quiz','family-quiz'] },
-    guessora:     { key:'guessora',     name:'OraGuess',  modes:['guess-challenge'] },
+    guessora:     { key:'guessora',     name:'OraGuess',  modes:['guess-challenge','daily-guess'] },
     orawords:     { key:'orawords',     name:'OraWords',  modes:['spelling-sprint','vocabulary-quest','letter-rush','anagram-challenge','daily-quest'] },
     oramath:      { key:'oramath',      name:'OraMath',   modes:['truth-or-trap','math-sprint','numdrop'] },
     'team-quest': { key:'team-quest',   name:'Team Quest', modes:['team-quest'] }
@@ -227,7 +227,7 @@ const LBCore = (function () {
     { id:'guessora', gameKeys:['guessora'] },
     { id:'orawords', gameKeys:['orawords'] },
     { id:'oramath',  gameKeys:['oramath'] },
-    { id:'daily',    gameKeys:['oraquest'], modes:['daily-quest'] },
+    { id:'daily',    gameKeys:['oraquest','guessora'], modes:['daily-quest','daily-guess'] },
     { id:'teams',    gameKeys:['team-quest'] }
   ];
 
@@ -381,6 +381,7 @@ const ROUTE_PATHS = {
   oraquest: { en:'/oraquest', es:'/es/oraquest', fr:'/fr/oraquest' },
   universe: { en:'/ora-universe', es:'/es/universo-ora', fr:'/fr/univers-ora' },
   guess: { en:'/oraguess', es:'/es/oraguess', fr:'/fr/oraguess' },
+  'daily-guess': { en:'/oraguess/daily', es:'/es/oraguess/diario', fr:'/fr/oraguess/quotidien' },
   words: { en:'/words', es:'/es/palabras', fr:'/fr/mots' },
   oramath: { en:'/oramath', es:'/es/oramath', fr:'/fr/oramath' },
   leaderboards: { en:'/leaderboards', es:'/es/clasificaciones', fr:'/fr/classements' },
@@ -712,8 +713,13 @@ const I18N = {
     itWas: 'It was',
     dailyQuizT: 'Daily Quiz',
     dailyQuizD: "10 questions about today's topic",
-    dailyGuessT: 'Daily Guess',
-    dailyGuessD: "Guess today's mystery animal",
+    dailyGuessT: 'Daily OraGuess',
+    dailyGuessD: 'One special guessing challenge every day. Keep your streak alive.',
+    dailyOraGuess: 'Daily OraGuess',
+    dailyOraGuessDesc: 'One special guessing challenge every day. Keep your streak alive.',
+    dailyOraGuessIntro: "Today's challenge uses the same mystery animal all day. Come back tomorrow for a new one.",
+    dailyGuessDone: "You've completed today's Daily OraGuess. Come back tomorrow for a new mystery.",
+    todayChallenge: "Today's challenge",
     teamHelp: 'Create a team or join with a code.',
     teamNamePh: 'e.g. Space Explorers',
     parentsWarn: 'Children should use OraQuest with a parent, guardian or teacher when creating accounts or joining teams.',
@@ -996,8 +1002,13 @@ const I18N = {
     itWas: 'Era',
     dailyQuizT: 'Quiz diario',
     dailyQuizD: 'Diez preguntas sobre el tema de hoy',
-    dailyGuessT: 'Adivina diario',
-    dailyGuessD: 'Adivina el animal misterioso de hoy',
+    dailyGuessT: 'Daily OraGuess',
+    dailyGuessD: 'Un reto especial de adivinanza cada día. Mantén viva tu racha.',
+    dailyOraGuess: 'Daily OraGuess',
+    dailyOraGuessDesc: 'Un reto especial de adivinanza cada día. Mantén viva tu racha.',
+    dailyOraGuessIntro: 'El reto de hoy usa el mismo animal misterioso durante todo el día. Vuelve mañana para uno nuevo.',
+    dailyGuessDone: 'Ya completaste el Daily OraGuess de hoy. Vuelve mañana para un nuevo misterio.',
+    todayChallenge: 'Reto de hoy',
     teamHelp: 'Crea un equipo o únete con un código.',
     teamNamePh: 'p. ej. Exploradores del espacio',
     parentsWarn: 'Los niños deben usar OraQuest con un adulto al crear cuentas o unirse a equipos.',
@@ -1280,8 +1291,13 @@ const I18N = {
     itWas: "C'était",
     dailyQuizT: 'Quiz du jour',
     dailyQuizD: 'Dix questions sur le sujet du jour',
-    dailyGuessT: 'Devine du jour',
-    dailyGuessD: 'Devine l\'animal mystère du jour',
+    dailyGuessT: 'Daily OraGuess',
+    dailyGuessD: 'Un défi de devinette spécial chaque jour. Garde ta série active.',
+    dailyOraGuess: 'Daily OraGuess',
+    dailyOraGuessDesc: 'Un défi de devinette spécial chaque jour. Garde ta série active.',
+    dailyOraGuessIntro: 'Le défi du jour utilise le même animal mystère toute la journée. Reviens demain pour un nouveau mystère.',
+    dailyGuessDone: 'Tu as terminé le Daily OraGuess du jour. Reviens demain pour un nouveau mystère.',
+    todayChallenge: 'Défi du jour',
     teamHelp: 'Crée une équipe ou rejoins avec un code.',
     teamNamePh: 'p. ex. Explorateurs de l\'espace',
     parentsWarn: 'Les enfants doivent utiliser OraQuest avec un parent, tuteur ou enseignant pour créer un compte ou rejoindre une équipe.',
@@ -1325,7 +1341,9 @@ const I18N_EXT = {
     universeTitle:'Ora Universe', universeSub:'Explore all HorusQuest educational games guided by Ora, the wise owl.',
     connectTitle:'How the games connect', connectBody:'HorusQuest is the parent brand. Ora is the shared guide. OraQuest, OraGuess and OraWords each focus on a different way to learn, and future scores, achievements and challenges can connect under one HorusQuest account.',
     playTitle:'Choose your next adventure.', playSub:'Play quizzes, guessing games, daily challenges and word games from one place.',
-    dailyQuest:'Today’s Daily Quest', playOraQuest:'Play OraQuest', playGuessOra:'Play OraGuess', exploreOraWords:'Explore OraWords', viewLeaderboards:'View Leaderboards', familyTeams:'Family & Teams',
+    dailyQuest:'Daily OraGuess', playOraQuest:'Play OraQuest', playGuessOra:'Play OraGuess', playOraWords:'Play OraWords', playOraWorld:'Play OraWorld', playOraMath:'Play OraMath', exploreOraWords:'Explore OraWords', viewLeaderboards:'View Leaderboards', familyTeams:'Family & Teams',
+    oraQuestHubDesc:'Play quizzes by age, category and difficulty.',
+    oraGuessHubDesc:'Use clues to guess the mystery animal, object or topic.',
     comingSoon:'Coming soon', altOra:'Ora, the wise owl guide for HorusQuest',
     noRealNames:'No real names required.', noChat:'No public chat.', emailsHidden:'Emails are never shown on leaderboards.', childrenAccounts:'Children should use accounts with a parent/guardian if accounts are enabled.',
     oraQuestBadge:'OraQuest · by HorusQuest',
@@ -1359,7 +1377,9 @@ const I18N_EXT = {
     universeTitle:'Universo Ora', universeSub:'Explora todos los juegos educativos de HorusQuest guiados por Ora, la búho sabia.',
     connectTitle:'Cómo se conectan los juegos', connectBody:'HorusQuest es la marca principal. Ora es la guía compartida. OraQuest, OraGuess y OraWords se centran en formas distintas de aprender, y en el futuro las puntuaciones, logros y retos podrán unirse bajo una cuenta HorusQuest.',
     playTitle:'Elige tu próxima aventura.', playSub:'Juega quizzes, adivinanzas, retos diarios y juegos de palabras desde un solo lugar.',
-    dailyQuest:'Reto diario de hoy', playOraQuest:'Jugar OraQuest', playGuessOra:'Jugar OraGuess', exploreOraWords:'Explorar OraWords', viewLeaderboards:'Ver clasificaciones', familyTeams:'Familia y equipos',
+    dailyQuest:'Daily OraGuess', playOraQuest:'Jugar OraQuest', playGuessOra:'Jugar OraGuess', playOraWords:'Jugar OraWords', playOraWorld:'Jugar OraWorld', playOraMath:'Jugar OraMath', exploreOraWords:'Explorar OraWords', viewLeaderboards:'Ver clasificaciones', familyTeams:'Familia y equipos',
+    oraQuestHubDesc:'Juega quizzes por edad, categoría y dificultad.',
+    oraGuessHubDesc:'Usa pistas para adivinar el animal, objeto o tema misterioso.',
     comingSoon:'Próximamente', altOra:'Ora, la búho sabia que guía HorusQuest',
     noRealNames:'No se requieren nombres reales.', noChat:'Sin chat público.', emailsHidden:'Los correos nunca se muestran en clasificaciones.', childrenAccounts:'Los menores deben usar cuentas con padre/tutor si se activan cuentas.',
     oraQuestBadge:'OraQuest · por HorusQuest',
@@ -1393,7 +1413,9 @@ const I18N_EXT = {
     universeTitle:'Univers Ora', universeSub:'Explore tous les jeux éducatifs de HorusQuest guidés par Ora, la chouette sage.',
     connectTitle:'Comment les jeux sont liés', connectBody:'HorusQuest est la marque principale. Ora est le guide commun. OraQuest, OraGuess et OraWords proposent chacun une façon différente d’apprendre, et les scores, réussites et défis pourront plus tard se rejoindre sous un compte HorusQuest.',
     playTitle:'Choisis ta prochaine aventure.', playSub:'Joue à des quiz, des devinettes, des défis quotidiens et des jeux de mots depuis un seul endroit.',
-    dailyQuest:'Défi quotidien du jour', playOraQuest:'Jouer à OraQuest', playGuessOra:'Jouer à OraGuess', exploreOraWords:'Explorer OraWords', viewLeaderboards:'Voir les classements', familyTeams:'Famille et équipes',
+    dailyQuest:'Daily OraGuess', playOraQuest:'Jouer à OraQuest', playGuessOra:'Jouer à OraGuess', playOraWords:'Jouer à OraWords', playOraWorld:'Jouer à OraWorld', playOraMath:'Jouer à OraMath', exploreOraWords:'Explorer OraWords', viewLeaderboards:'Voir les classements', familyTeams:'Famille et équipes',
+    oraQuestHubDesc:'Joue à des quiz par âge, catégorie et difficulté.',
+    oraGuessHubDesc:'Utilise les indices pour deviner l’animal, l’objet ou le thème mystère.',
     comingSoon:'Bientôt disponible', altOra:'Ora, la chouette sage qui guide HorusQuest',
     noRealNames:'Aucun nom réel obligatoire.', noChat:'Pas de chat public.', emailsHidden:'Les e-mails ne sont jamais affichés dans les classements.', childrenAccounts:'Les mineurs doivent utiliser les comptes avec un parent/tuteur si les comptes sont activés.',
     oraQuestBadge:'OraQuest · par HorusQuest',
@@ -1446,11 +1468,11 @@ function pick(obj) { return (obj && obj[state.lang]) || (obj && obj.en) || ''; }
 const ORA_UNIVERSE_GAMES = [
   {
     key:'guessora', name:'OraGuess', status:'live', route:'guess', icon:'🔍', color:'from-violet-500 to-fuchsia-500',
-    description:{ en:'Ora guesses what you are thinking.', es:'Ora intenta adivinar lo que estás pensando.', fr:'Ora essaie de deviner ce à quoi tu penses.' }
+    description:{ en:'Use clues to guess the mystery animal, object or topic.', es:'Usa pistas para adivinar el animal, objeto o tema misterioso.', fr:'Utilise les indices pour deviner l’animal, l’objet ou le thème mystère.' }
   },
   {
-    key:'oraquest', name:'OraQuest', status:'live', route:'oraquest', icon:'✨', color:'from-sky-500 to-indigo-500',
-    description:{ en:'Daily quizzes, challenges and family learning games.', es:'Quizzes diarios, retos y juegos familiares de aprendizaje.', fr:'Quiz quotidiens, défis et jeux d’apprentissage en famille.' }
+    key:'oraquest', name:'OraQuest', status:'live', route:'quiz', icon:'✨', color:'from-sky-500 to-indigo-500',
+    description:{ en:'Play quizzes by age, category and difficulty.', es:'Juega quizzes por edad, categoría y dificultad.', fr:'Joue à des quiz par âge, catégorie et difficulté.' }
   },
   {
     key:'orawords', name:'OraWords', status:'live', route:'words', icon:'🔤', color:'from-emerald-500 to-teal-500',
@@ -5495,23 +5517,37 @@ const ORAWORDS_GAME_MODES = [
   { id:'daily-word-quest', en:'Daily Word Quest', es:'Reto diario de palabras', fr:'Défi mot du jour', icon:'📅', active:true }
 ];
 const ORAWORDS_CATEGORIES = [
-  { id:'animals', en:'Animals', es:'Animales', fr:'Animaux' },
-  { id:'nature', en:'Nature', es:'Naturaleza', fr:'Nature' },
-  { id:'space', en:'Space', es:'Espacio', fr:'Espace' },
-  { id:'food', en:'Food', es:'Comida', fr:'Nourriture' },
-  { id:'school', en:'School', es:'Escuela', fr:'École' },
-  { id:'sports', en:'Sports', es:'Deportes', fr:'Sports' },
-  { id:'countries', en:'Countries', es:'Países', fr:'Pays' },
-  { id:'history', en:'History', es:'Historia', fr:'Histoire' },
-  { id:'science', en:'Science', es:'Ciencia', fr:'Science' },
-  { id:'everyday', en:'Everyday Words', es:'Palabras cotidianas', fr:'Mots du quotidien' },
-  { id:'advanced', en:'Advanced Vocabulary', es:'Vocabulario avanzado', fr:'Vocabulaire avancé' },
-  { id:'english-vocabulary', en:'English Vocabulary', es:'Vocabulario inglés', fr:'Vocabulaire anglais' },
-  { id:'spanish-vocabulary', en:'Spanish Vocabulary', es:'Vocabulario español', fr:'Vocabulaire espagnol' },
-  { id:'french-vocabulary', en:'French Vocabulary', es:'Vocabulario francés', fr:'Vocabulaire français' }
+  { id:'everyday', icon:'📝', en:'Everyday Words', es:'Palabras cotidianas', fr:'Mots du quotidien' },
+  { id:'animals', icon:'🦁', en:'Animals', es:'Animales', fr:'Animaux' },
+  { id:'geography', icon:'🌍', en:'Geography', es:'Geografía', fr:'Géographie' },
+  { id:'science', icon:'🔬', en:'Science', es:'Ciencia', fr:'Science' },
+  { id:'space', icon:'🚀', en:'Space', es:'Espacio', fr:'Espace' },
+  { id:'history', icon:'🏛️', en:'History', es:'Historia', fr:'Histoire' },
+  { id:'dinosaurs', icon:'🦕', en:'Dinosaurs', es:'Dinosaurios', fr:'Dinosaures' },
+  { id:'sports', icon:'⚽', en:'Sports', es:'Deportes', fr:'Sports' },
+  { id:'logic', icon:'🧩', en:'Logic', es:'Lógica', fr:'Logique' },
+  { id:'general', icon:'📚', en:'General Knowledge', es:'Cultura general', fr:'Culture générale' },
+  { id:'advanced', icon:'🎓', en:'Advanced Vocabulary', es:'Vocabulario avanzado', fr:'Vocabulaire avancé' },
+  { id:'english-vocabulary', icon:'🇬🇧', en:'English Vocabulary', es:'Vocabulario inglés', fr:'Vocabulaire anglais' },
+  { id:'spanish-vocabulary', icon:'🇪🇸', en:'Spanish Vocabulary', es:'Vocabulario español', fr:'Vocabulaire espagnol' },
+  { id:'french-vocabulary', icon:'🇫🇷', en:'French Vocabulary', es:'Vocabulario francés', fr:'Vocabulaire français' }
+];
+const ORAWORDS_SETUP_CATEGORY_IDS = ['animals','geography','science','space','history','dinosaurs','sports','logic','general'];
+const SPELLING_SETUP_CATEGORY_IDS = ['everyday'].concat(ORAWORDS_SETUP_CATEGORY_IDS);
+const ORAWORDS_DIFFICULTIES = [
+  { id:'easy', emoji:'🌱', en:'Easy', es:'Fácil', fr:'Facile' },
+  { id:'medium', emoji:'⚡', en:'Medium', es:'Medio', fr:'Moyen' },
+  { id:'hard', emoji:'🔥', en:'Hard', es:'Difícil', fr:'Difficile' }
 ];
 function wordModeName(mode) { const m = ORAWORDS_GAME_MODES.find(x => x.id === mode); return m ? pick(m) : mode; }
 function wordCatName(cat) { const c = ORAWORDS_CATEGORIES.find(x => x.id === cat); return c ? pick(c) : cat; }
+function wordCatIcon(cat) { const c = ORAWORDS_CATEGORIES.find(x => x.id === cat); return c ? c.icon : ''; }
+function setupCategoriesForMode(mode) {
+  if (mode === 'spelling-sprint') {
+    return SPELLING_SETUP_CATEGORY_IDS.map(id => ORAWORDS_CATEGORIES.find(c => c.id === id)).filter(Boolean);
+  }
+  return ORAWORDS_CATEGORIES;
+}
 function makeSpellingSet(prefix, language, category, ageGroup, difficulty, entries) {
   return entries.map((entry, i) => ({
     id: `${prefix}-${String(i + 1).padStart(3, '0')}`,
@@ -5895,6 +5931,216 @@ const ORAWORDS_BANK = {
   'daily-word-quest': []
 };
 
+const ORAWORDS_AGE_IDS = ['5-7','8-10','11-13','teens','adults','family'];
+const SPELLING_GENERATED_MIN = 20;
+const SPELLING_WORD_SEEDS = {
+  en: {
+    everyday:['because','friend','family','school','people','answer','minute','orange','window','picture','travel','garden','morning','evening','weather','butter','yellow','pencil','summer','winter','kitchen','water','bicycle','birthday'],
+    animals:['rabbit','turtle','monkey','dolphin','penguin','giraffe','elephant','hamster','butterfly','chicken','octopus','kangaroo','squirrel','leopard','flamingo','gorilla','cheetah','alligator','crocodile','hedgehog','seahorse','jellyfish','raccoon','parrot'],
+    geography:['country','capital','island','mountain','desert','valley','river','ocean','continent','village','harbour','forest','border','climate','glacier','volcano','peninsula','waterfall','latitude','longitude','rainforest','savanna','territory','landmark'],
+    science:['energy','matter','planet','gravity','magnet','oxygen','carbon','crystal','biology','physics','chemistry','weather','organism','laboratory','microscope','experiment','temperature','electricity','molecule','ecosystem','photosynthesis','reaction','density','friction'],
+    space:['rocket','planet','galaxy','comet','orbit','meteor','astronaut','telescope','satellite','universe','asteroid','gravity','nebula','eclipse','constellation','spacecraft','atmosphere','moonlight','starlight','launchpad','supernova','cosmos','mission','explorer'],
+    history:['castle','empire','ancient','museum','kingdom','pyramid','battle','voyage','dynasty','archive','century','artifact','revolution','monument','civilization','chronicle','archaeology','heritage','medieval','renaissance','explorer','tradition','territory','manuscript'],
+    dinosaurs:['fossil','raptor','dinosaur','jurassic','cretaceous','triceratops','stegosaurus','tyrannosaur','sauropod','pterosaur','ankylosaurus','velociraptor','brachiosaurus','allosaurus','iguanodon','diplodocus','spinosaur','paleontology','extinction','prehistoric','footprint','herbivore','carnivore','excavation'],
+    sports:['soccer','tennis','basketball','baseball','athlete','stadium','referee','trophy','training','cycling','swimming','gymnastics','volleyball','marathon','skateboard','goalkeeper','champion','tournament','scoreboard','badminton','wrestling','archery','sprinting','exercise'],
+    logic:['puzzle','reason','pattern','sequence','riddle','symbol','number','answer','strategy','mystery','compare','deduce','binary','matrix','triangle','equation','solution','clue','cipher','balance','diagram','estimate','logic','proof'],
+    general:['library','calendar','holiday','machine','journey','language','community','festival','instrument','computer','airport','restaurant','telephone','umbrella','medicine','newspaper','adventure','question','knowledge','creative','important','different','excellent','curious']
+  },
+  es: {
+    everyday:['corazon','familia','escuela','ventana','manana','telefono','zapato','amigo','camino','jardin','lapiz','musica','cuaderno','biblioteca','naranja','cocina','caballo','verano','invierno','playa','montana','pajaro','comida','bicicleta'],
+    animals:['conejo','tortuga','mono','delfin','pinguino','jirafa','elefante','hamster','mariposa','gallina','pulpo','canguro','ardilla','leopardo','flamenco','gorila','guepardo','aligador','cocodrilo','erizo','caballito','medusa','loro','ballena'],
+    geography:['pais','capital','isla','montana','desierto','valle','rio','oceano','continente','pueblo','puerto','bosque','frontera','clima','glaciar','volcan','peninsula','cascada','latitud','longitud','selva','sabana','territorio','monumento'],
+    science:['energia','materia','planeta','gravedad','iman','oxigeno','carbono','cristal','biologia','fisica','quimica','tiempo','organismo','laboratorio','microscopio','experimento','temperatura','electricidad','molecula','ecosistema','fotosintesis','reaccion','densidad','friccion'],
+    space:['cohete','planeta','galaxia','cometa','orbita','meteoro','astronauta','telescopio','satelite','universo','asteroide','gravedad','nebulosa','eclipse','constelacion','nave','atmosfera','luna','estrella','lanzamiento','supernova','cosmos','mision','explorador'],
+    history:['castillo','imperio','antiguo','museo','reino','piramide','batalla','viaje','dinastia','archivo','siglo','artefacto','revolucion','monumento','civilizacion','cronica','arqueologia','herencia','medieval','renacimiento','explorador','tradicion','territorio','manuscrito'],
+    dinosaurs:['fosil','raptor','dinosaurio','jurasico','cretacico','triceratops','estegosaurio','tiranosaurio','sauropodo','pterosaurio','anquilosaurio','velociraptor','braquiosaurio','alosaurio','iguanodon','diplodocus','espinosaurio','paleontologia','extincion','prehistorico','huella','herbivoro','carnivoro','excavacion'],
+    sports:['futbol','tenis','baloncesto','beisbol','atleta','estadio','arbitro','trofeo','entrenamiento','ciclismo','natacion','gimnasia','voleibol','maraton','patineta','portero','campeon','torneo','marcador','badminton','lucha','tiro','carrera','ejercicio'],
+    logic:['rompecabezas','razon','patron','secuencia','acertijo','simbolo','numero','respuesta','estrategia','misterio','comparar','deducir','binario','matriz','triangulo','ecuacion','solucion','pista','cifrado','balance','diagrama','estimar','logica','prueba'],
+    general:['biblioteca','calendario','vacaciones','maquina','viaje','idioma','comunidad','festival','instrumento','computadora','aeropuerto','restaurante','telefono','paraguas','medicina','periodico','aventura','pregunta','conocimiento','creativo','importante','diferente','excelente','curioso']
+  },
+  fr: {
+    everyday:['ecole','famille','bonjour','maison','fromage','jardin','oiseau','chateau','francais','eleve','voiture','gateau','fenetre','chien','soleil','fleur','arbre','livre','table','banane','poisson','cheval','lumiere','musique'],
+    animals:['lapin','tortue','singe','dauphin','manchot','girafe','elephant','hamster','papillon','poule','pieuvre','kangourou','ecureuil','leopard','flamant','gorille','guepard','alligator','crocodile','herisson','hippocampe','meduse','perroquet','baleine'],
+    geography:['pays','capitale','ile','montagne','desert','vallee','riviere','ocean','continent','village','port','foret','frontiere','climat','glacier','volcan','peninsule','cascade','latitude','longitude','jungle','savane','territoire','monument'],
+    science:['energie','matiere','planete','gravite','aimant','oxygene','carbone','cristal','biologie','physique','chimie','meteo','organisme','laboratoire','microscope','experience','temperature','electricite','molecule','ecosysteme','photosynthese','reaction','densite','friction'],
+    space:['fusee','planete','galaxie','comete','orbite','meteore','astronaute','telescope','satellite','univers','asteroide','gravite','nebuleuse','eclipse','constellation','vaisseau','atmosphere','lumiere','etoile','lancement','supernova','cosmos','mission','explorateur'],
+    history:['chateau','empire','ancien','musee','royaume','pyramide','bataille','voyage','dynastie','archive','siecle','artefact','revolution','monument','civilisation','chronique','archeologie','heritage','medieval','renaissance','explorateur','tradition','territoire','manuscrit'],
+    dinosaurs:['fossile','raptor','dinosaure','jurassique','cretace','triceratops','stegosaure','tyrannosaure','sauropode','pterosaure','ankylosaure','velociraptor','brachiosaure','allosaure','iguanodon','diplodocus','spinosaure','paleontologie','extinction','prehistorique','empreinte','herbivore','carnivore','excavation'],
+    sports:['football','tennis','basketball','baseball','athlete','stade','arbitre','trophee','entrainement','cyclisme','natation','gymnastique','volleyball','marathon','skateboard','gardien','champion','tournoi','tableau','badminton','lutte','tir','sprint','exercice'],
+    logic:['puzzle','raison','motif','sequence','enigme','symbole','nombre','reponse','strategie','mystere','comparer','deduire','binaire','matrice','triangle','equation','solution','indice','chiffre','balance','diagramme','estimer','logique','preuve'],
+    general:['bibliotheque','calendrier','vacances','machine','voyage','langue','communaute','festival','instrument','ordinateur','aeroport','restaurant','telephone','parapluie','medecine','journal','aventure','question','connaissance','creatif','important','different','excellent','curieux']
+  }
+};
+function spellingExplanation(word, lang) {
+  if (lang === 'es') return 'La forma correcta es "' + word + '". Observa el orden de sus letras.';
+  if (lang === 'fr') return 'La bonne orthographe est « ' + word + ' ». Observe l’ordre des lettres.';
+  return 'The correct spelling is "' + word + '". Notice the order of the letters.';
+}
+function spellingVariantCandidates(word) {
+  const s = String(word);
+  const variants = [];
+  if (s.length > 3) variants.push(s.slice(0, 1) + s.slice(2), s.slice(0, -1), s.slice(0, 2) + s[1] + s.slice(2));
+  if (s.length > 4) variants.push(s.slice(0, 2) + s[3] + s[2] + s.slice(4));
+  variants.push(s.replace(/c/g, 'k'), s.replace(/k/g, 'c'), s.replace(/s/g, 'z'), s.replace(/z/g, 's'), s.replace(/ph/g, 'f'), s.replace(/f/g, 'ph'));
+  variants.push(s + 'e', s + 's', s.replace(/[aeiou]/, 'a'), s.replace(/[aeiou]/, 'e'), s.replace(/[aeiou]/, 'o'));
+  return variants;
+}
+function spellingGeneratedEntry(word, language) {
+  const correct = String(word).trim();
+  const normCorrect = normalizeWord(correct, language);
+  const variants = [];
+  spellingVariantCandidates(correct).forEach(v => {
+    v = String(v || '').trim();
+    const n = normalizeWord(v, language);
+    if (v && v !== correct && n && n !== normCorrect && variants.map(x => normalizeWord(x, language)).indexOf(n) === -1) variants.push(v);
+  });
+  let suffix = 1;
+  while (variants.length < 3) {
+    const v = correct + String(suffix++);
+    if (normalizeWord(v, language) !== normCorrect) variants.push(v);
+  }
+  return [correct, variants[0], variants[1], variants[2], spellingExplanation(correct, language)];
+}
+function buildGeneratedSpellingEntries(language, category, ageGroup, difficulty) {
+  const words = ((SPELLING_WORD_SEEDS[language] || SPELLING_WORD_SEEDS.en)[category] || SPELLING_WORD_SEEDS.en.everyday).slice();
+  return words.slice(0, SPELLING_GENERATED_MIN).map(w => spellingGeneratedEntry(w, language));
+}
+function expandGeneratedSpellingBank() {
+  const existing = {};
+  (ORAWORDS_BANK['spelling-sprint'] || []).forEach(item => {
+    existing[[item.language, item.category, item.ageGroup, item.difficulty].join('|')] = true;
+  });
+  Object.keys(SPELLING_WORD_SEEDS).forEach(language => {
+    SPELLING_SETUP_CATEGORY_IDS.forEach(category => {
+      ORAWORDS_AGE_IDS.forEach(ageGroup => {
+        ORAWORDS_DIFFICULTIES.forEach(diff => {
+          const key = [language, category, ageGroup, diff.id].join('|');
+          if (existing[key]) return;
+          const prefix = ['spell-gen', language, category, ageGroup, diff.id].join('-').replace(/[^a-z0-9-]/gi, '-');
+          ORAWORDS_BANK['spelling-sprint'].push(...makeSpellingSet(prefix, language, category, ageGroup, diff.id, buildGeneratedSpellingEntries(language, category, ageGroup, diff.id)));
+        });
+      });
+    });
+  });
+}
+expandGeneratedSpellingBank();
+
+const VOCAB_DIFFICULTY_SEEDS = {
+  en: {
+    medium: [
+      ['calm','peaceful','noisy','angry','empty','Calm and peaceful both describe quiet steadiness.'],
+      ['choose','select','forget','break','hide','Choose and select both mean to pick something.'],
+      ['finish','complete','begin','open','delay','Finish and complete both mean to bring something to an end.'],
+      ['honest','truthful','false','silent','lazy','Honest and truthful both mean telling the truth.'],
+      ['repair','mend','damage','ignore','drop','Repair and mend both mean to fix something.'],
+      ['rapid','swift','slow','heavy','dull','Rapid and swift both mean very fast.'],
+      ['ancient','historic','modern','future','fresh','Ancient and historic both point to the distant past.'],
+      ['create','produce','erase','lose','sleep','Create and produce both mean to make something.'],
+      ['protect','defend','attack','forget','waste','Protect and defend both mean to keep safe.'],
+      ['gather','collect','scatter','divide','refuse','Gather and collect both mean to bring things together.'],
+      ['fragile','delicate','strong','rough','giant','Fragile and delicate both mean easily damaged.'],
+      ['silent','hushed','loud','bright','quick','Silent and hushed both mean very quiet.']
+    ],
+    hard: [
+      ['brief','concise','lengthy','careless','ordinary','Brief and concise both mean using few words.'],
+      ['evident','obvious','hidden','uncertain','distant','Evident and obvious both mean easy to see or understand.'],
+      ['scarce','rare','common','simple','steady','Scarce and rare both mean not found in large amounts.'],
+      ['complex','intricate','plain','empty','weak','Complex and intricate both mean made of many connected parts.'],
+      ['predict','forecast','remember','invent','repair','Predict and forecast both mean to say what may happen.'],
+      ['reluctant','hesitant','eager','careless','certain','Reluctant and hesitant both mean not fully willing.'],
+      ['vivid','brilliant','dull','silent','brief','Vivid and brilliant both describe strong, clear color or detail.'],
+      ['accurate','precise','wrong','vague','rapid','Accurate and precise both mean exact and correct.'],
+      ['observe','notice','ignore','damage','borrow','Observe and notice both mean to pay attention to something.'],
+      ['expand','enlarge','shrink','hide','delay','Expand and enlarge both mean to make bigger.'],
+      ['essential','vital','optional','minor','distant','Essential and vital both mean very important.'],
+      ['contrast','compare','repeat','accept','finish','Contrast and compare both involve examining differences or similarities.']
+    ]
+  },
+  es: {
+    medium: [
+      ['tranquilo','sereno','ruidoso','furioso','vacío','Tranquilo y sereno indican calma.'],
+      ['elegir','seleccionar','olvidar','romper','esconder','Elegir y seleccionar significan escoger algo.'],
+      ['terminar','completar','empezar','abrir','retrasar','Terminar y completar significan llegar al final.'],
+      ['honesto','sincero','falso','callado','perezoso','Honesto y sincero significan decir la verdad.'],
+      ['reparar','arreglar','dañar','ignorar','soltar','Reparar y arreglar significan corregir un problema.'],
+      ['rápido','veloz','lento','pesado','apagado','Rápido y veloz indican mucha velocidad.'],
+      ['antiguo','histórico','moderno','futuro','nuevo','Antiguo e histórico se relacionan con el pasado.'],
+      ['crear','producir','borrar','perder','dormir','Crear y producir significan hacer algo.'],
+      ['proteger','defender','atacar','olvidar','gastar','Proteger y defender significan mantener a salvo.'],
+      ['reunir','juntar','dispersar','dividir','rechazar','Reunir y juntar significan poner cosas en grupo.'],
+      ['frágil','delicado','fuerte','áspero','enorme','Frágil y delicado indican que se rompe con facilidad.'],
+      ['silencioso','callado','ruidoso','brillante','rápido','Silencioso y callado indican poco ruido.']
+    ],
+    hard: [
+      ['breve','conciso','largo','descuidado','normal','Breve y conciso significan con pocas palabras.'],
+      ['evidente','obvio','oculto','incierto','lejano','Evidente y obvio significan fácil de entender.'],
+      ['escaso','raro','común','simple','estable','Escaso y raro indican poca cantidad o frecuencia.'],
+      ['complejo','intrincado','sencillo','vacío','débil','Complejo e intrincado significan con muchas partes.'],
+      ['predecir','pronosticar','recordar','inventar','reparar','Predecir y pronosticar significan anticipar algo.'],
+      ['reacio','dudoso','entusiasta','descuidado','seguro','Reacio y dudoso indican poca disposición.'],
+      ['vívido','brillante','apagado','silencioso','breve','Vívido y brillante describen algo claro e intenso.'],
+      ['exacto','preciso','erróneo','vago','rápido','Exacto y preciso significan correcto y definido.'],
+      ['observar','notar','ignorar','dañar','tomar','Observar y notar significan prestar atención.'],
+      ['ampliar','agrandar','reducir','ocultar','retrasar','Ampliar y agrandar significan hacer más grande.'],
+      ['esencial','vital','opcional','menor','lejano','Esencial y vital significan muy importante.'],
+      ['contrastar','comparar','repetir','aceptar','finalizar','Contrastar y comparar implican examinar semejanzas o diferencias.']
+    ]
+  },
+  fr: {
+    medium: [
+      ['calme','paisible','bruyant','fâché','vide','Calme et paisible indiquent la tranquillité.'],
+      ['choisir','sélectionner','oublier','casser','cacher','Choisir et sélectionner veulent dire prendre une option.'],
+      ['terminer','compléter','commencer','ouvrir','retarder','Terminer et compléter veulent dire arriver à la fin.'],
+      ['honnête','sincère','faux','silencieux','paresseux','Honnête et sincère veulent dire dire la vérité.'],
+      ['réparer','arranger','abîmer','ignorer','lâcher','Réparer et arranger veulent dire corriger un problème.'],
+      ['rapide','vif','lent','lourd','terne','Rapide et vif indiquent beaucoup de vitesse.'],
+      ['ancien','historique','moderne','futur','neuf','Ancien et historique se rapportent au passé.'],
+      ['créer','produire','effacer','perdre','dormir','Créer et produire veulent dire faire quelque chose.'],
+      ['protéger','défendre','attaquer','oublier','gaspiller','Protéger et défendre veulent dire garder en sécurité.'],
+      ['réunir','rassembler','disperser','diviser','refuser','Réunir et rassembler veulent dire mettre ensemble.'],
+      ['fragile','délicat','solide','rugueux','énorme','Fragile et délicat indiquent quelque chose qui casse facilement.'],
+      ['silencieux','muet','bruyant','brillant','rapide','Silencieux et muet indiquent très peu de bruit.']
+    ],
+    hard: [
+      ['bref','concis','long','négligent','ordinaire','Bref et concis veulent dire avec peu de mots.'],
+      ['évident','manifeste','caché','incertain','lointain','Évident et manifeste veulent dire facile à comprendre.'],
+      ['rare','peu fréquent','commun','simple','stable','Rare et peu fréquent indiquent que cela arrive peu.'],
+      ['complexe','intriqué','simple','vide','faible','Complexe et intriqué veulent dire composé de nombreuses parties.'],
+      ['prédire','prévoir','oublier','inventer','réparer','Prédire et prévoir veulent dire annoncer ce qui peut arriver.'],
+      ['réticent','hésitant','enthousiaste','négligent','certain','Réticent et hésitant indiquent peu d’envie ou de certitude.'],
+      ['vif','éclatant','terne','silencieux','bref','Vif et éclatant décrivent une couleur ou un détail intense.'],
+      ['exact','précis','faux','vague','rapide','Exact et précis veulent dire correct et défini.'],
+      ['observer','remarquer','ignorer','abîmer','emprunter','Observer et remarquer veulent dire faire attention.'],
+      ['élargir','agrandir','réduire','cacher','retarder','Élargir et agrandir veulent dire rendre plus grand.'],
+      ['essentiel','vital','facultatif','mineur','lointain','Essentiel et vital veulent dire très important.'],
+      ['contraster','comparer','répéter','accepter','finir','Contraster et comparer impliquent d’examiner des différences ou ressemblances.']
+    ]
+  }
+};
+const ANAGRAM_DIFFICULTY_SEEDS = {
+  en: {
+    medium: [['JOURNEY','A trip from one place to another'],['WEATHER','Rain, wind and sunshine'],['LIBRARY','A place full of books'],['SCIENCE','Learning how the world works'],['HISTORY','Stories and events from the past'],['COUNTRY','A nation on the map'],['PICTURE','An image or drawing'],['KITCHEN','Where meals are prepared'],['ISLAND','Land surrounded by water'],['MARKET','A place to buy and sell'],['ROCKET','A vehicle that launches into space'],['GARDEN','A place where plants grow']],
+    hard: [['KNOWLEDGE','Things you understand or remember'],['ADVENTURE','An exciting journey'],['COMPUTER','A machine for digital work'],['QUESTION','Something you ask'],['DINOSAUR','A prehistoric reptile'],['TELESCOPE','A tool for seeing far away'],['LANGUAGE','A system of words'],['MOUNTAIN','A very high natural place'],['FESTIVAL','A celebration or event'],['CALENDAR','Tracks days and months'],['EXPLORER','Someone who discovers places'],['UNIVERSE','Everything in space']]
+  },
+  es: {
+    medium: [['FAMILIA','Personas cercanas en casa'],['ESCUELA','Lugar para aprender'],['VENTANA','Sirve para mirar afuera'],['CAMINO','Ruta para pasar'],['JARDIN','Lugar con plantas'],['MUSICA','Arte de sonidos'],['CUADERNO','Lo usas para escribir'],['NARANJA','Fruta redonda'],['COCINA','Donde se prepara la comida'],['CABALLO','Animal que puede montarse'],['VERANO','Estación calurosa'],['INVIERNO','Estación fría']],
+    hard: [['BIBLIOTECA','Lugar con muchos libros'],['MARIPOSA','Insecto con alas de colores'],['TELEFONO','Sirve para llamar'],['DINOSAURIO','Reptil prehistórico'],['PLANETA','La Tierra es uno'],['UNIVERSO','Todo lo que existe en el espacio'],['AVENTURA','Viaje emocionante'],['PREGUNTA','Algo que quieres saber'],['HISTORIA','Hechos del pasado'],['CIENCIA','Estudia cómo funciona el mundo'],['DEPORTE','Actividad física con reglas'],['LOGICA','Ayuda a razonar']]
+  },
+  fr: {
+    medium: [['FAMILLE','Personnes proches à la maison'],['BONJOUR','Mot pour saluer'],['MAISON','Lieu où l’on habite'],['JARDIN','Lieu où poussent les plantes'],['OISEAU','Animal qui vole'],['VOITURE','On roule avec elle'],['FENETRE','On regarde dehors par elle'],['SOLEIL','Il brille le jour'],['MUSIQUE','Art des sons'],['CUISINE','On y prépare les repas'],['MONTAGNE','Relief très haut'],['CRAYON','On écrit avec lui']],
+    hard: [['BIBLIOTHEQUE','Lieu avec beaucoup de livres'],['DINOSAURE','Reptile préhistorique'],['PLANETE','La Terre en est une'],['UNIVERS','Tout ce qui existe dans l’espace'],['AVENTURE','Voyage excitant'],['QUESTION','Ce que l’on demande'],['HISTOIRE','Événements du passé'],['SCIENCE','Étudie le fonctionnement du monde'],['LOGIQUE','Aide à raisonner'],['CALENDRIER','Suit les jours et les mois'],['TELEPHONE','Sert à appeler'],['EXPLORATEUR','Personne qui découvre des lieux']]
+  }
+};
+function expandWordDifficultyBanks() {
+  Object.keys(VOCAB_DIFFICULTY_SEEDS).forEach(language => {
+    ['medium','hard'].forEach(difficulty => {
+      ORAWORDS_BANK['vocabulary-quest'].push(...makeVocabSet('vocab-' + language + '-everyday-family-' + difficulty, language, 'everyday', 'family', difficulty, VOCAB_DIFFICULTY_SEEDS[language][difficulty]));
+      ORAWORDS_BANK['anagram-challenge'].push(...makeAnagramSet('anagram-' + language + '-everyday-family-' + difficulty, language, 'everyday', 'family', difficulty, ANAGRAM_DIFFICULTY_SEEDS[language][difficulty]));
+    });
+  });
+}
+expandWordDifficultyBanks();
+
 const ORAWORDS_ROUND_SIZE = 10;
 const ORAWORDS_RECENT_MAX = 80;
 const ORAWORDS_RECENT_KEY = 'orawords_recent_items';
@@ -6039,6 +6285,8 @@ function updateMeta() {
     },
     play: { title:{en:'Play HorusQuest Games', es:'Jugar a HorusQuest', fr:'Jouer aux jeux HorusQuest'}, desc:{en:t('playSub'), es:t('playSub'), fr:t('playSub')} },
     universe: { title:{en:'Ora Universe — HorusQuest', es:'Universo Ora — HorusQuest', fr:'Univers Ora — HorusQuest'}, desc:{en:t('universeSub'), es:t('universeSub'), fr:t('universeSub')} },
+    guess: { title:{en:'OraGuess — Guess the Animal by HorusQuest', es:'OraGuess — Adivina el animal de HorusQuest', fr:'OraGuess — Devine l’animal par HorusQuest'}, desc:{en:t('oraGuessHubDesc'), es:t('oraGuessHubDesc'), fr:t('oraGuessHubDesc')} },
+    'daily-guess': { title:{en:'Daily OraGuess — Daily Guessing Challenge', es:'Daily OraGuess — Reto diario de adivinanza', fr:'Daily OraGuess — Défi quotidien de devinette'}, desc:{en:t('dailyOraGuessDesc'), es:t('dailyOraGuessDesc'), fr:t('dailyOraGuessDesc')} },
     words: { title:{en:'OraWords — Word Games by HorusQuest', es:'OraWords — Juegos de palabras de HorusQuest', fr:'OraWords — Jeux de mots par HorusQuest'}, desc:{en:t('wordsSub'), es:t('wordsSub'), fr:t('wordsSub')} },
     oramath: { title:{en:'OraMath — Mental Maths Games by HorusQuest', es:'OraMath — Juegos de cálculo mental de HorusQuest', fr:'OraMath — Jeux de calcul mental par HorusQuest'}, desc:{en:t('mathSub'), es:t('mathSub'), fr:t('mathSub')} },
     shop: {
@@ -6049,6 +6297,7 @@ function updateMeta() {
   const sectionMap = {
     quiz: t('quizTitle'),
     guess: t('guessTitle'),
+    'daily-guess': t('dailyOraGuess'),
     daily: t('dailyTitle'),
     leaderboards: t('lbTitle'),
     teams: t('teamTitle'),
@@ -6398,7 +6647,13 @@ function seoLongHtml() { return t('seoLongHtml'); }
 function UniverseGameCard(game, { compact=false }={}) {
   const soon = game.status !== 'live';
   const href = pathFor(game.route, state.lang) + (game.anchor ? '#' + game.anchor : '');
-  const cta = game.key === 'oraquest' ? t('playOraQuest') : game.key === 'guessora' ? t('playGuessOra') : game.key === 'orawords' ? t('exploreOraWords') : t('learnMore');
+  const cta = ({
+    oraquest: t('playOraQuest'),
+    guessora: t('playGuessOra'),
+    orawords: t('playOraWords'),
+    oraworld: t('playOraWorld'),
+    oramath: t('playOraMath')
+  })[game.key] || t('learnMore');
   return `
     <article id="${game.key}" class="card p-5 md:p-6 flex flex-col ${compact?'':'card-hover'}">
       <div class="flex items-start justify-between gap-4">
@@ -6408,7 +6663,7 @@ function UniverseGameCard(game, { compact=false }={}) {
       <h3 class="mt-4 font-display text-xl font-bold">${game.name}</h3>
       <p class="mt-2 text-sm text-slate-600 flex-1">${pick(game.description)}</p>
       ${soon
-        ? `<a href="${href}" onclick="navGo(event,'universe')" class="mt-5 btn-ghost text-sm self-start" aria-label="${game.name} — ${t('comingSoon')}">${t('learnMore')}</a>`
+        ? `<a href="${href}" onclick="navGo(event,'universe')" class="mt-5 btn-ghost text-sm self-start" aria-label="${game.name} — ${t('comingSoon')}">${cta}</a>`
         : `<a href="${href}" onclick="navGo(event,'${game.route}')" class="mt-5 btn-primary text-sm self-start">${cta}</a>`}
     </article>`;
 }
@@ -6547,9 +6802,9 @@ function viewHome() {
 
 function viewPlay() {
   const cards = [
-    { route:'daily', icon:'🔥', title:t('dailyQuest'), desc:t('dailySub') },
-    { route:'oraquest', icon:'✨', title:t('playOraQuest'), desc:t('oraQuestProductSub') },
-    { route:'guess', icon:'🔍', title:t('playGuessOra'), desc:pick(ORA_UNIVERSE_GAMES[0].description) },
+    { route:'quiz', icon:'✨', title:t('playOraQuest'), desc:t('oraQuestHubDesc') },
+    { route:'guess', icon:'🔍', title:t('playGuessOra'), desc:t('oraGuessHubDesc') },
+    { route:'daily-guess', icon:'🔥', title:t('dailyOraGuess'), desc:t('dailyOraGuessDesc') },
     { route:'words', icon:'🔤', title:t('exploreOraWords'), desc:t('wordsSub') },
     { route:'oramath', icon:'➗', title:t('mathTitle'), desc:t('mathSub') },
     { route:'leaderboards', icon:'🏆', title:t('viewLeaderboards'), desc:t('lbAllSub') },
@@ -6713,11 +6968,22 @@ function viewWords() {
 }
 
 /* -------- OraWords setup selection (OraQuest-style cards, real banks only) --------
-   Reusable across future Ora Universe word games. Options are derived straight
-   from ORAWORDS_BANK; a combo is offered only if its bank has at least
-   ORAWORDS_ROUND_SIZE active+reviewed items, so we never show a combination
-   without data. Selection cascades age -> category -> difficulty. */
+   Reusable across Ora Universe word games. Spelling Sprint now has generated,
+   reviewed banks for the complete shared setup. Smaller modes still derive
+   options from playable content, so the shared UI never starts an empty round. */
+function getAvailableLetterRushCombos(lang) {
+  if (typeof ORAWORDS_LETTER_SETS === 'undefined' || !ORAWORDS_LETTER_SETS[lang]) return [];
+  const counts = {};
+  ORAWORDS_LETTER_SETS[lang].forEach(set => {
+    (set.ages || ['family']).forEach(ageGroup => {
+      const key = ageGroup + '|' + set.category + '|' + set.difficulty;
+      (counts[key] || (counts[key] = { ageGroup, category:set.category, difficulty:set.difficulty, count:0 })).count++;
+    });
+  });
+  return Object.keys(counts).map(k => counts[k]).filter(c => c.count >= 1);
+}
 function getAvailableOraWordsCombos(mode, lang) {
+  if (mode === 'letter-rush') return getAvailableLetterRushCombos(lang);
   const counts = {};
   (ORAWORDS_BANK[mode] || []).forEach(it => {
     if (it.active === false || it.reviewed === false || it.language !== lang) return;
@@ -6732,11 +6998,11 @@ function getAvailableAgeGroups(mode, lang) {
 }
 function getAvailableCategories(mode, lang, age) {
   const combos = getAvailableOraWordsCombos(mode, lang).filter(c => c.ageGroup === age);
-  return ORAWORDS_CATEGORIES.map(c => c.id).filter(id => combos.some(c => c.category === id));
+  return setupCategoriesForMode(mode).map(c => c.id).filter(id => combos.some(c => c.category === id));
 }
 function getAvailableDifficulties(mode, lang, age, category) {
   const combos = getAvailableOraWordsCombos(mode, lang).filter(c => c.ageGroup === age && c.category === category);
-  return ['easy', 'medium', 'hard'].filter(d => combos.some(c => c.difficulty === d));
+  return ORAWORDS_DIFFICULTIES.map(d => d.id).filter(d => combos.some(c => c.difficulty === d));
 }
 // Coerce a (possibly stale/partial) selection into a fully valid combo, cascading
 // age -> category -> difficulty and picking the first valid option at each level.
@@ -6794,6 +7060,7 @@ function oraWordsSetupPanel(mode, combo) {
   const diffLabel = d => t('difficulty' + d.charAt(0).toUpperCase() + d.slice(1));
   const ageLabel = a => ageName(AGE_GROUPS.find(g => g.id === a) || AGE_GROUPS[5]);
   const ageEmoji = a => (AGE_GROUPS.find(g => g.id === a) || {}).emoji || '';
+  const diffEmoji = d => (ORAWORDS_DIFFICULTIES.find(x => x.id === d) || {}).emoji || '';
   const cur = combos.find(c => c.ageGroup === combo.ageGroup && c.category === combo.category && c.difficulty === combo.difficulty);
   const smallNote = (cur && cur.count < 30) ? `<p class="mt-4 text-xs text-amber-600 text-center">${t('metaSmallBank')}</p>` : '';
   if (combos.length <= 1) {
@@ -6805,13 +7072,13 @@ function oraWordsSetupPanel(mode, combo) {
           </div>${smallNote}`;
   }
   const ages = getAvailableAgeGroups(mode, lang).map(a => ({ value:a, label:ageLabel(a), emoji:ageEmoji(a) }));
-  const cats = getAvailableCategories(mode, lang, combo.ageGroup).map(c => ({ value:c, label:wordCatName(c) }));
-  const diffs = getAvailableDifficulties(mode, lang, combo.ageGroup, combo.category).map(d => ({ value:d, label:diffLabel(d) }));
+  const cats = getAvailableCategories(mode, lang, combo.ageGroup).map(c => ({ value:c, label:wordCatName(c), emoji:wordCatIcon(c) }));
+  const diffs = getAvailableDifficulties(mode, lang, combo.ageGroup, combo.category).map(d => ({ value:d, label:diffLabel(d), emoji:diffEmoji(d) }));
   return `
           <div class="mt-6 card p-5 md:p-6 space-y-6 text-left">
-            ${renderChoiceCardGroup(t('metaAge'), ages, combo.ageGroup, mode, 'ageGroup', 'grid-cols-2 sm:grid-cols-4')}
-            ${renderChoiceCardGroup(t('metaCategory'), cats, combo.category, mode, 'category', 'grid-cols-2 sm:grid-cols-4')}
-            ${renderChoiceCardGroup(t('metaDifficulty'), diffs, combo.difficulty, mode, 'difficulty', 'grid-cols-3')}
+            ${renderChoiceCardGroup(t('pickAge'), ages, combo.ageGroup, mode, 'ageGroup', 'grid-cols-2 sm:grid-cols-3 md:grid-cols-6')}
+            ${renderChoiceCardGroup(t('pickCat'), cats, combo.category, mode, 'category', 'grid-cols-2 sm:grid-cols-3 md:grid-cols-5')}
+            ${renderChoiceCardGroup(t('pickDiff'), diffs, combo.difficulty, mode, 'difficulty', 'grid-cols-3')}
             <p class="text-xs text-slate-400">${t('onlyAvailableBanks')}</p>
           </div>${smallNote}`;
 }
@@ -6839,7 +7106,8 @@ function startSpellingSprint() {
   pushOraWordsRecentIds(combo, items.map(x => x.id));
   state.wordsSession = {
     ...combo, items, idx:0, selectedOptionId:null, answeredOptionId:null,
-    score:0, correct:0, wrong:0, startedAt:Date.now(), durationMs:0
+    score:0, correct:0, wrong:0, startedAt:Date.now(), durationMs:0, saved:false,
+    sessionId: 'spell_' + Date.now().toString(36) + Math.random().toString(36).slice(2,6)
   };
   go('words', { mode:'spelling-sprint', play:true }, { keepScroll:true });
 }
@@ -6906,7 +7174,9 @@ function viewSpellingSprint() {
             <div class="stat-cell bg-emerald-50 p-4"><div class="text-3xl font-bold text-emerald-700">${s.score}</div><div class="text-xs text-slate-600 mt-1">${t('yourScore')}</div></div>
             <div class="stat-cell bg-sky-50 p-4"><div class="text-3xl font-bold text-sky-700">${acc}%</div><div class="text-xs text-slate-600 mt-1">${t('accuracy')}</div></div>
           </div>
-          <div class="mt-6 grid sm:grid-cols-2 gap-2">
+          ${leaderboardAliasPanelHtml(s.saved)}
+          <div class="mt-6 grid sm:grid-cols-3 gap-2">
+            <button onclick="saveCurrentWordScore()" class="btn-primary" ${s.saved?'disabled':''}>${s.saved?t('saved'):t('saveScore')}</button>
             <button onclick="resetSpellingSprint()" class="btn-primary">${t('playAgain')}</button>
             <button onclick="go('words')" class="btn-ghost">${t('backHome')}</button>
           </div>
@@ -6981,21 +7251,57 @@ function defaultVocabCombo() {
   return Object.assign({ language: state.lang }, byLang[state.lang] || byLang.en);
 }
 
-// Shared finish-time leaderboard save for word quizzes (vocab; spelling could
-// opt in later). Privacy-safe: no alias prompt, no PII.
+function leaderboardAliasPanelHtml(saved) {
+  return `
+          <div class="mt-6 card p-4 text-left">
+            <label class="text-sm font-medium">${t('guestName')}</label>
+            <input id="guest-name" type="text" maxlength="${MAX_ALIAS_LENGTH}" placeholder="${t('aliasPlaceholder')}" style="text-transform:uppercase" class="mt-1 w-full px-3 py-2 rounded-lg border border-slate-200 focus-ring" ${saved?'disabled':''} />
+            <p class="mt-2 text-xs text-slate-500">${t('aliasHelp')}</p>
+            <p class="mt-1 text-xs text-slate-500">${t('guestRules')}</p>
+            <label class="mt-2 flex items-center gap-2 text-xs text-slate-600"><input type="checkbox" id="accept-rules" class="focus-ring" ${saved?'disabled':''}/> ${t('rulesAccept')}</label>
+          </div>`;
+}
+function readLeaderboardAliasFromForm() {
+  const rulesEl = document.getElementById('accept-rules');
+  if (!rulesEl || !rulesEl.checked) { toast(t('toastAcceptRules')); return null; }
+  const nameEl = document.getElementById('guest-name');
+  const typed = nameEl ? nameEl.value : '';
+  if (!typed.trim()) return generateGuestAlias();
+  const alias = normalizeAlias(typed);
+  const check = validateLeaderboardAlias(alias);
+  if (!check.ok) { toast(t(check.error)); if (nameEl) nameEl.focus(); return null; }
+  return alias;
+}
+// Explicit leaderboard save for shared word quizzes. Results screens ask for a
+// short anonymous alias instead of silently saving scores.
 function saveWordQuizScore(s) {
-  if (!s || s.saved) return;
+  if (!s || s.saved || s.idx < s.items.length) return;
+  const alias = readLeaderboardAliasFromForm();
+  if (!alias) return;
   try {
     const rec = LBCore.makeScoreRecord({
       gameKey:'orawords', gameMode:s.gameMode, language:s.language,
       category:s.category, ageGroup:s.ageGroup, difficulty:s.difficulty,
+      playerName:alias,
       score:s.score, accuracy:calcAccuracy(s.correct, s.items.length),
-      durationSeconds: s.durationMs ? Math.round(s.durationMs / 1000) : null
+      durationSeconds: s.durationMs ? Math.round(s.durationMs / 1000) : null,
+      sessionId:s.sessionId || null,
+      suspicious:isSuspicious({ durationMs:s.durationMs, total:s.items.length })
     });
-    state.guestScores.unshift(rec);
+    state.guestScores.push(rec);
+    state.guestScores.sort((a, b) => b.score - a.score);
+    state.guestScores = state.guestScores.slice(0, 200);
     LS.set(SCORES_KEY, state.guestScores);
+    state.user = { name:alias, isGuest:true };
+    LS.set('ora.user', state.user);
     s.saved = true;
+    toast(t('saved'));
+    trackEvent('score_saved', { score:s.score, mode:s.gameMode });
+    render();
   } catch (e) {}
+}
+function saveCurrentWordScore() {
+  saveWordQuizScore(state.wordsSession);
 }
 
 function startVocabQuest() {
@@ -7012,7 +7318,8 @@ function startVocabQuest() {
   pushOraWordsRecentIds(combo, items.map(x => x.id));
   state.wordsSession = {
     ...combo, items, idx:0, selectedOptionId:null, answeredOptionId:null,
-    score:0, correct:0, wrong:0, startedAt:Date.now(), durationMs:0, saved:false
+    score:0, correct:0, wrong:0, startedAt:Date.now(), durationMs:0, saved:false,
+    sessionId: 'vocab_' + Date.now().toString(36) + Math.random().toString(36).slice(2,6)
   };
   go('words', { mode:'vocabulary-quest', play:true }, { keepScroll:true });
 }
@@ -7022,7 +7329,7 @@ function nextVocabItem() {
   s.idx++;
   s.selectedOptionId = null;
   s.answeredOptionId = null;
-  if (s.idx >= s.items.length) { s.durationMs = Date.now() - s.startedAt; saveWordQuizScore(s); }
+  if (s.idx >= s.items.length) s.durationMs = Date.now() - s.startedAt;
   render();
 }
 function resetVocabQuest() {
@@ -7065,7 +7372,9 @@ function viewVocabQuest() {
             <div class="stat-cell bg-emerald-50 p-4"><div class="text-3xl font-bold text-emerald-700">${s.score}</div><div class="text-xs text-slate-600 mt-1">${t('yourScore')}</div></div>
             <div class="stat-cell bg-sky-50 p-4"><div class="text-3xl font-bold text-sky-700">${acc}%</div><div class="text-xs text-slate-600 mt-1">${t('accuracy')}</div></div>
           </div>
-          <div class="mt-6 grid sm:grid-cols-2 gap-2">
+          ${leaderboardAliasPanelHtml(s.saved)}
+          <div class="mt-6 grid sm:grid-cols-3 gap-2">
+            <button onclick="saveCurrentWordScore()" class="btn-primary" ${s.saved?'disabled':''}>${s.saved?t('saved'):t('saveScore')}</button>
             <button onclick="resetVocabQuest()" class="btn-primary">${t('playAgain')}</button>
             <button onclick="go('words')" class="btn-ghost">${t('backHome')}</button>
           </div>
@@ -7113,7 +7422,7 @@ function viewVocabQuest() {
     </main>
   </div>`;
 }
-try { if (typeof window !== 'undefined'){ window.startVocabQuest = startVocabQuest; window.viewVocabQuest = viewVocabQuest; window.makeVocabSet = makeVocabSet; } } catch (e) {}
+try { if (typeof window !== 'undefined'){ window.startVocabQuest = startVocabQuest; window.viewVocabQuest = viewVocabQuest; window.saveCurrentWordScore = saveCurrentWordScore; window.makeVocabSet = makeVocabSet; } } catch (e) {}
 /* ====== VOCABULARY QUEST END ====== */
 
 /* ====== DAILY WORD QUEST (engine + ui) START ====== */
@@ -7122,8 +7431,8 @@ try { if (typeof window !== 'undefined'){ window.startVocabQuest = startVocabQue
    everyone on the same date+locale gets the same word. The bonus and streak are
    awarded ONCE per date (streak farming blocked): replaying after completion
    does not change the score or streak. Missing a day resets the streak.
-   Progress is local-only under DAILY_WORD_KEY (no PII). A completed day still
-   records a leaderboard entry with gameKey:'orawords', gameMode:'daily-quest'. */
+   Progress is local-only under DAILY_WORD_KEY (no PII). A completed day can be
+   saved to the local leaderboard with gameKey:'orawords', gameMode:'daily-quest'. */
 const DAILY_WORD_KEY = 'orawords:daily';
 const DAILY_WORD_COMBO = { gameMode:'vocabulary-quest', category:'everyday', ageGroup:'family', difficulty:'easy' };
 
@@ -7195,22 +7504,41 @@ function answerDailyWord(selected) {
   const yesterday = addDaysKey(today, -1);
   const nextStreak = st.lastDailyDate === yesterday ? st.streak + 1 : 1;
   const score = 100 + Math.min(50, nextStreak * 10);
-  st.completed[today] = { score, word: item.correctWord };
+  st.completed[today] = { score, word: item.correctWord, saved:false };
   st.lastDailyDate = today;
   st.streak = nextStreak;
   saveDailyWordState(st);
   state.dailyWordResult = 'correct';
+  if (typeof confetti === 'function') confetti();
+  render();
+}
+function saveDailyWordScore() {
+  const st = loadDailyWordState();
+  const today = todayKey();
+  const done = st.completed[today];
+  if (!done || done.saved) return;
+  const alias = readLeaderboardAliasFromForm();
+  if (!alias) return;
   try {
     const rec = LBCore.makeScoreRecord({
       gameKey:'orawords', gameMode:'daily-quest', language:state.lang,
       category:DAILY_WORD_COMBO.category, ageGroup:DAILY_WORD_COMBO.ageGroup,
-      difficulty:DAILY_WORD_COMBO.difficulty, score, accuracy:100
+      difficulty:DAILY_WORD_COMBO.difficulty, playerName:alias,
+      score:done.score, accuracy:100,
+      sessionId:'daily_' + today + '_' + state.lang
     });
-    state.guestScores.unshift(rec);
+    state.guestScores.push(rec);
+    state.guestScores.sort((a, b) => b.score - a.score);
+    state.guestScores = state.guestScores.slice(0, 200);
     LS.set(SCORES_KEY, state.guestScores);
+    state.user = { name:alias, isGuest:true };
+    LS.set('ora.user', state.user);
+    done.saved = true;
+    saveDailyWordState(st);
+    toast(t('saved'));
+    trackEvent('score_saved', { score:done.score, mode:'daily-quest' });
+    render();
   } catch (e) {}
-  if (typeof confetti === 'function') confetti();
-  render();
 }
 function viewDailyWordQuest() {
   const st = loadDailyWordState();
@@ -7248,6 +7576,8 @@ function viewDailyWordQuest() {
           <h1 class="font-display text-2xl font-bold">${pick({en:'Completed today',es:'Completado hoy',fr:'Terminé aujourd’hui'})}</h1>
           <p class="mt-2 text-slate-600">${pick({en:'You earned',es:'Ganaste',fr:'Tu as gagné'})} <strong>${st.completed[today].score}</strong> ${pick({en:'points. Come back tomorrow — replays don’t change your streak.',es:'puntos. Vuelve mañana: repetir no cambia tu racha.',fr:'points. Reviens demain — rejouer ne change pas ta série.'})}</p>
           <div class="mt-5 rounded-xl bg-emerald-50 p-4 text-sm text-emerald-800">${pick({en:'Today’s word',es:'Palabra de hoy',fr:'Mot du jour'})}: <strong>${escapeHtml(item.word)}</strong> → <strong>${escapeHtml(st.completed[today].word)}</strong></div>
+          ${leaderboardAliasPanelHtml(!!st.completed[today].saved)}
+          <button onclick="saveDailyWordScore()" class="mt-5 btn-primary w-full sm:w-auto" ${st.completed[today].saved?'disabled':''}>${st.completed[today].saved?t('saved'):t('saveScore')}</button>
         ` : `
           <h1 class="font-display text-2xl font-bold">${pick(item.prompt)}</h1>
           <p class="mt-2 text-sm text-slate-500">${pick({en:'One challenge per day. A correct answer adds to your streak.',es:'Un reto por día. Una respuesta correcta suma a tu racha.',fr:'Un défi par jour. Une bonne réponse augmente ta série.'})}</p>
@@ -7266,7 +7596,7 @@ function viewDailyWordQuest() {
     ${Footer()}
   </div>`;
 }
-try { if (typeof window !== 'undefined'){ window.viewDailyWordQuest = viewDailyWordQuest; window.answerDailyWord = answerDailyWord; window.getDailyWordChallenge = getDailyWordChallenge; window.dailyWordOptions = dailyWordOptions; window.loadDailyWordState = loadDailyWordState; window.DAILY_WORD_KEY = DAILY_WORD_KEY; } } catch (e) {}
+try { if (typeof window !== 'undefined'){ window.viewDailyWordQuest = viewDailyWordQuest; window.answerDailyWord = answerDailyWord; window.saveDailyWordScore = saveDailyWordScore; window.getDailyWordChallenge = getDailyWordChallenge; window.dailyWordOptions = dailyWordOptions; window.loadDailyWordState = loadDailyWordState; window.DAILY_WORD_KEY = DAILY_WORD_KEY; } } catch (e) {}
 /* ====== DAILY WORD QUEST END ====== */
 
 /* ====== ANAGRAM CHALLENGE (engine + ui) START ====== */
@@ -7296,7 +7626,8 @@ function startAnagramChallenge() {
   pushOraWordsRecentIds(combo, items.map(x => x.id));
   state.anagramSession = {
     ...combo, items, idx:0, attempts:0, answered:false, lastResult:null,
-    score:0, correct:0, startedAt:Date.now(), durationMs:0, saved:false
+    score:0, correct:0, startedAt:Date.now(), durationMs:0, saved:false,
+    sessionId: 'ana_' + Date.now().toString(36) + Math.random().toString(36).slice(2,6)
   };
   go('words', { mode:'anagram-challenge', play:true }, { keepScroll:true });
 }
@@ -7344,20 +7675,42 @@ function nextAnagramItem() {
   s.idx++; s.attempts = 0; s.answered = false; s.lastResult = null;
   if (s.idx >= s.items.length) {
     s.durationMs = Date.now() - s.startedAt;
-    if (!s.saved) {
-      try {
-        const rec = LBCore.makeScoreRecord({
-          gameKey:'orawords', gameMode:'anagram-challenge', language:s.language,
-          category:s.category, ageGroup:s.ageGroup, difficulty:s.difficulty,
-          score:s.score, accuracy:calcAccuracy(s.correct, s.items.length),
-          durationSeconds: s.durationMs ? Math.round(s.durationMs / 1000) : null
-        });
-        state.guestScores.unshift(rec);
-        LS.set(SCORES_KEY, state.guestScores);
-        s.saved = true;
-      } catch (e) {}
-    }
   }
+  render();
+}
+function saveAnagramScore() {
+  const s = state.anagramSession;
+  if (!s || s.idx < s.items.length || s.saved) return;
+  const rulesEl = document.getElementById('accept-rules');
+  if (!rulesEl || !rulesEl.checked) { toast(t('toastAcceptRules')); return; }
+  const nameEl = document.getElementById('guest-name');
+  const typed = nameEl ? nameEl.value : '';
+  let alias;
+  if (!typed.trim()) {
+    alias = generateGuestAlias();
+  } else {
+    alias = normalizeAlias(typed);
+    const check = validateLeaderboardAlias(alias);
+    if (!check.ok) { toast(t(check.error)); if (nameEl) nameEl.focus(); return; }
+  }
+  const rec = LBCore.makeScoreRecord({
+    gameKey:'orawords', gameMode:'anagram-challenge', language:s.language,
+    category:s.category, ageGroup:s.ageGroup, difficulty:s.difficulty,
+    playerName:alias,
+    score:s.score, accuracy:calcAccuracy(s.correct, s.items.length),
+    durationSeconds:s.durationMs ? Math.round(s.durationMs / 1000) : null,
+    sessionId:s.sessionId || null,
+    suspicious:isSuspicious({ durationMs:s.durationMs, total:s.items.length })
+  });
+  state.guestScores.push(rec);
+  state.guestScores.sort((a, b) => b.score - a.score);
+  state.guestScores = state.guestScores.slice(0, 200);
+  LS.set(SCORES_KEY, state.guestScores);
+  state.user = { name:alias, isGuest:true };
+  LS.set('ora.user', state.user);
+  s.saved = true;
+  toast(t('saved'));
+  trackEvent('score_saved', { score:s.score, mode:'anagram-challenge' });
   render();
 }
 function viewAnagramChallenge() {
@@ -7396,7 +7749,15 @@ function viewAnagramChallenge() {
             <div class="stat-cell bg-emerald-50 p-4"><div class="text-3xl font-bold text-emerald-700">${s.score}</div><div class="text-xs text-slate-600 mt-1">${t('yourScore')}</div></div>
             <div class="stat-cell bg-sky-50 p-4"><div class="text-3xl font-bold text-sky-700">${acc}%</div><div class="text-xs text-slate-600 mt-1">${t('accuracy')}</div></div>
           </div>
-          <div class="mt-6 grid sm:grid-cols-2 gap-2">
+          <div class="mt-6 card p-4 text-left">
+            <label class="text-sm font-medium">${t('guestName')}</label>
+            <input id="guest-name" type="text" maxlength="${MAX_ALIAS_LENGTH}" placeholder="${t('aliasPlaceholder')}" style="text-transform:uppercase" class="mt-1 w-full px-3 py-2 rounded-lg border border-slate-200 focus-ring" ${s.saved?'disabled':''} />
+            <p class="mt-2 text-xs text-slate-500">${t('aliasHelp')}</p>
+            <p class="mt-1 text-xs text-slate-500">${t('guestRules')}</p>
+            <label class="mt-2 flex items-center gap-2 text-xs text-slate-600"><input type="checkbox" id="accept-rules" class="focus-ring" ${s.saved?'disabled':''}/> ${t('rulesAccept')}</label>
+          </div>
+          <div class="mt-6 grid sm:grid-cols-3 gap-2">
+            <button onclick="saveAnagramScore()" class="btn-primary" ${s.saved?'disabled':''}>${s.saved?t('saved'):t('saveScore')}</button>
             <button onclick="resetAnagramChallenge()" class="btn-primary">${t('playAgain')}</button>
             <button onclick="go('words')" class="btn-ghost">${t('backHome')}</button>
           </div>
@@ -7438,7 +7799,7 @@ function viewAnagramChallenge() {
     </main>
   </div>`;
 }
-try { if (typeof window !== 'undefined'){ window.startAnagramChallenge = startAnagramChallenge; window.viewAnagramChallenge = viewAnagramChallenge; window.scrambleLetters = scrambleLetters; window.makeAnagramSet = makeAnagramSet; } } catch (e) {}
+try { if (typeof window !== 'undefined'){ window.startAnagramChallenge = startAnagramChallenge; window.viewAnagramChallenge = viewAnagramChallenge; window.saveAnagramScore = saveAnagramScore; window.scrambleLetters = scrambleLetters; window.makeAnagramSet = makeAnagramSet; } } catch (e) {}
 /* ====== ANAGRAM CHALLENGE END ====== */
 
 /* ====== LETTER RUSH (data + engine + ui) START ====== */
@@ -7463,7 +7824,9 @@ const ORAWORDS_LETTER_SETS = {
     { id:'en-lr-003', t:{en:'Garden mix',es:'Mezcla de jardín',fr:'Mélange jardin'}, letters:'GARDENS', ages:['family','8-10','11-13','teens','adults'], category:'everyday', difficulty:'easy',
       words:'garden gardens grand grade grades danger anger range ranges sedan snare sand reads dares' },
     { id:'en-lr-004', t:{en:'Friendly mix',es:'Mezcla amistosa',fr:'Mélange amical'}, letters:'FRIENDS', ages:['family','8-10','11-13','teens','adults'], category:'everyday', difficulty:'easy',
-      words:'friend friends finds fired fries diner diners rinse rinsed rides finer nerds dines dries' }
+      words:'friend friends finds fired fries diner diners rinse rinsed rides finer nerds dines dries' },
+    { id:'en-lr-005', t:{en:'Relations',es:'Relaciones',fr:'Relations'}, letters:'RELATIONS', ages:['family','8-10','11-13','teens','adults'], category:'everyday', difficulty:'hard',
+      words:'relation relations ration rations salon sailor tailor trail trails train trains stone notes tones alien aliens linear rental salt stare staler' }
   ],
   es: [
     { id:'es-lr-001', t:{en:'Oceans',es:'Océanos',fr:'Océans'}, letters:'OCÉANOS', ages:['family','8-10','11-13','teens','adults'], category:'everyday', difficulty:'easy',
@@ -7475,7 +7838,9 @@ const ORAWORDS_LETTER_SETS = {
     { id:'es-lr-004', t:{en:'Space',es:'Espacio',fr:'Espace'}, letters:'PLANETAS', ages:['family','8-10','11-13','teens','adults'], category:'everyday', difficulty:'easy',
       words:'planta plantas planeta planetas plata pena penal sala nata lata pala lana tela' },
     { id:'es-lr-005', t:{en:'Routes',es:'Rutas',fr:'Routes'}, letters:'CAMINOS', ages:['family','8-10','11-13','teens','adults'], category:'everyday', difficulty:'easy',
-      words:'camino caminos cima cosa mano manos mina mona mosca caos coma saco mico anis' }
+      words:'camino caminos cima cosa mano manos mina mona mosca caos coma saco mico anis' },
+    { id:'es-lr-006', t:{en:'Butterfly',es:'Mariposa',fr:'Papillon'}, letters:'MARIPOSA', ages:['family','8-10','11-13','teens','adults'], category:'everyday', difficulty:'hard',
+      words:'mariposa amor rosa risa misa ramo mapa para sapo sopa piso rima arma mora ropa prosa prisa' }
   ],
   fr: [
     { id:'fr-lr-001', t:{en:'Planets',es:'Planètes',fr:'Planètes'}, letters:'PLANÈTES', ages:['family','8-10','11-13','teens','adults'], category:'everyday', difficulty:'easy',
@@ -7485,7 +7850,9 @@ const ORAWORDS_LETTER_SETS = {
     { id:'fr-lr-003', t:{en:'Reading',es:'Lectura',fr:'Lecture'}, letters:'LIVRES', ages:['family','8-10','11-13','teens','adults'], category:'everyday', difficulty:'easy',
       words:'livre livres lire vire vires rive rives sel les lis ver vers vil vile ire' },
     { id:'fr-lr-004', t:{en:'Nature',es:'Naturaleza',fr:'Nature'}, letters:'RACINES', ages:['family','8-10','11-13','teens','adults'], category:'everyday', difficulty:'easy',
-      words:'racine racines carie caries crâne scie scier nacre ancre ancres rance crise aine' }
+      words:'racine racines carie caries crâne scie scier nacre ancre ancres rance crise aine' },
+    { id:'fr-lr-005', t:{en:'Reading hard',es:'Lectura difícil',fr:'Lecture avancée'}, letters:'LECTURES', ages:['family','8-10','11-13','teens','adults'], category:'everyday', difficulty:'hard',
+      words:'lecture lectures recule recules sucre cruel cruels reste leste celte celtes cure cures recul lustre sert rue rues' }
   ]
 };
 
@@ -7545,7 +7912,7 @@ function defaultLetterRushCombo(){
     es: { ageGroup:'family', category:'everyday', difficulty:'easy' },
     fr: { ageGroup:'family', category:'everyday', difficulty:'easy' }
   };
-  return Object.assign({ language: state.lang }, byLang[state.lang] || byLang.en);
+  return resolveWordsCombo('letter-rush', Object.assign({ language: state.lang }, byLang[state.lang] || byLang.en));
 }
 function lrLettersHtml(s){
   const arr = s.activeSet.letters.split('');
@@ -7580,7 +7947,8 @@ function startLetterRush(){
     activeSet:set, letterOrder:lrInitialLetterOrder(set.letters),
     timeLeft: LR_TIMER_BY_AGE[combo.ageGroup] || 120,
     score:0, words:[], streak:0, longestWord:'', attempts:0, validAttempts:0,
-    shufflesLeft:3, saved:false, startedAt:Date.now(), timer:null
+    shufflesLeft:3, saved:false, startedAt:Date.now(), durationMs:0, timer:null,
+    sessionId: 'lr_' + Date.now().toString(36) + Math.random().toString(36).slice(2,6)
   });
   lrPushRecent(combo.language, set.id);
   go('words', { mode:'letter-rush', play:true }, { keepScroll:true });
@@ -7704,19 +8072,37 @@ function endLetterRush(){
   const s = state.lrSession;
   if (!s || s.ended) return;
   s.ended = true;
+  s.durationMs = Date.now() - s.startedAt;
   if (s.timer){ clearInterval(s.timer); s.timer = null; }
+  render();
+}
+function saveLetterRushScore(){
+  const s = state.lrSession;
+  if (!s || !s.ended || s.saved) return;
+  const alias = readLeaderboardAliasFromForm();
+  if (!alias) return;
   try {
     const acc = s.attempts ? Math.round((s.validAttempts/s.attempts)*100) : 0;
     const rec = LBCore.makeScoreRecord({
       gameKey:'orawords', gameMode:'letter-rush', language:s.language,
       category:s.category, ageGroup:s.ageGroup, difficulty:s.difficulty,
-      score:s.score, accuracy:acc, durationMs: Date.now() - s.startedAt
+      playerName:alias,
+      score:s.score, accuracy:acc,
+      durationSeconds:s.durationMs ? Math.round(s.durationMs / 1000) : null,
+      sessionId:s.sessionId || null,
+      suspicious:isSuspicious({ durationMs:s.durationMs, total:Math.max(1, s.attempts || s.words.length || 1) })
     });
-    state.guestScores.unshift(rec);
+    state.guestScores.push(rec);
+    state.guestScores.sort((a, b) => b.score - a.score);
+    state.guestScores = state.guestScores.slice(0, 200);
     LS.set(SCORES_KEY, state.guestScores);
+    state.user = { name:alias, isGuest:true };
+    LS.set('ora.user', state.user);
     s.saved = true;
+    toast(t('saved'));
+    trackEvent('score_saved', { score:s.score, mode:'letter-rush' });
+    render();
   } catch (e) {}
-  render();
 }
 function viewLetterRush(){
   const s = state.lrSession;
@@ -7731,6 +8117,7 @@ function viewLetterRush(){
       + '    <span class="chip bg-emerald-100 text-emerald-800">⚡ ' + wordModeName('letter-rush') + '</span>'
       + '    <h1 class="mt-4 font-display text-3xl md:text-4xl font-bold">' + wordModeName('letter-rush') + '</h1>'
       + '    <p class="mt-3 text-slate-600">' + pick({en:'Build as many valid words as you can from the letters before the timer ends.',es:'Forma todas las palabras válidas que puedas con las letras antes de que acabe el tiempo.',fr:'Forme un maximum de mots valides avec les lettres avant la fin du temps.'}) + '</p>'
+      + oraWordsSetupPanel('letter-rush', combo)
       + (sets.length
           ? '    <button onclick="startLetterRush()" class="mt-7 btn-primary">▶ ' + pick({en:'Start',es:'Empezar',fr:'Commencer'}) + '</button>'
           : '    <div class="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">' + pick({en:'No letter sets for this combo yet.',es:'Aún no hay sets de letras para esta combinación.',fr:'Pas encore de grilles pour cette combinaison.'}) + '</div>')
@@ -7754,7 +8141,9 @@ function viewLetterRush(){
       + '      <div class="stat-cell bg-sky-50 p-4"><div class="text-3xl font-bold text-sky-700">' + pct + '%</div><div class="text-xs text-slate-600 mt-1">' + t('accuracy') + '</div></div>'
       + '    </div>'
       + '    <p class="mt-4 text-sm text-slate-600">' + pick({en:'Words',es:'Palabras',fr:'Mots'}) + ': <strong>' + s.words.length + '</strong>' + (s.longestWord ? ' · ' + pick({en:'Longest',es:'Más larga',fr:'Plus long'}) + ': <strong>' + escapeHtml(s.longestWord) + '</strong>' : '') + '</p>'
-      + '    <div class="mt-6 grid sm:grid-cols-2 gap-2">'
+      + leaderboardAliasPanelHtml(s.saved)
+      + '    <div class="mt-6 grid sm:grid-cols-3 gap-2">'
+      + '      <button onclick="saveLetterRushScore()" class="btn-primary" ' + (s.saved ? 'disabled' : '') + '>' + (s.saved ? t('saved') : t('saveScore')) + '</button>'
       + '      <button onclick="resetLetterRush()" class="btn-primary">' + t('playAgain') + '</button>'
       + '      <button onclick="go(\'words\')" class="btn-ghost">' + t('backHome') + '</button>'
       + '    </div>'
@@ -7791,7 +8180,7 @@ function viewLetterRush(){
 }
 
 // Expose for browser checks + node tests.
-try { if (typeof window !== 'undefined'){ window.validateLetterRushWord = validateLetterRushWord; window.ORAWORDS_LETTER_SETS = ORAWORDS_LETTER_SETS; window.getLetterRushSets = getLetterRushSets; window.pickLetterRushSet = pickLetterRushSet; } } catch (e) {}
+try { if (typeof window !== 'undefined'){ window.validateLetterRushWord = validateLetterRushWord; window.saveLetterRushScore = saveLetterRushScore; window.ORAWORDS_LETTER_SETS = ORAWORDS_LETTER_SETS; window.getLetterRushSets = getLetterRushSets; window.pickLetterRushSet = pickLetterRushSet; } } catch (e) {}
 try { if (typeof module !== 'undefined' && module.exports){ module.exports.validateLetterRushWord = validateLetterRushWord; module.exports.ORAWORDS_LETTER_SETS = ORAWORDS_LETTER_SETS; module.exports.getLetterRushSets = getLetterRushSets; module.exports.pickLetterRushSet = pickLetterRushSet; } } catch (e) {}
 /* ====== LETTER RUSH END ====== */
 
@@ -9479,12 +9868,48 @@ function viewQuizResults() {
   </div>`;
 }
 
-function newGuessSession() {
+const DAILY_GUESS_KEY = 'oraguess:daily';
+function loadDailyGuessState() {
+  const fb = { completed:{}, lastDailyDate:'', streak:0 };
+  const raw = LS.get(DAILY_GUESS_KEY, fb) || fb;
   return {
-    animals: getRandomAnimalsForGame(MAX_ANIMAL_ROUNDS),
+    completed: raw.completed && typeof raw.completed === 'object' ? raw.completed : {},
+    lastDailyDate: typeof raw.lastDailyDate === 'string' ? raw.lastDailyDate : '',
+    streak: Number.isFinite(raw.streak) ? raw.streak : 0
+  };
+}
+function saveDailyGuessState(st) { LS.set(DAILY_GUESS_KEY, st); }
+function dailyGuessAnimal() {
+  const idx = dailySeedIndex('oraguess:' + todayKey() + ':' + state.lang, ANIMALS.length);
+  return ANIMALS[idx] || ANIMALS[0];
+}
+function completeDailyGuess(gs) {
+  if (!gs || !gs.daily) return;
+  const today = gs.dailyDate || todayKey();
+  const st = loadDailyGuessState();
+  if (st.completed[today]) return;
+  const yesterday = addDaysKey(today, -1);
+  const nextStreak = st.lastDailyDate === yesterday ? st.streak + 1 : 1;
+  st.completed[today] = {
+    score: gs.score,
+    correct: gs.correct,
+    completedAt: new Date().toISOString()
+  };
+  st.lastDailyDate = today;
+  st.streak = nextStreak;
+  saveDailyGuessState(st);
+}
+function newGuessSession(opts={}) {
+  const daily = !!opts.daily;
+  const today = todayKey();
+  return {
+    animals: daily ? [dailyGuessAnimal()] : getRandomAnimalsForGame(MAX_ANIMAL_ROUNDS),
     idx:0, revealed:0, guessed:false, shownAnswer:false,
     score:0, correct:0, failed:0, streak:0, bestStreak:0,
-    startedAt: Date.now(), durationMs:0, over:false, finishedReason:null, confettiShown:false, saved:false
+    startedAt: Date.now(), durationMs:0, over:false, finishedReason:null, confettiShown:false, saved:false,
+    daily, dailyDate: daily ? today : null,
+    gameMode: daily ? 'daily-guess' : 'guess-challenge',
+    sessionId: (daily ? 'dg_' : 'gs_') + today.replace(/-/g, '') + '_' + Date.now().toString(36)
   };
 }
 // Educational result card shown when a round is resolved (guessed or revealed).
@@ -9521,7 +9946,8 @@ function GuessEduCard(a) {
     </div>`;
 }
 function viewGuess() {
-  if (!state.guessSession) state.guessSession = newGuessSession();
+  const dailyMode = state.route === 'daily-guess';
+  if (!state.guessSession || !!state.guessSession.daily !== dailyMode) state.guessSession = newGuessSession({ daily:dailyMode });
   const gs = state.guessSession;
   if (gs.over) return viewGuessResults();
   const a = gs.animals[gs.idx];
@@ -9536,8 +9962,9 @@ function viewGuess() {
     <main class="max-w-3xl mx-auto px-4 sm:px-6 py-10">
       <div class="text-center">
         <div class="mx-auto">${OraAvatar({size:'md', mood: gs.guessed?'celebrate':gs.shownAnswer?'thinking':'happy'})}</div>
-        <h1 class="mt-4 font-display text-3xl font-bold">${t('guessTitle')}</h1>
-        <p class="mt-2 text-slate-600">${t('guessIntro')}</p>
+        ${gs.daily ? `<span class="chip bg-rose-100 text-rose-700 mt-4">🔥 ${t('todayChallenge')}</span>` : ''}
+        <h1 class="mt-4 font-display text-3xl font-bold">${gs.daily ? t('dailyOraGuess') : t('guessTitle')}</h1>
+        <p class="mt-2 text-slate-600">${gs.daily ? t('dailyOraGuessIntro') : t('guessIntro')}</p>
       </div>
       <div class="mt-6 card p-6 md:p-8">
         <div class="flex items-center justify-between mb-2">
@@ -9611,6 +10038,36 @@ function viewGuess() {
   </div>`;
 }
 
+function viewDailyGuess() {
+  const today = todayKey();
+  const st = loadDailyGuessState();
+  const done = st.completed[today];
+  if (done) {
+    return `
+    <div class="min-h-screen bg-slate-50">
+      ${Header()}
+      <main class="max-w-3xl mx-auto px-4 sm:px-6 py-10">
+        <div class="card p-8 text-center">
+          <span class="chip bg-rose-100 text-rose-700">🔥 ${t('todayChallenge')}</span>
+          <h1 class="mt-4 font-display text-3xl font-bold">${t('dailyOraGuess')}</h1>
+          <p class="mt-2 text-slate-600">${t('dailyGuessDone')}</p>
+          <div class="mt-6 grid grid-cols-2 gap-3">
+            <div class="stat-cell bg-violet-50 p-4"><div class="text-3xl font-bold text-brand-violet">${done.score || 0}</div><div class="text-xs text-slate-600 mt-1">${t('yourScore')}</div></div>
+            <div class="stat-cell bg-amber-50 p-4"><div class="text-3xl font-bold text-amber-600">${st.streak || 0}</div><div class="text-xs text-slate-600 mt-1">${t('streakDays')}</div></div>
+          </div>
+          <div class="mt-6 grid sm:grid-cols-2 gap-2">
+            <button onclick="go('guess')" class="btn-primary">${t('playGuessOra')}</button>
+            <button onclick="go('play')" class="btn-ghost">${t('backHome')}</button>
+          </div>
+        </div>
+        ${AdSlot()}
+      </main>
+      ${Footer()}
+    </div>`;
+  }
+  return viewGuess();
+}
+
 function guessPlayedCount(gs) {
   // Animals actually attempted this game (used for accuracy).
   return gs.finishedReason === 'completed' ? gs.animals.length : Math.min(gs.idx + 1, gs.animals.length);
@@ -9622,6 +10079,7 @@ function viewGuessResults() {
   const acc = calcAccuracy(gs.correct, played);
   const failed = gs.finishedReason === 'failed';
   const isGreat = !failed && acc >= 70;
+  const isDailyGuess = !!gs.daily;
   if (isGreat && !gs.confettiShown) { confetti(); gs.confettiShown = true; }
   const shareText = t('shareText').replace('{score}', gs.score);
   return `
@@ -9631,6 +10089,7 @@ function viewGuessResults() {
       <div class="card p-8 text-center slide-up">
         <div class="mx-auto">${OraAvatar({size:'lg', mood: failed?'thinking':isGreat?'celebrate':'happy'})}</div>
         ${failed?`<span class="chip bg-rose-100 text-rose-700 mt-4">${t('guessGameOver')}</span>`:''}
+        ${isDailyGuess?`<span class="chip bg-rose-100 text-rose-700 mt-4">🔥 ${t('dailyOraGuess')}</span>`:''}
         <h1 class="mt-4 font-display text-3xl font-bold">${t('resultsTitle')}</h1>
         <p class="mt-2 text-slate-600">${failed?t('gameOverMsg'):''} ${gs.correct} / ${played} ${t('correctSuffix')}</p>
         <div class="mt-6 grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -9661,9 +10120,9 @@ function viewGuessResults() {
         <div class="mt-5 grid sm:grid-cols-3 gap-2">
           <button onclick="saveScore()" class="btn-primary" ${gs.saved?'disabled':''}>${gs.saved?t('saved'):t('saveScore')}</button>
           <button onclick="shareResult('${escapeHtml(shareText)}')" class="btn-ghost">${t('shareResult')}</button>
-          <button onclick="playAgainGuess()" class="btn-ghost">${t('playAgain')}</button>
+          <button onclick="${isDailyGuess ? "go('guess')" : 'playAgainGuess()'}" class="btn-ghost">${isDailyGuess ? t('playGuessOra') : t('playAgain')}</button>
         </div>
-        <button onclick="go('home')" class="mt-3 text-sm text-slate-500 hover:underline focus-ring">${t('backHome')}</button>
+        <button onclick="go('play')" class="mt-3 text-sm text-slate-500 hover:underline focus-ring">${t('backHome')}</button>
       </div>
       ${AdSlot()}
     </main>
@@ -9673,7 +10132,7 @@ function viewGuessResults() {
 
 function viewDaily() {
   const today = todayKey();
-  const lastPlayed = LS.get('ora.lastDaily', null);
+  const lastPlayed = LS.get('oraquest:daily:lastPlayed', LS.get('ora.lastDaily', null));
   const playedToday = lastPlayed === today;
   const streak = state.streak.days || 0;
   return `
@@ -10442,7 +10901,7 @@ function nextQuestion() {
   render();
 }
 function saveScore() {
-  const isGuess = state.route === 'guess-results';
+  const isGuess = state.route === 'guess-results' || state.route === 'daily-guess-results';
   const s = isGuess ? state.guessSession : state.quizSession;
   if (!s) return;
   if (s.saved) return; // prevent duplicate score saving
@@ -10464,7 +10923,7 @@ function saveScore() {
   const record = LBCore.makeScoreRecord({
     gameKey:    isGuess ? 'guessora' : 'oraquest',
     gameName:   isGuess ? 'OraGuess' : 'OraQuest',
-    gameMode:   isGuess ? 'guess-challenge' : (s.fromDaily ? 'daily-quest' : 'quiz-battle'),
+    gameMode:   isGuess ? (s.gameMode || (s.daily ? 'daily-guess' : 'guess-challenge')) : (s.fromDaily ? 'daily-quest' : 'quiz-battle'),
     category:   isGuess ? 'animals' : s.category,
     difficulty: isGuess ? null : s.difficulty,
     ageGroup:   isGuess ? 'family' : s.age,
@@ -10484,7 +10943,7 @@ function saveScore() {
   LS.set('ora.user', state.user);
   s.saved = true;
   toast(t('saved'));
-  trackEvent('score_saved', { score:s.score, mode: isGuess ? 'guess' : 'quiz' });
+  trackEvent('score_saved', { score:s.score, mode: isGuess ? (s.gameMode || 'guess-challenge') : 'quiz' });
   render();
 }
 function shareResult(text) {
@@ -10499,12 +10958,15 @@ function shareResult(text) {
 function startDaily(cat, diff) {
   if (cat === 'guess') {
     state.guessSession = null;
-    go('guess');
+    go('daily-guess');
+    trackEvent('daily_started', { category:cat, mode:'daily-guess' });
+    return;
   } else {
     // fromDaily marks the session so its score is logged as the 'daily-quest' mode.
     state.quiz = { age:'family', category: cat, difficulty: diff, timerOn: true, fromDaily: true };
     startQuiz();
   }
+  LS.set('oraquest:daily:lastPlayed', todayKey());
   LS.set('ora.lastDaily', todayKey());
   trackEvent('daily_started', { category:cat });
 }
@@ -10583,9 +11045,10 @@ function finishGuessGame(reason) {
   gs.over = true;
   gs.finishedReason = reason; // 'completed' | 'failed'
   gs.durationMs = Date.now() - gs.startedAt;
-  state.route = 'guess-results';
+  if (gs.daily) completeDailyGuess(gs);
+  state.route = gs.daily ? 'daily-guess-results' : 'guess-results';
   render();
-  trackEvent('guess_game_over', { reason, score:gs.score, correct:gs.correct });
+  trackEvent('guess_game_over', { reason, score:gs.score, correct:gs.correct, mode:gs.gameMode || 'guess-challenge' });
 }
 function submitGuess() {
   const gs = state.guessSession;
@@ -10927,6 +11390,8 @@ function render() {
     case 'quiz-results': html = viewQuizResults(); break;
     case 'guess': html = viewGuess(); break;
     case 'guess-results': html = viewGuessResults(); break;
+    case 'daily-guess': html = viewDailyGuess(); break;
+    case 'daily-guess-results': html = viewGuessResults(); break;
     case 'daily': html = viewDaily(); break;
     case 'leaderboards': html = viewLeaderboards(); break;
     case 'teams': html = viewTeams(); break;
