@@ -86,8 +86,8 @@ and any later tests/UX polish.
 Route `oramath` (`/oramath` + es/fr, indexable), modes via `state.params.mode`
 like OraWords. Pure logic lives in the `__MATHENGINE_START__/END__` sentinel
 block (`MathEngine` IIFE: injectable rng/date, no DOM/state/clock) — tested by
-`tests/oramath-engine.test.js` (56 tests incl. NumDrop + EquaCode, seeded
-mulberry32 property tests).
+`tests/oramath-engine.test.js` (98 tests incl. NumDrop + EquaCode + Camino
+Mágico + Ojo de Ora, seeded mulberry32 property tests).
 
 - **Age mapping:** UI uses the site's 6 `AGE_GROUPS`; `ORAMATH_AGE_BANDS`
   collapses them to the spec's 3 bands (`6-8`/`9-12`/`13+`) + `timeFactor`.
@@ -143,11 +143,74 @@ mulberry32 property tests).
   Scaling: 6-8 = 5 chars, addition, 8 tries; 9-12 = 8 chars, +/−, 6 tries; 13+ =
   8 chars ×÷ (hard = 9 chars, two operators with precedence). Keyboard: on-screen
   + physical digits/operators/Enter/Backspace.
+- **Camino Mágico** (`magic-path`): the "zen" path-sum puzzle. Engine
+  (`__MATHENGINE__`) generates ONE level per `band|difficulty|world|level` seed
+  (deterministic mulberry32, no backend) via `magicpathGenLevel`: place start +
+  exit(s) on opposite borders, self-avoiding random walk of the configured length
+  (`magicpathFindPath`, manhattan+parity pruned), assign cell values so the path's
+  emergent sum lands in a tier-scaled window `[targetLo,targetHi]` (no forced exit
+  cell), place traps 💀 / extra ×2÷2 / distractors, then enforce the single-
+  solution invariant on small grids (`magicpathEnforceUnique`: exhaustive DFS
+  `magicpathCountSolutions` on ≤5×5 + perturbation of **intermediate** off-path
+  cells of any offending alternative — never start/exit cells). All exit cells
+  (solution AND decoy) carry an ordinary in-range value `[valLo,valHi]` via
+  `magicpathAssignDecoyExits` — decoy exits are NOT poisoned (a poisoned
+  `>targetCap` value made the false exit obviously fake, leaving no real player
+  decision; the test `exits always carry an ordinary in-range value` guards this).
+  Note: 7×7 multi-exit boards (13+ hard) are intentionally NOT single-solution —
+  a 49-cell 1–9 grid has hundreds–thousands of adjacent paths summing to target,
+  which is fine for a path-sum puzzle (any path that sums to target wins).
+  `magicpathAcc` walks the path L→R applying
+  ×2 (double) / ÷2 (floor) as accumulator operators; `magicpathValidatePath`,
+  `magicpathCheckStar` (3=no hints+under par, 2=over par, 1=any hint),
+  `magicpathHintNext` (prefix→next cell, else null), `magicpathXpForLevel`,
+  `magicpathUnlockThreshold` (world>1 needs 16 of the previous). 5 Egyptian worlds
+  × 20 levels, scaling per `MAGICPATH_TABLE` (9 band×diff cells) × world multiplier.
+  **13+ hard density tuning** (difficulty via blocked/negative cells, NOT via
+  uniqueness): `trap` count `[5,7]`, `negCount` `[7,9]` (a fixed count of negative
+  DISTRACTOR cells placed off-path in `magicpathFillDistractors` — target/
+  uniqueness untouched, but routes through them make the running sum dip+rise),
+  `par` 25s. `negCount` is the only band that forces a negative count; others keep
+  the probabilistic sprinkle. `magicpathEnforceUnique` only nudges **positive**
+  off-path distractors (never an exit, never a negative → keeps the count intact
+  and never leaves a dead 0 cell).
+  Host: progress in `oramath:mp-progress` (per `band|diff`, best stars + time),
+  **3 daily shared hints** in `oramath:hints` (reset at local `todayKey()`).
+  Does NOT use the leaderboard or `finishMathGame()` — `mpAwardLevel()` adds XP +
+  global daily streak only. Views: setup → worlds map → level grid → play. Tracing
+  uses pointer events (capture deferred to first move so a plain tap still fires
+  the per-cell `onclick` accessible path); `mpPaint()` repaints the path overlay
+  incrementally to keep capture alive while dragging. Keyboard tracing is FUTURE.
 - **Leaderboards page** now renders `LeaderboardTabs()` (was locked to the
   OraQuest tab); OraMath has its own tab via `LB_TAB_META`.
-- The OraMath hub now ships all 4 games (no "coming soon" card). Pending (spec
-  approved, NOT built): Camino Mágico, Ojo de Ora, achievements/badges,
-  OraMath share emoji-grids.
+- **Ojo de Ora** (`eye-of-ora`): the estimation / number-sense game — 6º y
+  último juego, OraMath is now complete. Engine (`__MATHENGINE__`) generates an
+  8-round session (`eyeGenSession`) from 6 challenge types via `EYE_CHALLENGE_TABLE`
+  (type × band × difficulty; `null` where a type isn't offered — 6-8 has no
+  `fraction-visual`/`quick-magnitude`). Types: **dot-cloud** (count a dot cloud
+  after timed exposure), **compare-groups** (which side has more), **number-line**
+  (place N on a 0–max line), **estimate-result** (≈ which option, timed),
+  **fraction-visual** (estimate % coloured of a circle/square/triangle SVG, area-
+  accurate fill), **quick-magnitude** (which expression is bigger, timed). Session
+  ordering uses `eyeArrange` (fill most-frequent into evens-then-odds → no
+  consecutive repeats; guaranteed since top count ≤ 4). Scoring (`eyeScoreForRound`):
+  numeric types use a continuous accuracy curve `points = max(0, round(100·(1 −
+  errorPct/tol)))` (`EYE_TOLERANCE`; fraction-visual uses **absolute** pct points,
+  others relative); choice types are 100/0 + a ≤10 speed bonus kept OUT of `points`
+  (so accuracy stays ≤100%) and folded into `total`. `eyeTotalScore` → `{total,
+  accuracy=mean(points), breakdown}`. Host: custom pointer slider / number-line
+  marker (no native `<input>` → no OS keyboard, `touch-action:none`), exposure +
+  5s answer timers with the standard route/session self-clear guards, per-round
+  feedback then auto-advance after 2s. Calls `finishMathGame` once + saves a
+  FIFO-capped (100) accuracy history in `oramath:eye-history` (`loadEyeHistory`/
+  `saveEyeResult`/`eyeHistoryStats`) rendered as an SVG polyline "evolution" chart
+  (setup + results both link to it; needs ≥2 games). Reuses `mathResultsHtml` via
+  new optional `extraHtml`/`extraButtons` slots (and `mathGameSetupHtml`'s
+  `extraCta`). Leaderboard accuracy mirrors the precision % (attempts=100,
+  correct=accuracy).
+- The OraMath hub ships all 6 games (no "coming soon" card); OraMath is complete.
+  Pending (spec approved, NOT built): Camino Mágico achievements/badges, OraMath
+  share emoji-grids, keyboard path tracing, Ojo de Ora badges.
 
 ## Validation
 - `npm run lint` — lints the inline `<script>` block
