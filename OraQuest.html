@@ -132,6 +132,76 @@
   .eq-key.eq-absent  { background: rgb(100 116 139); border-color: rgb(100 116 139); color: #fff; }
   .eq-key-wide { min-width: 3.6rem; font-size: .8rem; }
   @media (max-width: 380px) { .eq-cell { width: 2.25rem; height: 2.25rem; font-size: 1.1rem; } .eq-key { min-width: 1.8rem; } }
+  /* Camino Mágico (magic-path) — traceable number grid + world/level maps. */
+  .mp-grid { display: grid; gap: 5px; touch-action: none; user-select: none; -webkit-user-select: none; max-width: 26rem; margin: 0 auto; }
+  .mp-cell { aspect-ratio: 1 / 1; display: flex; align-items: center; justify-content: center; border-radius: 0.55rem; border: 2px solid rgb(226 232 240); background: rgb(248 250 252); color: rgb(15 23 42); font-weight: 800; font-size: 1.05rem; line-height: 1; position: relative; cursor: pointer; transition: background .12s, transform .08s; }
+  /* Two-class selectors (.mp-cell.mp-cell--x) so state colours always beat the
+     base .mp-cell background regardless of source order; --path sits last so it
+     wins over --negative/--mul/--div when a coloured cell is on the path. */
+  .mp-cell.mp-cell--negative { background: rgb(254 226 226); color: rgb(153 27 27); }
+  .mp-cell.mp-cell--mul { background: rgb(254 249 195); color: rgb(133 77 14); }
+  .mp-cell.mp-cell--div { background: rgb(219 234 254); color: rgb(30 64 175); }
+  .mp-cell.mp-cell--trap { background: rgb(51 65 85); color: rgb(226 232 240); cursor: not-allowed; }
+  .mp-cell--start { border-color: rgb(217 119 6); border-width: 3px; box-shadow: inset 0 0 0 1px rgb(251 191 36); }
+  .mp-cell--exit { border-color: rgb(22 163 74); border-width: 3px; box-shadow: inset 0 0 0 1px rgb(74 222 128); }
+  .mp-cell.mp-cell--path { background: rgb(124 58 237); color: #fff; border-color: rgb(109 40 217); transform: scale(1.04); z-index: 1; }
+  .mp-cell.mp-cell--path.mp-cell--trap { background: rgb(51 65 85); }
+  .mp-cell--flash { animation: mpFlash .35s ease; }
+  .mp-cell--hint { animation: hintPulse 2s ease; }
+  .mp-cell.mp-hinted::after { content: ''; position: absolute; top: 3px; right: 3px; width: .42rem; height: .42rem; border-radius: 50%; background: rgb(245 158 11); box-shadow: 0 0 3px rgb(245 158 11); }
+  .mp-badge { position: absolute; bottom: 1px; right: 3px; font-size: .6rem; opacity: .8; }
+  @keyframes hintPulse { 0%,100% { box-shadow: 0 0 0 0 rgba(245,158,11,0); } 25%,75% { box-shadow: 0 0 0 4px rgba(245,158,11,.9); border-color: rgb(245 158 11); } }
+  @keyframes mpFlash { 0% { background: rgb(248 250 252); } 35% { background: rgb(248 113 113); } 100% { background: rgb(248 250 252); } }
+  .mp-worlds { display: flex; flex-direction: column; gap: .9rem; }
+  .mp-world { display: flex; align-items: center; gap: 1rem; text-align: left; padding: 1rem 1.15rem; border-radius: 1rem; border: 2px solid rgb(226 232 240); background: #fff; cursor: pointer; transition: border-color .12s, box-shadow .12s; }
+  .mp-world:hover:not(:disabled) { border-color: rgb(196 181 253); box-shadow: 0 4px 16px -8px rgba(124,58,237,.4); }
+  .mp-world--locked { opacity: .55; cursor: not-allowed; filter: grayscale(.5); }
+  .mp-world--done { border-color: rgb(167 139 250); }
+  .mp-level-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: .55rem; max-width: 24rem; margin: 0 auto; }
+  .mp-level { aspect-ratio: 1 / 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; border-radius: .75rem; border: 2px solid rgb(226 232 240); background: #fff; font-weight: 800; font-size: 1.1rem; cursor: pointer; }
+  .mp-level--locked { background: rgb(241 245 249); color: rgb(148 163 184); cursor: not-allowed; }
+  .mp-level--current { border-color: rgb(124 58 237); animation: mpPulse 1.6s ease-in-out infinite; }
+  .mp-level--done { border-color: rgb(167 139 250); background: rgb(245 243 255); }
+  @keyframes mpPulse { 0%,100% { box-shadow: 0 0 0 0 rgba(124,58,237,.35); } 50% { box-shadow: 0 0 0 5px rgba(124,58,237,0); } }
+  .mp-stars { font-size: .72rem; letter-spacing: .05em; line-height: 1; }
+  /* Ojo de Ora (eye-of-ora) — estimation game */
+  .eye-question { font-size: 1.15rem; font-weight: 700; color: rgb(15 23 42); }
+  .eye-expr { font-size: 2.25rem; font-weight: 800; color: rgb(15 23 42); line-height: 1.1; }
+  .eye-stage { display: flex; justify-content: center; align-items: center; margin: 0 auto; }
+  .eye-dots-svg { width: 100%; max-width: 18rem; aspect-ratio: 1 / 1; display: block; }
+  .eye-frac-svg { width: 100%; max-width: 13rem; aspect-ratio: 1 / 1; display: block; }
+  .eye-compare { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; }
+  .eye-panel { border-radius: .75rem; padding: .4rem; aspect-ratio: 1 / 1; }
+  .eye-panel--left { background: rgb(239 246 255); border: 2px solid rgb(191 219 254); }
+  .eye-panel--right { background: rgb(255 247 237); border: 2px solid rgb(254 215 170); }
+  .eye-panel .eye-dots-svg { max-width: none; }
+  .eye-bar-wrap { height: .5rem; border-radius: 9999px; background: rgb(241 245 249); overflow: hidden; }
+  .eye-bar { height: 100%; transform-origin: left; background: linear-gradient(to right, rgb(251 191 36), rgb(244 63 94)); animation-name: ttShrink; animation-timing-function: linear; animation-fill-mode: forwards; }
+  .eye-slider { padding: 0 .75rem; }
+  .eye-slider-track { position: relative; height: .65rem; border-radius: 9999px; background: rgb(226 232 240); touch-action: none; cursor: pointer; margin: 1.5rem 0; }
+  .eye-slider-fill { position: absolute; left: 0; top: 0; height: 100%; border-radius: 9999px; background: linear-gradient(to right, rgb(167 139 250), rgb(124 58 237)); }
+  .eye-slider-thumb { position: absolute; top: 50%; width: 2.75rem; height: 2.75rem; border-radius: 50%; background: #fff; border: 3px solid rgb(124 58 237); box-shadow: 0 2px 8px -2px rgba(124,58,237,.5); transform: translate(-50%, -50%); }
+  .eye-value { text-align: center; font-size: 2rem; font-weight: 800; color: rgb(124 58 237); font-variant-numeric: tabular-nums; }
+  .eye-numberline { padding: 1.5rem .5rem 0; }
+  .eye-numberline-track { position: relative; height: .5rem; border-radius: 9999px; background: rgb(203 213 225); touch-action: none; cursor: pointer; }
+  .eye-numberline-marker { position: absolute; top: 50%; width: 4px; height: 2.5rem; background: rgb(124 58 237); transform: translate(-50%, -50%); border-radius: 2px; }
+  .eye-numberline-value { position: absolute; bottom: 2.6rem; left: 50%; transform: translateX(-50%); font-size: .9rem; font-weight: 800; color: rgb(124 58 237); background: #fff; padding: 1px 6px; border-radius: 6px; border: 1px solid rgb(196 181 253); white-space: nowrap; }
+  .eye-option-btn { min-height: 3.5rem; padding: .75rem 1rem; border-radius: .85rem; border: 2px solid rgb(196 181 253); background: rgb(245 243 255); font-size: 1.25rem; font-weight: 800; color: rgb(76 29 149); cursor: pointer; transition: background .12s, transform .08s; }
+  .eye-option-btn:hover { background: rgb(237 233 254); }
+  .eye-option-btn:active { transform: scale(.97); }
+  .eye-feedback { min-height: 6rem; animation: feedbackSlide .3s ease; }
+  .eye-fb-opt { min-height: 3rem; display: flex; align-items: center; justify-content: center; border-radius: .75rem; border: 2px solid rgb(226 232 240); font-weight: 700; padding: .5rem; }
+  .eye-fb-correct { background: rgb(220 252 231); border-color: rgb(34 197 94); color: rgb(21 128 61); }
+  .eye-fb-wrong { background: rgb(254 226 226); border-color: rgb(239 68 68); color: rgb(153 27 27); }
+  .eye-round-bars { display: flex; gap: 5px; align-items: flex-end; }
+  .eye-round-bar { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; }
+  .eye-round-track { width: 100%; height: 52px; background: rgb(241 245 249); border-radius: 4px; display: flex; align-items: flex-end; overflow: hidden; }
+  .eye-round-fill { width: 100%; border-radius: 4px 4px 0 0; transition: height .3s ease; }
+  .eye-round-num { font-size: .65rem; color: rgb(148 163 184); font-weight: 700; }
+  .eye-history-chart { width: 100%; height: 200px; display: block; }
+  @keyframes dotsFadeOut { from { opacity: 1; } to { opacity: 0; } }
+  @keyframes feedbackSlide { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  @media (max-width: 380px) { .eye-option-btn { font-size: 1.05rem; } .eye-expr { font-size: 1.75rem; } }
   @keyframes fall { to { transform: translateY(110vh) rotate(720deg); opacity:0; } }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
   /* Ora the owl mascot animations */
@@ -231,7 +301,7 @@ const LBCore = (function () {
     oraquest:     { key:'oraquest',     name:'OraQuest',  modes:['quiz-battle','daily-quest','general-quiz','family-quiz'] },
     guessora:     { key:'guessora',     name:'OraGuess',  modes:['guess-challenge','daily-guess'] },
     orawords:     { key:'orawords',     name:'OraWords',  modes:['spelling-sprint','vocabulary-quest','letter-rush','anagram-challenge','daily-quest'] },
-    oramath:      { key:'oramath',      name:'OraMath',   modes:['truth-or-trap','math-sprint','numdrop','equacode'] },
+    oramath:      { key:'oramath',      name:'OraMath',   modes:['truth-or-trap','math-sprint','numdrop','equacode','magic-path','eye-of-ora'] },
     'team-quest': { key:'team-quest',   name:'Team Quest', modes:['team-quest'] }
   };
 
@@ -1374,9 +1444,20 @@ const I18N_EXT = {
     mathNDName:'NumDrop', mathNDSub:'Drop number tiles into the grid. Any connected group that adds up to the target merges and vanishes — chain combos and climb the levels before the board fills up!',
     mathEQName:'EquaCode', mathEQSub:'Crack today’s hidden equation in a few tries — green = right spot, yellow = wrong spot. One puzzle a day, the same for everyone your age!',
     eqErrLen:'Fill every cell first.', eqErrEquals:'Use exactly one = sign.', eqErrRhs:'The right side must be a whole number.', eqErrZero:'No leading zeros.', eqErrExpr:'That is not a valid equation.', eqErrNotEqual:'Both sides must be equal.',
+    mpWorldNilo:'The Nile', mpWorldPyramids:'The Pyramids', mpWorldTemple:'Temple of Horus', mpWorldOasis:'The Oasis', mpWorldTomb:'The Golden Tomb',
+    mathMPName:'Magic Path', mathMPSub:'Trace a path from ★ to 🏁 so the numbers you cross add up to the target — a calm puzzle across five Egyptian worlds.',
+    mpTarget:'Target', mpHints:'Hints', mpSum:'Sum', mpConfirm:'Confirm', mpClear:'Clear', mpHintBtn:'Hint', mpHintsTomorrow:'Come back tomorrow for more hints',
+    mpLocked:'Locked', mpWorldLocked:'Finish 16 levels of the previous world to unlock it.', mpStarsLabel:'stars',
+    mpNextLevel:'Next level', mpRetry:'Retry', mpBackToMap:'Back to map',
+    mpAlmost:'Sum: {sum} — Target: {target}. So close!', mpComplete:'Level complete!', mpNewStars:'New best — more stars!', mpXpGained:'+{xp} XP earned',
+    mpLevelN:'Level {w}-{l}', mpWorldN:'World {n}: {name}', mpHowTo:'Drag from ★ across neighbouring cells to 🏁. Tap the last cell again to step back.',
     mathLevel:'Level', mathStreakDays:'day streak', mathPlayNow:'Play',
     mathRecordLine:'Your record: {score} — can you beat it?', mathNoRecordYet:'No record for this combo yet — set the first one!',
-    mathMoreSoon:'More maths games are on the way: number puzzles, estimation challenges and a daily equation.',
+    mathEyeName:'Eye of Ora', mathEyeSub:'Trust your eyes! Estimate dot counts, where a number sits on a line, painted fractions and more — closer guesses earn more points across 8 quick rounds.',
+    eyeDotCloudQ:'How many dots were there?', eyeCompareQ:'Which group had more?', eyeNumberLineQ:'Where does {n} go?', eyeEstimateQ:'Closer to {a} or {b}?', eyeFractionQ:'What percent is coloured?', eyeMagnitudeQ:'Which is bigger?',
+    eyeRoundN:'Round {n}/8', eyeConfirm:'Confirm', eyeLeft:'Left', eyeRight:'Right', eyeYourAnswer:'You', eyeRealAnswer:'Real', eyePoints:'pts', eyeTimeUp:'Time’s up!',
+    eyeAccuracy:'Accuracy: {n}%', eyeRoundBreakdown:'Points per round', eyeGreat:'Sharp eye! 🦅', eyeGood:'Nice estimating! 👍', eyeTryAgain:'Keep practising — your eye is getting sharper!',
+    eyeEvolution:'My evolution', eyeEvolutionBtn:'My evolution', eyeBest:'Best', eyeAvg:'Average', eyeGamesPlayed:'Games', eyeNeedMore:'Play at least 2 games to see your evolution.',
     mathShareText:'I scored {score} points in {game} on OraMath (HorusQuest)! Can you beat me? 🦉➗',
     faqWhatHorus:'What is HorusQuest?', faqWhatHorusA:'HorusQuest is the family-friendly learning universe guided by Ora, combining quizzes, guessing games, word challenges and future learning adventures.',
     faqWhatOraQuest:'What is OraQuest?', faqWhatGuess:'What is OraGuess?', faqWhatWords:'What is OraWords?', faqAccount:'Do I need an account?', faqChildren:'Is HorusQuest suitable for children?', faqAds:'Does HorusQuest show ads?', faqBoards:'How do leaderboards work?'
@@ -1412,9 +1493,20 @@ const I18N_EXT = {
     mathNDName:'NumDrop', mathNDSub:'Suelta fichas de números en la cuadrícula. Cualquier grupo conectado que sume el objetivo se fusiona y desaparece: encadena combos y sube de nivel antes de que se llene el tablero.',
     mathEQName:'EquaCode', mathEQSub:'Descifra la ecuación oculta de hoy en pocos intentos: verde = sitio correcto, amarillo = sitio equivocado. ¡Un reto al día, igual para todos los de tu edad!',
     eqErrLen:'Completa todas las casillas.', eqErrEquals:'Usa exactamente un signo =.', eqErrRhs:'El lado derecho debe ser un número entero.', eqErrZero:'Sin ceros a la izquierda.', eqErrExpr:'Eso no es una ecuación válida.', eqErrNotEqual:'Ambos lados deben ser iguales.',
+    mpWorldNilo:'El Nilo', mpWorldPyramids:'Las Pirámides', mpWorldTemple:'Templo de Horus', mpWorldOasis:'El Oasis', mpWorldTomb:'La Tumba Dorada',
+    mathMPName:'Camino Mágico', mathMPSub:'Traza un camino de ★ a 🏁 para que los números que pises sumen el objetivo: un puzzle tranquilo por cinco mundos egipcios.',
+    mpTarget:'Objetivo', mpHints:'Pistas', mpSum:'Suma', mpConfirm:'Confirmar', mpClear:'Borrar', mpHintBtn:'Pista', mpHintsTomorrow:'Vuelve mañana para más pistas',
+    mpLocked:'Bloqueado', mpWorldLocked:'Completa 16 niveles del mundo anterior para desbloquearlo.', mpStarsLabel:'estrellas',
+    mpNextLevel:'Siguiente nivel', mpRetry:'Reintentar', mpBackToMap:'Volver al mapa',
+    mpAlmost:'Suma: {sum} — Objetivo: {target}. ¡Casi!', mpComplete:'¡Nivel completado!', mpNewStars:'¡Nuevo récord — más estrellas!', mpXpGained:'+{xp} XP ganados',
+    mpLevelN:'Nivel {w}-{l}', mpWorldN:'Mundo {n}: {name}', mpHowTo:'Arrastra desde ★ por casillas vecinas hasta 🏁. Toca otra vez la última casilla para retroceder.',
     mathLevel:'Nivel', mathStreakDays:'días de racha', mathPlayNow:'Jugar',
     mathRecordLine:'Tu récord: {score} — ¿lo superas?', mathNoRecordYet:'Aún no hay récord para esta combinación. ¡Marca el primero!',
-    mathMoreSoon:'Más juegos de matemáticas en camino: puzzles numéricos, retos de estimación y una ecuación diaria.',
+    mathEyeName:'Ojo de Ora', mathEyeSub:'¡Confía en tu vista! Estima cuántos puntos hay, dónde va un número en la línea, qué porción está pintada y más: cuanto más cerca aciertes, más puntos en 8 rondas rápidas.',
+    eyeDotCloudQ:'¿Cuántos puntos había?', eyeCompareQ:'¿Qué grupo tenía más?', eyeNumberLineQ:'¿Dónde va el {n}?', eyeEstimateQ:'¿Más cerca de {a} o {b}?', eyeFractionQ:'¿Qué porcentaje está coloreado?', eyeMagnitudeQ:'¿Cuál es mayor?',
+    eyeRoundN:'Ronda {n}/8', eyeConfirm:'Confirmar', eyeLeft:'Izquierda', eyeRight:'Derecha', eyeYourAnswer:'Tú', eyeRealAnswer:'Real', eyePoints:'pts', eyeTimeUp:'¡Se acabó el tiempo!',
+    eyeAccuracy:'Precisión: {n}%', eyeRoundBreakdown:'Puntos por ronda', eyeGreat:'¡Buen ojo! 🦅', eyeGood:'¡Buena estimación! 👍', eyeTryAgain:'Sigue practicando: tu ojo mejora cada vez más.',
+    eyeEvolution:'Mi evolución', eyeEvolutionBtn:'Mi evolución', eyeBest:'Mejor', eyeAvg:'Media', eyeGamesPlayed:'Partidas', eyeNeedMore:'Juega al menos 2 partidas para ver tu evolución.',
     mathShareText:'¡Hice {score} puntos en {game} de OraMath (HorusQuest)! ¿Me superas? 🦉➗',
     faqWhatHorus:'¿Qué es HorusQuest?', faqWhatHorusA:'HorusQuest es el universo de aprendizaje familiar guiado por Ora, con quizzes, adivinanzas, retos de palabras y futuras aventuras educativas.',
     faqWhatOraQuest:'¿Qué es OraQuest?', faqWhatGuess:'¿Qué es OraGuess?', faqWhatWords:'¿Qué es OraWords?', faqAccount:'¿Necesito una cuenta?', faqChildren:'¿HorusQuest es apto para niños?', faqAds:'¿HorusQuest muestra anuncios?', faqBoards:'¿Cómo funcionan las clasificaciones?'
@@ -1450,9 +1542,20 @@ const I18N_EXT = {
     mathNDName:'NumDrop', mathNDSub:'Dépose des tuiles de nombres dans la grille. Tout groupe relié dont la somme atteint la cible fusionne et disparaît — enchaîne les combos et grimpe les niveaux avant que la grille ne se remplisse !',
     mathEQName:'EquaCode', mathEQSub:'Déchiffre l’équation cachée du jour en quelques essais : vert = bonne place, jaune = mauvaise place. Un défi par jour, le même pour tous ceux de ton âge !',
     eqErrLen:'Remplis toutes les cases.', eqErrEquals:'Utilise exactement un signe =.', eqErrRhs:'Le côté droit doit être un nombre entier.', eqErrZero:'Pas de zéro initial.', eqErrExpr:'Ce n’est pas une équation valide.', eqErrNotEqual:'Les deux côtés doivent être égaux.',
+    mpWorldNilo:'Le Nil', mpWorldPyramids:'Les Pyramides', mpWorldTemple:'Temple d’Horus', mpWorldOasis:'L’Oasis', mpWorldTomb:'La Tombe Dorée',
+    mathMPName:'Chemin Magique', mathMPSub:'Trace un chemin de ★ à 🏁 pour que les nombres traversés atteignent la cible — un puzzle paisible à travers cinq mondes égyptiens.',
+    mpTarget:'Cible', mpHints:'Indices', mpSum:'Somme', mpConfirm:'Valider', mpClear:'Effacer', mpHintBtn:'Indice', mpHintsTomorrow:'Reviens demain pour plus d’indices',
+    mpLocked:'Verrouillé', mpWorldLocked:'Termine 16 niveaux du monde précédent pour le débloquer.', mpStarsLabel:'étoiles',
+    mpNextLevel:'Niveau suivant', mpRetry:'Recommencer', mpBackToMap:'Retour à la carte',
+    mpAlmost:'Somme : {sum} — Cible : {target}. Tout près !', mpComplete:'Niveau terminé !', mpNewStars:'Nouveau record — plus d’étoiles !', mpXpGained:'+{xp} XP gagnés',
+    mpLevelN:'Niveau {w}-{l}', mpWorldN:'Monde {n} : {name}', mpHowTo:'Glisse depuis ★ vers les cases voisines jusqu’à 🏁. Touche à nouveau la dernière case pour revenir en arrière.',
     mathLevel:'Niveau', mathStreakDays:'jours de série', mathPlayNow:'Jouer',
     mathRecordLine:'Ton record : {score} — tu peux le battre ?', mathNoRecordYet:'Pas encore de record pour cette combinaison. Établis le premier !',
-    mathMoreSoon:'D’autres jeux de maths arrivent : puzzles numériques, défis d’estimation et une équation quotidienne.',
+    mathEyeName:'Œil d’Ora', mathEyeSub:'Fais confiance à tes yeux ! Estime le nombre de points, la place d’un nombre sur la ligne, la portion coloriée et plus encore : plus tu approches, plus tu marques, sur 8 manches rapides.',
+    eyeDotCloudQ:'Combien de points y avait-il ?', eyeCompareQ:'Quel groupe en avait le plus ?', eyeNumberLineQ:'Où va le {n} ?', eyeEstimateQ:'Plus proche de {a} ou {b} ?', eyeFractionQ:'Quel pourcentage est colorié ?', eyeMagnitudeQ:'Lequel est le plus grand ?',
+    eyeRoundN:'Manche {n}/8', eyeConfirm:'Valider', eyeLeft:'Gauche', eyeRight:'Droite', eyeYourAnswer:'Toi', eyeRealAnswer:'Réel', eyePoints:'pts', eyeTimeUp:'Temps écoulé !',
+    eyeAccuracy:'Précision : {n}%', eyeRoundBreakdown:'Points par manche', eyeGreat:'Bon œil ! 🦅', eyeGood:'Belle estimation ! 👍', eyeTryAgain:'Continue de t’entraîner : ton œil s’affine.',
+    eyeEvolution:'Mon évolution', eyeEvolutionBtn:'Mon évolution', eyeBest:'Meilleur', eyeAvg:'Moyenne', eyeGamesPlayed:'Parties', eyeNeedMore:'Joue au moins 2 parties pour voir ton évolution.',
     mathShareText:'J’ai marqué {score} points à {game} sur OraMath (HorusQuest) ! Tu fais mieux ? 🦉➗',
     faqWhatHorus:'Qu’est-ce que HorusQuest ?', faqWhatHorusA:'HorusQuest est l’univers d’apprentissage familial guidé par Ora, avec des quiz, des devinettes, des défis de mots et de futures aventures éducatives.',
     faqWhatOraQuest:'Qu’est-ce que OraQuest ?', faqWhatGuess:'Qu’est-ce que OraGuess ?', faqWhatWords:'Qu’est-ce que OraWords ?', faqAccount:'Ai-je besoin d’un compte ?', faqChildren:'HorusQuest convient-il aux enfants ?', faqAds:'HorusQuest affiche-t-il des publicités ?', faqBoards:'Comment fonctionnent les classements ?'
@@ -8905,9 +9008,705 @@ const MathEngine = (function () {
     return { records: next, isNew: false };
   }
 
+  /* ===== Camino Mágico (magic-path) — procedural path-sum puzzle =====
+     A grid of numbers with a start (★) and exit(s) (🏁); the player traces a
+     continuous orthogonal path whose cell values sum to the level target. Pure +
+     deterministic per (band|difficulty|world|level) seed — same levels for every
+     player, no backend. The generator GUARANTEES exactly one path start→exit that
+     sums to `target`: uniqueness is enforced by a bounded DFS solution-counter
+     (exhaustive on small grids, budget-pruned on 6×6/7×7) plus distractor
+     perturbation. ×2/÷2 cells (13+) transform the running accumulator IN PATH
+     ORDER, so validation walks the path left-to-right. Traps 💀 are impassable.
+     `solution[]` feeds the daily hint system and is never sent to the DOM. */
+  const MAGICPATH_TABLE = {
+    '6-8': {
+      easy:   { grid: 4, val: [1, 5], target: 20, path: [4, 6], decoys: 1, par: 60000 },
+      medium: { grid: 4, val: [1, 7], target: 30, path: [5, 7], decoys: 2, par: 50000 },
+      hard:   { grid: 5, val: [1, 9], target: 40, path: [5, 8], decoys: 3, par: 45000 }
+    },
+    '9-12': {
+      easy:   { grid: 5, val: [1, 8], target: 40, path: [5, 7], decoys: 2, par: 50000, neg: [-3, -1] },
+      medium: { grid: 5, val: [1, 9], target: 60, path: [6, 8], decoys: 3, par: 45000, neg: [-3, -1] },
+      hard:   { grid: 6, val: [1, 9], target: 60, path: [7, 10], decoys: 4, par: 40000, neg: [-3, -1], trap: [2, 4] }
+    },
+    '13+': {
+      easy:   { grid: 6, val: [1, 9], target: 80,  path: [6, 9],  decoys: 3, par: 45000, neg: [-3, -1], mul: true, div: true },
+      medium: { grid: 6, val: [1, 9], target: 100, path: [7, 10], decoys: 4, par: 40000, neg: [-3, -1], mul: true, div: true, trap: [2, 4] },
+      hard:   { grid: 7, val: [1, 9], target: 120, path: [8, 12], decoys: 5, par: 25000, neg: [-3, -1], negCount: [7, 9], mul: true, div: true, trap: [5, 7], multiExit: [2, 3] }
+    }
+  };
+  const MAGICPATH_WORLDS = [
+    { id: 1, nameKey: 'mpWorldNilo',     icon: '🌊' },
+    { id: 2, nameKey: 'mpWorldPyramids', icon: '🔺' },
+    { id: 3, nameKey: 'mpWorldTemple',   icon: '🏛️' },
+    { id: 4, nameKey: 'mpWorldOasis',    icon: '🌴' },
+    { id: 5, nameKey: 'mpWorldTomb',     icon: '⚱️' }
+  ];
+  const MP_DIRS = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+  function mpKey(r, c) { return r + ',' + c; }
+  function mpShuffle(arr, rng) { for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(rng() * (i + 1)); const t = arr[i]; arr[i] = arr[j]; arr[j] = t; } return arr; }
+  function magicpathSeed(str) { let h = 2166136261 >>> 0; for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; } return h >>> 0; }
+  function magicpathRng(seed) { let s = seed >>> 0; return function () { s |= 0; s = (s + 0x6D2B79F5) | 0; let t = Math.imul(s ^ (s >>> 15), 1 | s); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+
+  function magicpathWorldMult(world) { return [1, 1.2, 1.4, 1.6, 1.8][(world || 1) - 1] || 1; }
+  function magicpathUnlockThreshold(world) { return (world || 1) <= 1 ? 0 : 16; }
+  function magicpathParTime(baseParMs, timeFactor) { return Math.round(baseParMs * (timeFactor || 1)); }
+  function magicpathXpForLevel(stars, world, difficulty) { const base = { 1: 10, 2: 20, 3: 30 }[stars] || 0; return Math.round(base * magicpathWorldMult(world) * diffMult(difficulty)); }
+  function magicpathCheckStar(parTimeMs, opts) { opts = opts || {}; if ((opts.usedHints || 0) >= 1) return { stars: 1 }; if ((opts.timeMs || 0) <= parTimeMs) return { stars: 3 }; return { stars: 2 }; }
+  function magicpathTier(levelInWorld) { return levelInWorld <= 5 ? 0 : levelInWorld <= 10 ? 1 : levelInWorld <= 15 ? 2 : 3; }
+
+  // Deterministic, interpolated level params from MAGICPATH_TABLE: pathLength,
+  // target and decoy count grow with the level tier (1-5/6-10/11-15/16-20) and
+  // world multiplier; the value range + target also scale by world.
+  function magicpathParams(band, difficulty, world, levelInWorld) {
+    const b = MAGICPATH_TABLE[band] || MAGICPATH_TABLE['9-12'];
+    const cell = b[difficulty] || b.easy;
+    const tier = magicpathTier(levelInWorld || 1);
+    const wMult = magicpathWorldMult(world);
+    const pathLen = cell.path[0] + Math.round((cell.path[1] - cell.path[0]) * tier / 3);
+    const decoyCount = Math.round(cell.decoys * (tier + 1) / 4);
+    const valLo = cell.val[0];
+    const valHi = Math.max(valLo + 1, Math.round(cell.val[1] * wMult));
+    const targetCap = Math.round(cell.target * wMult);
+    // Target is the path's emergent sum, constrained to a tier-scaled window so
+    // it grows with level (windows barely overlap → target20 > target1) while
+    // staying achievable by the value range (+ ×2 cells on 13+).
+    const frac = [[0.15, 0.40], [0.35, 0.60], [0.55, 0.80], [0.75, 1.0]][tier];
+    const targetLo = Math.max(1, Math.round(targetCap * frac[0]));
+    const targetHi = Math.max(targetLo + 1, Math.round(targetCap * frac[1]));
+    return {
+      gridSize: cell.grid, pathLen, decoyCount, valLo, valHi, targetCap, targetLo, targetHi,
+      parBaseMs: cell.par,
+      allowNeg: !!cell.neg, negLo: cell.neg ? cell.neg[0] : 0, negHi: cell.neg ? cell.neg[1] : 0,
+      negCount: cell.negCount || null,
+      allowSpecials: !!(cell.mul || cell.div),
+      trap: cell.trap || null,
+      multiExit: cell.multiExit || null
+    };
+  }
+
+  // Accumulate a path's value left-to-right, applying ×2/÷2 cells as operators.
+  function magicpathAcc(grid, path) {
+    let acc = 0;
+    for (let i = 0; i < path.length; i++) {
+      const cell = grid[path[i].r][path[i].c];
+      if (cell.t === 'mul2') acc = acc * 2;
+      else if (cell.t === 'div2') acc = Math.floor(acc / 2);
+      else acc += cell.v;
+    }
+    return acc;
+  }
+
+  function magicpathValidatePath(grid, path, exits, target) {
+    if (!path || !path.length) return { valid: false, sum: 0, reason: 'empty' };
+    const size = grid.length, seen = {};
+    for (let i = 0; i < path.length; i++) {
+      const p = path[i];
+      if (p.r < 0 || p.c < 0 || p.r >= size || p.c >= size) return { valid: false, sum: 0, reason: 'oob' };
+      const k = mpKey(p.r, p.c);
+      if (seen[k]) return { valid: false, sum: 0, reason: 'repeat' };
+      seen[k] = true;
+      if (grid[p.r][p.c].t === 'trap') return { valid: false, sum: 0, reason: 'trap' };
+      if (i > 0) { const q = path[i - 1]; if (Math.abs(p.r - q.r) + Math.abs(p.c - q.c) !== 1) return { valid: false, sum: 0, reason: 'adjacency' }; }
+    }
+    const last = path[path.length - 1];
+    const onExit = exits.some(function (e) { return e.r === last.r && e.c === last.c; });
+    const sum = magicpathAcc(grid, path);
+    if (!onExit) return { valid: false, sum: sum, reason: 'exit' };
+    if (sum !== target) return { valid: false, sum: sum, reason: 'sum' };
+    return { valid: true, sum: sum, reason: 'ok' };
+  }
+
+  // Count distinct start→exit paths summing to target, capped at `cap` (default
+  // 2 — enough to test uniqueness) with a node-expansion budget so big grids
+  // never hang. Exits are terminal (a path can't continue past one).
+  function magicpathCountSolutions(grid, start, exits, target, cap, budget) {
+    const size = grid.length;
+    const exitSet = {}; exits.forEach(function (e) { exitSet[mpKey(e.r, e.c)] = true; });
+    if (exitSet[mpKey(start.r, start.c)]) return 0;
+    const visited = []; for (let r = 0; r < size; r++) visited.push(new Array(size).fill(false));
+    cap = cap || 2; const b = budget || 300000; let count = 0, steps = 0;
+    function dfs(r, c, acc) {
+      if (count >= cap || steps++ > b) return;
+      const cell = grid[r][c];
+      if (cell.t === 'trap') return;
+      if (cell.t === 'mul2') acc = acc * 2; else if (cell.t === 'div2') acc = Math.floor(acc / 2); else acc += cell.v;
+      visited[r][c] = true;
+      if (exitSet[mpKey(r, c)]) { if (acc === target) count++; visited[r][c] = false; return; }
+      for (let d = 0; d < MP_DIRS.length; d++) {
+        const nr = r + MP_DIRS[d][0], nc = c + MP_DIRS[d][1];
+        if (nr < 0 || nc < 0 || nr >= size || nc >= size || visited[nr][nc]) continue;
+        dfs(nr, nc, acc);
+        if (count >= cap || steps > b) break;
+      }
+      visited[r][c] = false;
+    }
+    dfs(start.r, start.c, 0);
+    return count;
+  }
+
+  // First start→exit path summing to target whose cell-key signature differs
+  // from `excludeKey` (the known solution) — used to break extra solutions.
+  function magicpathFindSolvingPath(grid, start, exits, target, excludeKey, budget) {
+    const size = grid.length;
+    const exitSet = {}; exits.forEach(function (e) { exitSet[mpKey(e.r, e.c)] = true; });
+    const visited = []; for (let r = 0; r < size; r++) visited.push(new Array(size).fill(false));
+    const path = []; const b = budget || 300000; let steps = 0, found = null;
+    function dfs(r, c, acc) {
+      if (found || steps++ > b) return;
+      const cell = grid[r][c];
+      if (cell.t === 'trap') return;
+      if (cell.t === 'mul2') acc = acc * 2; else if (cell.t === 'div2') acc = Math.floor(acc / 2); else acc += cell.v;
+      visited[r][c] = true; path.push({ r: r, c: c });
+      if (exitSet[mpKey(r, c)]) {
+        if (acc === target) { const k = path.map(function (p) { return mpKey(p.r, p.c); }).join('|'); if (k !== excludeKey) found = path.slice(); }
+        visited[r][c] = false; path.pop(); return;
+      }
+      for (let d = 0; d < MP_DIRS.length; d++) {
+        const nr = r + MP_DIRS[d][0], nc = c + MP_DIRS[d][1];
+        if (nr < 0 || nc < 0 || nr >= size || nc >= size || visited[nr][nc]) continue;
+        dfs(nr, nc, acc);
+        if (found) break;
+      }
+      visited[r][c] = false; path.pop();
+    }
+    dfs(start.r, start.c, 0);
+    return found;
+  }
+
+  function magicpathHintNext(solution, currentPath) {
+    if (!solution || !solution.length) return null;
+    currentPath = currentPath || [];
+    if (currentPath.length >= solution.length) return null;
+    for (let i = 0; i < currentPath.length; i++) {
+      if (currentPath[i].r !== solution[i].r || currentPath[i].c !== solution[i].c) return null;
+    }
+    const next = solution[currentPath.length];
+    return { r: next.r, c: next.c };
+  }
+
+  function magicpathEmptyGrid(size) { const g = []; for (let r = 0; r < size; r++) g.push(new Array(size).fill(null)); return g; }
+  function mpIsOnBorder(r, c, size, border) {
+    return border === 'top' ? r === 0 : border === 'bot' ? r === size - 1 : border === 'left' ? c === 0 : c === size - 1;
+  }
+  function magicpathPlaceEndpoints(size, multiExit, rng) {
+    const borders = ['top', 'bot', 'left', 'right'];
+    const cellsOn = function (b) {
+      const a = [];
+      if (b === 'top') for (let c = 0; c < size; c++) a.push({ r: 0, c: c });
+      else if (b === 'bot') for (let c = 0; c < size; c++) a.push({ r: size - 1, c: c });
+      else if (b === 'left') for (let r = 0; r < size; r++) a.push({ r: r, c: 0 });
+      else for (let r = 0; r < size; r++) a.push({ r: r, c: size - 1 });
+      return a;
+    };
+    const sb = pickFrom(rng, borders);
+    const sCell = pickFrom(rng, cellsOn(sb));
+    const start = { r: sCell.r, c: sCell.c };
+    const exitCount = multiExit ? ri(rng, multiExit[0], multiExit[1]) : 1;
+    const exits = []; const used = {}; used[mpKey(start.r, start.c)] = true;
+    const others = borders.filter(function (x) { return x !== sb; });
+    let guard = 0;
+    while (exits.length < exitCount && guard++ < 400) {
+      const eb = pickFrom(rng, others);
+      const cand = pickFrom(rng, cellsOn(eb));
+      const k = mpKey(cand.r, cand.c);
+      if (used[k]) continue;
+      if (mpIsOnBorder(cand.r, cand.c, size, sb)) continue; // never on the start's border
+      used[k] = true; exits.push({ r: cand.r, c: cand.c });
+    }
+    return { start: start, exits: exits };
+  }
+
+  // Self-avoiding random walk of exactly `pathLen` cells from start to an exit.
+  // Pruned by manhattan-distance + parity to the nearest exit; budget-capped.
+  function magicpathFindPath(size, start, exits, pathLen, rng) {
+    const exitSet = {}; exits.forEach(function (e) { exitSet[mpKey(e.r, e.c)] = true; });
+    if (exitSet[mpKey(start.r, start.c)]) return null;
+    const visited = []; for (let r = 0; r < size; r++) visited.push(new Array(size).fill(false));
+    const path = []; let steps = 0; const budget = 200000; let found = null;
+    function minExitDist(r, c) { let m = 1e9; for (let i = 0; i < exits.length; i++) { const d = Math.abs(exits[i].r - r) + Math.abs(exits[i].c - c); if (d < m) m = d; } return m; }
+    function dfs(r, c, depth) {
+      if (found || steps++ > budget) return;
+      visited[r][c] = true; path.push({ r: r, c: c });
+      if (depth === pathLen) {
+        if (exitSet[mpKey(r, c)]) found = path.slice();
+      } else {
+        const remaining = pathLen - depth, md = minExitDist(r, c);
+        if (md <= remaining && (remaining - md) % 2 === 0) {
+          const dirs = mpShuffle(MP_DIRS.slice(), rng);
+          for (let d = 0; d < dirs.length; d++) {
+            const nr = r + dirs[d][0], nc = c + dirs[d][1];
+            if (nr < 0 || nc < 0 || nr >= size || nc >= size || visited[nr][nc]) continue;
+            if (exitSet[mpKey(nr, nc)] && depth + 1 !== pathLen) continue; // only the last cell may be an exit
+            dfs(nr, nc, depth + 1);
+            if (found) break;
+          }
+        }
+      }
+      visited[r][c] = false; path.pop();
+    }
+    dfs(start.r, start.c, 1);
+    return found;
+  }
+
+  // Assign cell types/values along the path; the target is the path's emergent
+  // sum, accepted only when it lands in the tier window [targetLo,targetHi] (so
+  // it's always reachable — no forced exit cell). ×2/÷2 specials land on interior
+  // cells only (never start/exit); negatives never on start/exit. Returns the
+  // target on success, or null.
+  function magicpathAssignPath(grid, path, P, rng) {
+    const last = path.length - 1;
+    for (let tries = 0; tries < 150; tries++) {
+      const types = path.map(function () { return 'num'; });
+      if (P.allowSpecials && path.length >= 5) {
+        const interior = []; for (let i = 1; i < last; i++) interior.push(i);
+        mpShuffle(interior, rng);
+        let specials = ri(rng, 0, Math.min(2, interior.length));
+        for (let si = 0; si < interior.length && specials > 0; si++) { types[interior[si]] = rng() < 0.5 ? 'mul2' : 'div2'; specials--; }
+      }
+      const vals = new Array(path.length).fill(0);
+      for (let i = 0; i < path.length; i++) {
+        if (types[i] !== 'num') continue;
+        if (P.allowNeg && i > 0 && i < last && rng() < 0.22) vals[i] = ri(rng, P.negLo, P.negHi);
+        else vals[i] = ri(rng, P.valLo, P.valHi);
+      }
+      let acc = 0;
+      for (let i = 0; i < path.length; i++) {
+        if (types[i] === 'mul2') acc = acc * 2; else if (types[i] === 'div2') acc = Math.floor(acc / 2); else acc += vals[i];
+      }
+      if (acc >= P.targetLo && acc <= P.targetHi) {
+        for (let i = 0; i < path.length; i++) {
+          const p = path[i];
+          grid[p.r][p.c] = { t: types[i], v: types[i] === 'num' ? vals[i] : 0 };
+        }
+        return acc;
+      }
+    }
+    return null;
+  }
+
+  function magicpathPlaceTraps(grid, start, path, exits, P, rng) {
+    if (!P.trap) return;
+    const count = ri(rng, P.trap[0], P.trap[1]);
+    const size = grid.length, block = {};
+    path.forEach(function (p) { block[mpKey(p.r, p.c)] = true; });
+    exits.forEach(function (e) { block[mpKey(e.r, e.c)] = true; });
+    block[mpKey(start.r, start.c)] = true;
+    const adj = [];
+    for (let i = 0; i < path.length; i++) {
+      for (let d = 0; d < MP_DIRS.length; d++) {
+        const nr = path[i].r + MP_DIRS[d][0], nc = path[i].c + MP_DIRS[d][1];
+        if (nr < 0 || nc < 0 || nr >= size || nc >= size) continue;
+        if (block[mpKey(nr, nc)]) continue;
+        adj.push({ r: nr, c: nc });
+      }
+    }
+    mpShuffle(adj, rng);
+    let placed = 0; const used = {};
+    for (let i = 0; i < adj.length && placed < count; i++) {
+      const k = mpKey(adj[i].r, adj[i].c);
+      if (used[k]) continue;
+      used[k] = true; grid[adj[i].r][adj[i].c] = { t: 'trap', v: 0 }; placed++;
+    }
+    if (placed < count) {
+      const rest = [];
+      for (let r = 0; r < size; r++) for (let c = 0; c < size; c++) { const k = mpKey(r, c); if (block[k] || used[k]) continue; rest.push({ r: r, c: c }); }
+      mpShuffle(rest, rng);
+      for (let i = 0; i < rest.length && placed < count; i++) { grid[rest[i].r][rest[i].c] = { t: 'trap', v: 0 }; placed++; }
+    }
+  }
+
+  // For levels with multiple exits, give every NON-solution exit an ordinary
+  // in-range value [valLo,valHi] — the same range as any other cell, so a decoy
+  // is a genuine candidate the player must reason about, never an obviously
+  // "dead" oversized number. Uniqueness across exits is NOT bought by making a
+  // decoy unreachable; it's enforced by the grid layout (no start→decoy path
+  // sums to target) plus, if needed, perturbing intermediate cells of the
+  // offending alternative route (magicpathEnforceUnique) — never the exit itself.
+  function magicpathAssignDecoyExits(grid, path, exits, P, rng) {
+    if (exits.length <= 1) return;
+    const term = path[path.length - 1];
+    for (let i = 0; i < exits.length; i++) {
+      const e = exits[i];
+      if (e.r === term.r && e.c === term.c) continue;
+      grid[e.r][e.c] = { t: 'num', v: ri(rng, P.valLo, P.valHi) };
+    }
+  }
+
+  function magicpathPlaceExtraSpecials(grid, start, path, exits, P, rng) {
+    if (!P.allowSpecials) return;
+    const size = grid.length, block = {};
+    path.forEach(function (p) { block[mpKey(p.r, p.c)] = true; });
+    exits.forEach(function (e) { block[mpKey(e.r, e.c)] = true; });
+    block[mpKey(start.r, start.c)] = true;
+    const free = [];
+    for (let r = 0; r < size; r++) for (let c = 0; c < size; c++) { if (block[mpKey(r, c)] || grid[r][c] !== null) continue; free.push({ r: r, c: c }); }
+    mpShuffle(free, rng);
+    const n = Math.min(free.length, ri(rng, 1, 2));
+    for (let i = 0; i < n; i++) grid[free[i].r][free[i].c] = { t: rng() < 0.5 ? 'mul2' : 'div2', v: 0 };
+  }
+
+  function magicpathFillDistractors(grid, P, rng) {
+    const size = grid.length;
+    const filled = [];
+    for (let r = 0; r < size; r++) for (let c = 0; c < size; c++) {
+      if (grid[r][c] !== null) continue;
+      let v;
+      // With a controlled negCount we fill positive first, then convert an exact
+      // count below; otherwise sprinkle negatives probabilistically.
+      if (P.allowNeg && !P.negCount && rng() < 0.18) v = ri(rng, P.negLo, P.negHi);
+      else v = ri(rng, P.valLo, P.valHi);
+      grid[r][c] = { t: 'num', v: v };
+      filled.push({ r: r, c: c });
+    }
+    // Denser difficulty (13+ hard): a fixed count of negative DISTRACTOR cells —
+    // off the solution path, so the target/uniqueness are untouched, but any
+    // route the player traces through them makes the running sum dip then rise,
+    // not just climb. Only the bands that declare negCount get this.
+    if (P.negCount && P.allowNeg) {
+      mpShuffle(filled, rng);
+      const want = Math.min(filled.length, ri(rng, P.negCount[0], P.negCount[1]));
+      for (let i = 0; i < want; i++) grid[filled[i].r][filled[i].c] = { t: 'num', v: ri(rng, P.negLo, P.negHi) };
+    }
+  }
+
+  // Enforce the single-solution invariant by perturbing OFF-path distractor
+  // cells (which can never change the solution path's sum) until no second path
+  // reaches an exit at `target`. The perturbed cell is an INTERMEDIATE cell of
+  // the offending alternative route — never a start/exit cell, so every exit
+  // keeps an ordinary in-range value (a decoy exit must stay a plausible
+  // candidate, not a poisoned dead number). Returns false if it can't (caller
+  // retries from a fresh layout, so most levels are unique by layout alone).
+  function magicpathEnforceUnique(grid, start, exits, target, solution, P, rng) {
+    const solKey = solution.map(function (p) { return mpKey(p.r, p.c); }).join('|');
+    const solSet = {}; solution.forEach(function (p) { solSet[mpKey(p.r, p.c)] = true; });
+    const exitSet = {}; exits.forEach(function (e) { exitSet[mpKey(e.r, e.c)] = true; });
+    for (let i = 0; i < 60; i++) {
+      const count = magicpathCountSolutions(grid, start, exits, target, 2, 300000);
+      if (count === 1) return true;
+      if (count === 0) return false;
+      const extra = magicpathFindSolvingPath(grid, start, exits, target, solKey, 300000);
+      if (!extra) return false;
+      // Only nudge POSITIVE off-path distractors: never an exit, never a
+      // negative cell (so the controlled negative count stays intact and a -1
+      // is never bumped to a dead 0), and ±1 keeps it inside [valLo,valHi].
+      const cands = extra.filter(function (p) {
+        const k = mpKey(p.r, p.c);
+        return !solSet[k] && !exitSet[k] && grid[p.r][p.c].t === 'num' && grid[p.r][p.c].v > 0;
+      });
+      if (!cands.length) return false;
+      const t = pickFrom(rng, cands), cur = grid[t.r][t.c].v;
+      grid[t.r][t.c] = { t: 'num', v: cur < P.valHi ? cur + 1 : cur - 1 };
+    }
+    return false;
+  }
+
+  function magicpathTryGen(P, world, rng) {
+    const size = P.gridSize;
+    const ends = magicpathPlaceEndpoints(size, P.multiExit, rng);
+    const start = ends.start, exits = ends.exits;
+    if (!exits.length) return null;
+    let path = null, usedLen = P.pathLen;
+    const lens = [P.pathLen, P.pathLen - 1, P.pathLen + 1, P.pathLen - 2, P.pathLen + 2];
+    for (let i = 0; i < lens.length; i++) {
+      const len = lens[i];
+      if (len < 2 || len > size * size) continue;
+      path = magicpathFindPath(size, start, exits, len, rng);
+      if (path) { usedLen = len; break; }
+    }
+    if (!path) return null;
+    const grid = magicpathEmptyGrid(size);
+    const target = magicpathAssignPath(grid, path, P, rng);
+    if (target === null) return null;
+    magicpathAssignDecoyExits(grid, path, exits, P, rng);
+    magicpathPlaceTraps(grid, start, path, exits, P, rng);
+    magicpathPlaceExtraSpecials(grid, start, path, exits, P, rng);
+    magicpathFillDistractors(grid, P, rng);
+    if (!magicpathEnforceUnique(grid, start, exits, target, path, P, rng)) return null;
+    return {
+      grid: grid, start: start, exits: exits, target: target, solution: path,
+      pathLength: usedLen, gridSize: size, decoyCount: P.decoyCount, parTimeMs: P.parBaseMs, world: world
+    };
+  }
+
+  // Last-resort valid level (a straight row), target = its own sum. Should
+  // essentially never trigger (80 attempts cover grids ≤7×7).
+  function magicpathTrivial(P, world, rng) {
+    const size = P.gridSize, start = { r: 0, c: 0 }, exits = [{ r: 0, c: size - 1 }];
+    const grid = magicpathEmptyGrid(size); const path = []; let sum = 0;
+    for (let c = 0; c < size; c++) { const v = ri(rng, P.valLo, P.valHi); grid[0][c] = { t: 'num', v: v }; path.push({ r: 0, c: c }); sum += v; }
+    for (let r = 0; r < size; r++) for (let c = 0; c < size; c++) if (!grid[r][c]) grid[r][c] = { t: 'num', v: P.valHi };
+    return { grid: grid, start: start, exits: exits, target: sum, solution: path, pathLength: path.length, gridSize: size, decoyCount: 0, parTimeMs: P.parBaseMs, world: world };
+  }
+
+  function magicpathGenLevel(band, difficulty, world, levelInWorld, rng) {
+    if (!rng) rng = magicpathRng(magicpathSeed(band + '|' + difficulty + '|' + world + '|' + levelInWorld));
+    const P = magicpathParams(band, difficulty, world, levelInWorld);
+    for (let attempt = 0; attempt < 80; attempt++) {
+      const lvl = magicpathTryGen(P, world, rng);
+      if (lvl) return lvl;
+    }
+    return magicpathTrivial(P, world, rng);
+  }
+
+  /* ===== Ojo de Ora (eye-of-ora) — estimation & number sense =====
+     Six visual/mental challenge types over 8 rounds. Numeric types (dot-cloud,
+     number-line, fraction-visual) score on a continuous accuracy curve; choice
+     types (compare-groups, estimate-result, quick-magnitude) score 100/0 plus a
+     small speed bonus. Pure data — the whole session is generated headlessly so
+     tests can drive it. All randomness flows through the injected rng. */
+  const EYE_TYPES_BY_BAND = {
+    '6-8':  ['dot-cloud', 'compare-groups', 'number-line', 'estimate-result'],
+    '9-12': ['dot-cloud', 'compare-groups', 'number-line', 'estimate-result', 'fraction-visual', 'quick-magnitude'],
+    '13+':  ['dot-cloud', 'compare-groups', 'number-line', 'estimate-result', 'fraction-visual', 'quick-magnitude']
+  };
+  // Score tolerances for the numeric types. errorPct ≥ tolerance → 0 points;
+  // errorPct = 0 → 100; linear in between (fraction-visual uses absolute pct).
+  const EYE_TOLERANCE = {
+    'dot-cloud':       { easy: 0.30, medium: 0.20, hard: 0.15 },
+    'number-line':     { easy: 0.15, medium: 0.10, hard: 0.07 },
+    'fraction-visual': { easy: 0.25, medium: 0.15, hard: 0.10 }
+  };
+  const EYE_CHOICE_TYPES = ['compare-groups', 'estimate-result', 'quick-magnitude'];
+  function eyeIsChoiceType(type) { return EYE_CHOICE_TYPES.indexOf(type) !== -1; }
+
+  // Per type × band × difficulty parameter ranges. `null` = type not offered to
+  // that band (6-8 has neither fraction-visual nor quick-magnitude).
+  const EYE_CHALLENGE_TABLE = {
+    'dot-cloud': {
+      '6-8':  { easy:{ countMin:6,  countMax:18,  dotR:0.052, exposureMs:4000 }, medium:{ countMin:10, countMax:25,  dotR:0.05,  exposureMs:3000 }, hard:{ countMin:15,  countMax:30,  dotR:0.048, exposureMs:2000 } },
+      '9-12': { easy:{ countMin:20, countMax:45,  dotR:0.034, exposureMs:4000 }, medium:{ countMin:30, countMax:60,  dotR:0.032, exposureMs:3000 }, hard:{ countMin:45,  countMax:80,  dotR:0.03,  exposureMs:2000 } },
+      '13+':  { easy:{ countMin:55, countMax:90,  dotR:0.02,  exposureMs:3000 }, medium:{ countMin:80, countMax:120, dotR:0.018, exposureMs:2500 }, hard:{ countMin:110, countMax:150, dotR:0.016, exposureMs:2000 } }
+    },
+    'compare-groups': {
+      '6-8':  { easy:{ minCount:4,  maxCount:12, minDiff:3, maxDiff:6, exposureMs:4000 }, medium:{ minCount:5,  maxCount:15, minDiff:3, maxDiff:5, exposureMs:3000 }, hard:{ minCount:6,  maxCount:15, minDiff:3, maxDiff:4, exposureMs:2500 } },
+      '9-12': { easy:{ minCount:8,  maxCount:25, minDiff:3, maxDiff:6, exposureMs:3500 }, medium:{ minCount:12, maxCount:35, minDiff:2, maxDiff:5, exposureMs:3000 }, hard:{ minCount:15, maxCount:40, minDiff:2, maxDiff:3, exposureMs:2500 } },
+      '13+':  { easy:{ minCount:20, maxCount:50, minDiff:2, maxDiff:4, exposureMs:3000 }, medium:{ minCount:30, maxCount:65, minDiff:1, maxDiff:3, exposureMs:2500 }, hard:{ minCount:40, maxCount:80, minDiff:1, maxDiff:3, exposureMs:2000 } }
+    },
+    'number-line': {
+      '6-8':  { easy:{ min:0, max:100, values:[10,25,50,75] }, medium:{ min:0, max:100, values:[10,20,25,40,50,60,75,80] }, hard:{ min:0, max:100, values:[15,35,45,55,65,85] } },
+      '9-12': { easy:{ min:0, max:1000 }, medium:{ min:0, max:1000 }, hard:{ min:0, max:1000 } },
+      '13+':  { easy:{ min:0, max:1000 }, medium:{ min:0, max:10000 }, hard:{ min:0, max:750 } }
+    },
+    'estimate-result': {
+      '6-8':  { easy:{ op:'add', aMin:8,  aMax:29, unit:10,  gapMul:2 }, medium:{ op:'add', aMin:12, aMax:48, unit:10,  gapMul:1 }, hard:{ op:'add', aMin:18, aMax:68, unit:10, gapMul:1 } },
+      '9-12': { easy:{ op:'mul', aMin:11, aMax:29, bMin:11, bMax:29, unit:100, gapMul:2 }, medium:{ op:'mul', aMin:18, aMax:49, bMin:11, bMax:39, unit:100, gapMul:1 }, hard:{ op:'mul', aMin:21, aMax:79, bMin:11, bMax:49, unit:50, gapMul:1 } },
+      '13+':  { easy:{ op:'expr', aMin:21, aMax:59, bMin:21, bMax:59, cMin:200, cMax:900,  unit:100, gapMul:2 }, medium:{ op:'expr', aMin:31, aMax:89, bMin:31, bMax:89, cMin:500, cMax:1500, unit:100, gapMul:1 }, hard:{ op:'expr', aMin:41, aMax:99, bMin:41, bMax:99, cMin:800, cMax:2500, unit:100, gapMul:1 } }
+    },
+    'fraction-visual': {
+      '6-8':  null,
+      '9-12': { easy:{ segMin:4, segMax:8 },  medium:{ segMin:5, segMax:10 }, hard:{ segMin:6, segMax:12 } },
+      '13+':  { easy:{ segMin:5, segMax:10 }, medium:{ segMin:6, segMax:12 }, hard:{ segMin:8, segMax:16 } }
+    },
+    'quick-magnitude': {
+      '6-8':  null,
+      '9-12': { easy:{ kinds:['mul'], minDiffPct:20 }, medium:{ kinds:['mul'], minDiffPct:10 }, hard:{ kinds:['mul'], minDiffPct:3 } },
+      '13+':  { easy:{ kinds:['mul','pow'], minDiffPct:20 }, medium:{ kinds:['mul','pow','frac'], minDiffPct:10 }, hard:{ kinds:['pow','frac'], minDiffPct:3 } }
+    }
+  };
+
+  function eyeShuffle(arr, rng) {
+    for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(rng() * (i + 1)); const t = arr[i]; arr[i] = arr[j]; arr[j] = t; }
+    return arr;
+  }
+
+  // Scatter `count` circles in the unit square with best-effort non-overlap.
+  function eyeScatter(count, rng, opts) {
+    opts = opts || {};
+    const r = opts.r || 0.06, minDist = r * 1.7;
+    const items = [];
+    for (let i = 0; i < count; i++) {
+      let x = r, y = r, placed = false;
+      for (let a = 0; a < 200 && !placed; a++) {
+        x = r + rng() * (1 - 2 * r); y = r + rng() * (1 - 2 * r);
+        placed = true;
+        for (let k = 0; k < items.length; k++) { const dx = items[k].x - x, dy = items[k].y - y; if (dx * dx + dy * dy < minDist * minDist) { placed = false; break; } }
+      }
+      items.push({ x: x, y: y, r: r });
+    }
+    return items;
+  }
+
+  function eyeGenDotCloud(cell, difficulty, rng) {
+    const count = ri(rng, cell.countMin, cell.countMax);
+    const r = cell.dotR, minDist = r * 2;
+    const dots = [];
+    for (let i = 0; i < count; i++) {
+      let x = r, y = r, placed = false;
+      // Rejection sampling (≤500 attempts), then accept the last sample — at
+      // high counts a little overlap is acceptable (it only makes estimation
+      // harder, which is the point for 13+).
+      for (let a = 0; a < 500 && !placed; a++) {
+        x = r + rng() * (1 - 2 * r); y = r + rng() * (1 - 2 * r);
+        placed = true;
+        for (let k = 0; k < dots.length; k++) { const dx = dots[k].x - x, dy = dots[k].y - y; if (dx * dx + dy * dy < minDist * minDist) { placed = false; break; } }
+      }
+      dots.push({ x: x, y: y, r: r });
+    }
+    return { type:'dot-cloud', count: count, dots: dots, exposureMs: cell.exposureMs, correct: count, tolerance: EYE_TOLERANCE['dot-cloud'][difficulty] };
+  }
+
+  function eyeGenCompare(cell, difficulty, rng) {
+    const bigCount = ri(rng, cell.minCount + cell.maxDiff, cell.maxCount);
+    const diff = ri(rng, cell.minDiff, cell.maxDiff);
+    let smallCount = bigCount - diff;
+    if (smallCount < cell.minCount) smallCount = cell.minCount;
+    if (smallCount >= bigCount) smallCount = bigCount - 1;
+    const leftBig = rng() < 0.5;
+    const leftCount = leftBig ? bigCount : smallCount;
+    const rightCount = leftBig ? smallCount : bigCount;
+    const correctSide = leftCount > rightCount ? 'left' : 'right';
+    // Hard: a perceptual trick — the smaller group's items are drawn bigger.
+    const trick = difficulty === 'hard';
+    const leftR = trick && leftCount < rightCount ? 0.085 : 0.06;
+    const rightR = trick && rightCount < leftCount ? 0.085 : 0.06;
+    return { type:'compare-groups',
+      left:  { count: leftCount,  items: eyeScatter(leftCount,  rng, { r: leftR }) },
+      right: { count: rightCount, items: eyeScatter(rightCount, rng, { r: rightR }) },
+      correctSide: correctSide, exposureMs: cell.exposureMs, correct: correctSide };
+  }
+
+  function eyeGenNumberLine(cell, difficulty, rng) {
+    const min = cell.min, max = cell.max, span = max - min;
+    let target;
+    if (cell.values) { target = pickFrom(rng, cell.values); }
+    else { const lo = min + span * 0.06, hi = max - span * 0.06; target = Math.round(lo + rng() * (hi - lo)); }
+    return { type:'number-line', min: min, max: max, target: target, tolerance: EYE_TOLERANCE['number-line'][difficulty], correct: target };
+  }
+
+  function eyeGenEstimate(cell, rng) {
+    let expression, real;
+    if (cell.op === 'add') {
+      const a = ri(rng, cell.aMin, cell.aMax), b = ri(rng, cell.aMin, cell.aMax);
+      real = a + b; expression = a + ' + ' + b;
+    } else if (cell.op === 'mul') {
+      const a = ri(rng, cell.aMin, cell.aMax), b = ri(rng, cell.bMin, cell.bMax);
+      real = a * b; expression = a + ' × ' + b;
+    } else {
+      const a = ri(rng, cell.aMin, cell.aMax), b = ri(rng, cell.bMin, cell.bMax);
+      const cHi = Math.max(cell.cMin, Math.min(cell.cMax, a * b - 100));
+      const c = ri(rng, cell.cMin, cHi);
+      real = a * b - c; expression = '(' + a + ' × ' + b + ') − ' + c;
+    }
+    const unit = cell.unit;
+    const nearest = Math.round(real / unit) * unit;
+    let other = nearest + (real >= nearest ? -1 : 1) * unit * cell.gapMul;
+    if (other <= 0) other = nearest + unit * cell.gapMul;
+    // Push `other` further until one option is strictly closest to real.
+    let guard = 0;
+    while ((other === nearest || Math.abs(other - real) === Math.abs(nearest - real)) && guard++ < 8) other += unit;
+    const nearestCloser = Math.abs(nearest - real) < Math.abs(other - real);
+    const correctVal = nearestCloser ? nearest : other;
+    const wrongVal = nearestCloser ? other : nearest;
+    let optionA, optionB, correct;
+    if (rng() < 0.5) { optionA = correctVal; optionB = wrongVal; correct = 'A'; }
+    else { optionA = wrongVal; optionB = correctVal; correct = 'B'; }
+    return { type:'estimate-result', expression: expression, optionA: optionA, optionB: optionB, correct: correct, real: real };
+  }
+
+  function eyeGenFraction(cell, difficulty, rng) {
+    const shape = pickFrom(rng, ['circle', 'square', 'triangle']);
+    let filledPct;
+    if (difficulty === 'hard') { do { filledPct = ri(rng, 10, 90); } while (filledPct === 25 || filledPct === 50 || filledPct === 75); }
+    else { filledPct = ri(rng, 10, 90); }
+    const segments = ri(rng, cell.segMin, cell.segMax);
+    return { type:'fraction-visual', shape: shape, filledPct: filledPct, segments: segments, tolerance: EYE_TOLERANCE['fraction-visual'][difficulty], correct: filledPct };
+  }
+
+  function eyeMagOperand(kind, rng) {
+    if (kind === 'pow') { const n = ri(rng, 2, 20); return { expr: n + '²', value: n * n }; }
+    if (kind === 'frac') { const d = ri(rng, 3, 12), n = ri(rng, 1, d - 1); return { expr: n + '/' + d, value: n / d }; }
+    const a = ri(rng, 2, 12), b = ri(rng, 2, 12); return { expr: a + ' × ' + b, value: a * b };
+  }
+  function eyeGenMagnitude(cell, rng) {
+    const kind = pickFrom(rng, cell.kinds);
+    let A, B, guard = 0;
+    do { A = eyeMagOperand(kind, rng); B = eyeMagOperand(kind, rng); guard++; }
+    while (guard < 80 && (A.value === B.value || Math.abs(A.value - B.value) / Math.max(A.value, B.value) < cell.minDiffPct / 100));
+    if (A.value === B.value) { B = { expr: (A.value + 1) + '', value: A.value + 1 }; }
+    const correct = A.value > B.value ? 'A' : 'B';
+    return { type:'quick-magnitude', exprA: A.expr, exprB: B.expr, valueA: A.value, valueB: B.value, correct: correct };
+  }
+
+  function eyeGenRound(type, band, difficulty, rng) {
+    rng = rng || Math.random;
+    const byBand = EYE_CHALLENGE_TABLE[type] || {};
+    const c = (byBand[band] && byBand[band][difficulty]) || {};
+    switch (type) {
+      case 'dot-cloud':       return eyeGenDotCloud(c, difficulty, rng);
+      case 'compare-groups':  return eyeGenCompare(c, difficulty, rng);
+      case 'number-line':     return eyeGenNumberLine(c, difficulty, rng);
+      case 'estimate-result': return eyeGenEstimate(c, rng);
+      case 'fraction-visual': return eyeGenFraction(c, difficulty, rng);
+      case 'quick-magnitude': return eyeGenMagnitude(c, rng);
+      default:                return eyeGenDotCloud(EYE_CHALLENGE_TABLE['dot-cloud'][band][difficulty], difficulty, rng);
+    }
+  }
+
+  // Lay tokens (one per round) into 8 slots so no two adjacent are equal. Filling
+  // the most-frequent first into [evens then odds] guarantees this whenever the
+  // top count ≤ ceil(n/2) = 4, which always holds here.
+  function eyeArrange(tokens, rng) {
+    const counts = {};
+    tokens.forEach(function (t) { counts[t] = (counts[t] || 0) + 1; });
+    const types = eyeShuffle(Object.keys(counts), rng);
+    types.sort(function (a, b) { return counts[b] - counts[a]; });
+    const n = tokens.length, res = new Array(n), order = [];
+    for (let i = 0; i < n; i += 2) order.push(i);
+    for (let i = 1; i < n; i += 2) order.push(i);
+    let oi = 0;
+    for (let ti = 0; ti < types.length; ti++) { const ty = types[ti]; for (let k = 0; k < counts[ty]; k++) res[order[oi++]] = ty; }
+    return res;
+  }
+
+  function eyeGenSession(band, difficulty, rng) {
+    rng = rng || Math.random;
+    const types = EYE_TYPES_BY_BAND[band] || EYE_TYPES_BY_BAND['9-12'];
+    let tokens;
+    if (band === '6-8') { tokens = types.concat(types); }            // 4 types × 2
+    else { tokens = types.slice(); while (tokens.length < 8) tokens.push(pickFrom(rng, types)); } // ≥1 each + extras
+    const ordered = eyeArrange(tokens, rng);
+    return ordered.map(function (ty) { return eyeGenRound(ty, band, difficulty, rng); });
+  }
+
+  // Per-round scoring. Numeric types: continuous accuracy curve. Choice types
+  // ({ choice, fast }): 100/0 plus a ≤10 speed bonus (kept out of `points` so
+  // accuracy stays ≤100%; `total` folds the bonus in).
+  function eyeScoreForRound(type, answer, correct, difficulty) {
+    if (eyeIsChoiceType(type)) {
+      const choice = (answer && typeof answer === 'object') ? answer.choice : answer;
+      const fast = !!(answer && typeof answer === 'object' && answer.fast);
+      const ok = choice === correct;
+      const points = ok ? 100 : 0;
+      const bonus = (ok && fast) ? 10 : 0;
+      return { points: points, errorPct: ok ? 0 : 1, errorAbs: ok ? 0 : 1, bonus: bonus, total: points + bonus };
+    }
+    const tol = (EYE_TOLERANCE[type] || {})[difficulty] || 0.2;
+    const errorAbs = Math.abs(answer - correct);
+    const errorPct = type === 'fraction-visual' ? errorAbs / 100 : errorAbs / Math.max(correct, 1);
+    const points = Math.max(0, Math.round(100 * (1 - errorPct / tol)));
+    return { points: points, errorPct: errorPct, errorAbs: errorAbs, bonus: 0, total: points };
+  }
+
+  function eyeTotalScore(rounds) {
+    let total = 0, accSum = 0;
+    const breakdown = rounds.map(function (r) {
+      const pts = r.points || 0, bon = r.bonus || 0;
+      total += pts + bon; accSum += pts;
+      return { points: pts, bonus: bon, total: pts + bon };
+    });
+    const accuracy = rounds.length ? Math.round(accSum / rounds.length) : 0;
+    return { total: total, accuracy: accuracy, breakdown: breakdown };
+  }
+
   // FUTURE (phase 2): badges/achievements registry.
 
   return { ORAMATH_AGE_BANDS, bandFor, timeFactorFor, GEN_TABLE, TT_TABLE, TRAP_KINDS,
+           MAGICPATH_TABLE, MAGICPATH_WORLDS,
+           magicpathParams, magicpathGenLevel, magicpathValidatePath, magicpathAcc,
+           magicpathCheckStar, magicpathHintNext, magicpathParTime,
+           magicpathUnlockThreshold, magicpathXpForLevel, magicpathWorldMult,
+           magicpathCountSolutions, magicpathFindPath,
            genOperation, genTrapEquation,
            ttTimeLimitMs, ttScoreFor,
            sprintMultiplier, sprintScoreFor, sprintBonusMs,
@@ -8917,6 +9716,8 @@ const MathEngine = (function () {
            equacodeConfig, equacodeDailyPuzzle, equacodeEval, equacodeValidateGuess,
            equacodeFeedback, equacodeKeyStates, equacodeGrid, equacodeUpdateStats,
            equacodeParseSide, equacodeToString,
+           EYE_CHALLENGE_TABLE, EYE_TYPES_BY_BAND, EYE_TOLERANCE,
+           eyeGenSession, eyeGenRound, eyeScoreForRound, eyeTotalScore,
            xpForGame, xpNeededFor, levelForXp,
            prevDayKey, updateDailyStreak,
            recordKey, bestRecord, updateRecord };
@@ -8976,7 +9777,9 @@ const MATH_GAMES = {
   'truth-or-trap': { icon:'🎭', nameKey:'mathTTName',     subKey:'mathTTSub',     start:'startMathTT()',      state:function(){ return state.mathTT; } },
   'math-sprint':   { icon:'⚡', nameKey:'mathSprintName', subKey:'mathSprintSub', start:'startMathSprint()',  state:function(){ return state.mathSprint; } },
   'numdrop':       { icon:'🧩', nameKey:'mathNDName',     subKey:'mathNDSub',     start:'startMathNumDrop()', state:function(){ return state.mathNumDrop; } },
-  'equacode':      { icon:'🔐', nameKey:'mathEQName',     subKey:'mathEQSub',     start:'startMathEqua()',    state:function(){ return state.mathEqua; } }
+  'equacode':      { icon:'🔐', nameKey:'mathEQName',     subKey:'mathEQSub',     start:'startMathEqua()',    state:function(){ return state.mathEqua; } },
+  'magic-path':    { icon:'🗺️', nameKey:'mathMPName',     subKey:'mathMPSub',     start:'startMagicPath()',   state:function(){ return state.mathMP; }, hasLevels:true },
+  'eye-of-ora':    { icon:'👁️', nameKey:'mathEyeName',    subKey:'mathEyeSub',    start:'startEyeOfOra()',    state:function(){ return state.mathEye; } }
 };
 function mathGameName(mode){ const g = MATH_GAMES[mode]; return g ? t(g.nameKey) : t('mathTitle'); }
 
@@ -9060,7 +9863,8 @@ function mathOpText(op){
 }
 
 // Shared setup screen (age + difficulty + record line) for both OraMath games.
-function mathGameSetupHtml(gameMode){
+// `extraCta` is optional extra HTML inserted just under the Play button.
+function mathGameSetupHtml(gameMode, extraCta){
   const g = MATH_GAMES[gameMode] || MATH_GAMES['truth-or-trap'];
   return ''
     + '<div class="min-h-screen bg-slate-50">'
@@ -9076,6 +9880,7 @@ function mathGameSetupHtml(gameMode){
     + '  <div class="text-center">'
     + mathRecordLineHtml(gameMode)
     + '    <button onclick="' + g.start + '" class="mt-4 btn-primary px-8 py-3 text-lg">▶ ' + t('mathPlayNow') + '</button>'
+    + (extraCta || '')
     + '    <button onclick="go(\'oramath\')" class="mt-4 block mx-auto text-sm text-slate-500 hover:underline focus-ring">← OraMath</button>'
     + '  </div>'
     + '  </div>'
@@ -9106,6 +9911,7 @@ function mathResultsHtml(opts){
     + '      <div class="stat-cell bg-sky-50 p-4"><div class="text-3xl font-bold text-sky-700">' + opts.accuracy + '%</div><div class="text-xs text-slate-600 mt-1">' + t('accuracy') + '</div></div>'
     + '    </div>'
     + (opts.statLine ? '<p class="mt-4 text-sm text-slate-600">' + opts.statLine + '</p>' : '')
+    + (opts.extraHtml || '')
     + (meta.recordIsNew
         ? '<p class="mt-4 text-sm font-bold text-amber-700">🏅 ' + pick({en:'New personal record!',es:'¡Nuevo récord personal!',fr:'Nouveau record personnel !'}) + '</p>'
         : '<p class="mt-4 text-sm text-slate-500">' + mathRecordTextFor(opts.gameMode) + '</p>')
@@ -9127,6 +9933,7 @@ function mathResultsHtml(opts){
     + '      <button onclick="saveMathScore(\'' + opts.gameMode + '\')" class="btn-primary" ' + (opts.saved ? 'disabled' : '') + '>' + (opts.saved ? t('saved') : t('saveScore')) + '</button>'
     + '      <button onclick="' + opts.retryFn + '" class="btn-ghost">' + t('playAgain') + '</button>'
     + '      <button onclick="mathShare(\'' + opts.gameMode + '\',' + opts.score + ')" class="btn-ghost">📤 ' + pick({en:'Share',es:'Compartir',fr:'Partager'}) + '</button>'
+    + (opts.extraButtons || '')
     + '      <button onclick="go(\'oramath\')" class="btn-ghost">← OraMath</button>'
     + '    </div>'
     + '  </div>'
@@ -9792,13 +10599,770 @@ function viewMathEquaCode(){
     + '</div>';
 }
 
+/* ---- Camino Mágico (magic-path) — traceable path-sum puzzle ----
+   Levels are generated deterministically by the engine (same level for every
+   player of the same band|difficulty|world|level), so progress is stored per
+   band|difficulty (two age groups sharing a band share progress — intended).
+   Unlike the other OraMath games this does NOT use the leaderboard or
+   finishMathGame(): the metric is stars/progress. It DOES award XP + the global
+   daily streak via mpAwardLevel(). 3 daily hints are shared across all levels. */
+const MAGICPATH_LS = { progress:'oramath:mp-progress', hints:'oramath:hints' };
+const MP_DAILY_HINTS = 3;
+const MP_LEVELS_PER_WORLD = 20, MP_STARS_PER_WORLD = 60;
+
+function mpProgressAll(){ return LS.get(MAGICPATH_LS.progress, {}) || {}; }
+function mpBandDiffKey(band, diff){ return band + '|' + diff; }
+function loadMPProgress(band, diff){ return mpProgressAll()[mpBandDiffKey(band, diff)] || { world:1, levels:{} }; }
+function mpLevelKey(world, level){ return world + '-' + level; }
+function mpWorldLevelsDone(prog, world){ let n = 0; for (let l = 1; l <= MP_LEVELS_PER_WORLD; l++) if (prog.levels[mpLevelKey(world, l)]) n++; return n; }
+function mpWorldStars(prog, world){ let s = 0; for (let l = 1; l <= MP_LEVELS_PER_WORLD; l++){ const e = prog.levels[mpLevelKey(world, l)]; if (e) s += e.stars; } return s; }
+function mpWorldUnlocked(prog, world){ if (world <= 1) return true; return mpWorldLevelsDone(prog, world - 1) >= MathEngine.magicpathUnlockThreshold(world); }
+function mpHighestUnlockedWorld(prog){ let w = 1; for (let world = 2; world <= MathEngine.MAGICPATH_WORLDS.length; world++){ if (mpWorldUnlocked(prog, world)) w = world; else break; } return w; }
+function mpLevelUnlocked(prog, world, level){ if (!mpWorldUnlocked(prog, world)) return false; if (level === 1) return true; return !!prog.levels[mpLevelKey(world, level - 1)] || !!prog.levels[mpLevelKey(world, level)]; }
+function saveMPLevel(band, diff, world, level, stars, timeMs){
+  const all = mpProgressAll(), k = mpBandDiffKey(band, diff);
+  const prog = all[k] || { world:1, levels:{} };
+  const lk = mpLevelKey(world, level), cur = prog.levels[lk];
+  prog.levels[lk] = {
+    stars: Math.max(cur ? cur.stars : 0, stars),
+    bestTimeMs: (cur && typeof cur.bestTimeMs === 'number') ? Math.min(cur.bestTimeMs, timeMs) : timeMs
+  };
+  prog.world = mpHighestUnlockedWorld(prog); // remember the furthest map reached
+  all[k] = prog; LS.set(MAGICPATH_LS.progress, all);
+  return prog;
+}
+
+// Daily hints — shared across all levels, reset at LOCAL midnight (todayKey()).
+function loadHints(){
+  const today = todayKey(), h = LS.get(MAGICPATH_LS.hints, null);
+  if (!h || h.date !== today){ const fresh = { date: today, used: 0 }; LS.set(MAGICPATH_LS.hints, fresh); return fresh; }
+  return h;
+}
+function hintsRemaining(){ return Math.max(0, MP_DAILY_HINTS - loadHints().used); }
+function useHint(){ const h = loadHints(); if (h.used >= MP_DAILY_HINTS) return false; h.used++; LS.set(MAGICPATH_LS.hints, h); return true; }
+
+// XP + global daily streak (no leaderboard, no finishMathGame funnel).
+function mpAwardLevel(stars, world, difficulty){
+  const today = todayKey(), profile = loadMathProfile();
+  const before = MathEngine.levelForXp(profile.xp).level;
+  const xpGained = MathEngine.magicpathXpForLevel(stars, world, difficulty);
+  profile.xp += xpGained; profile.games = (profile.games || 0) + 1;
+  saveMathProfile(profile);
+  const after = MathEngine.levelForXp(profile.xp).level;
+  const streak = MathEngine.updateDailyStreak(loadMathStreak(), today);
+  LS.set(ORAMATH_LS.streak, { days:streak.days, last:streak.last });
+  return { xpGained, leveledUp: after > before, newLevel: after, streakDays: streak.days, milestone: streak.milestone };
+}
+
+function mpBand(){ const su = mathSetupOrDefault(); return (MathEngine.ORAMATH_AGE_BANDS[su.ageGroup] || MathEngine.ORAMATH_AGE_BANDS.family).band; }
+function mpStarStr(n){ return '★'.repeat(n) + '☆'.repeat(3 - n); }
+function mpKeyHost(r, c){ return r + ',' + c; }
+function startMagicPath(){ go('oramath', { mode:'magic-path', subview:'worlds' }); }
+
+// Generate (deterministically) and open a level for play.
+function mpOpenLevel(world, level){
+  const su = mathSetupOrDefault();
+  const info = MathEngine.ORAMATH_AGE_BANDS[su.ageGroup] || MathEngine.ORAMATH_AGE_BANDS.family;
+  const lvl = MathEngine.magicpathGenLevel(info.band, su.difficulty, world, level); // seeded → same for everyone
+  state.mathMP = {
+    ageGroup: su.ageGroup, difficulty: su.difficulty, band: info.band, timeFactor: info.timeFactor,
+    world: world, level: level, levelData: lvl,
+    grid: lvl.grid, start: lvl.start, exits: lvl.exits, target: lvl.target, solution: lvl.solution,
+    parTimeMs: MathEngine.magicpathParTime(lvl.parTimeMs, info.timeFactor),
+    path: [], usedHints: 0, hintedCells: [], lastHintCell: null, failMsg: '',
+    started: true, ended: false, startedAt: Date.now(), timeMs: 0, stars: 0, newStars: false, award: null,
+    tracing: false, captured: false, gestureMoved: false, downOnStart: false, suppressClickUntil: 0
+  };
+  go('oramath', { mode:'magic-path', subview:'play', world: world, level: level });
+}
+
+/* ---- Tracing: pointer events with capture deferred until the first move, so a
+   plain tap still fires the per-cell onclick (accessible step-by-step path). --- */
+function mpCellUnder(e){
+  const el = document.elementFromPoint(e.clientX, e.clientY);
+  const cell = el && el.closest ? el.closest('.mp-cell') : null;
+  if (!cell || !cell.dataset || cell.dataset.r === undefined) return null;
+  return { r: +cell.dataset.r, c: +cell.dataset.c };
+}
+function mpDown(e){
+  const s = state.mathMP; if (!s || s.ended) return;
+  const cell = mpCellUnder(e);
+  s.tracing = true; s.captured = false; s.gestureMoved = false;
+  s.downOnStart = !!cell && cell.r === s.start.r && cell.c === s.start.c;
+}
+function mpMove(e){
+  const s = state.mathMP; if (!s || !s.tracing) return;
+  const cell = mpCellUnder(e); if (!cell) return;
+  if (!s.captured){ const g = document.getElementById('mp-grid'); if (g){ try { g.setPointerCapture(e.pointerId); } catch (err) {} } s.captured = true; }
+  mpDragStep(cell.r, cell.c);
+}
+function mpUp(e){
+  const s = state.mathMP; if (!s) return;
+  s.tracing = false;
+  if (s.captured){ const g = document.getElementById('mp-grid'); if (g){ try { g.releasePointerCapture(e.pointerId); } catch (err) {} } s.captured = false; }
+  if (s.gestureMoved) s.suppressClickUntil = Date.now() + 350; // swallow the click that follows a drag
+}
+function mpDragStep(r, c){
+  const s = state.mathMP;
+  if (s.path.length === 0){
+    if (r === s.start.r && c === s.start.c){ s.path.push({ r:r, c:c }); s.gestureMoved = true; mpPaint(); return; }
+    if (s.downOnStart){ s.path.push({ r:s.start.r, c:s.start.c }); } else return;
+  }
+  if (mpExtendTo(r, c)) s.gestureMoved = true;
+}
+// Tap-to-step alternative (also the accessible keyboard-free path on desktop).
+function mpTapCell(r, c){
+  const s = state.mathMP; if (!s || s.ended) return;
+  if (Date.now() < s.suppressClickUntil) return;
+  if (s.path.length === 0){ if (r === s.start.r && c === s.start.c){ s.path.push({ r:r, c:c }); mpAfterPathChange(); } return; }
+  const last = s.path[s.path.length - 1];
+  if (r === last.r && c === last.c){ s.path.pop(); mpAfterPathChange(); return; } // tap the tip to undo
+  mpExtendTo(r, c);
+}
+// Extend/backtrack relative to the path tip. Returns true if the path changed.
+function mpExtendTo(r, c){
+  const s = state.mathMP, p = s.path;
+  if (p.length === 0) return false;
+  const last = p[p.length - 1];
+  if (r === last.r && c === last.c) return false;
+  if (p.length >= 2){ const sec = p[p.length - 2]; if (r === sec.r && c === sec.c){ p.pop(); mpAfterPathChange(); return true; } }
+  if (Math.abs(r - last.r) + Math.abs(c - last.c) !== 1) return false;
+  if (p.some(function (q){ return q.r === r && q.c === c; })) return false;
+  if (s.grid[r][c].t === 'trap'){ mpFlashTrap(r, c); return false; }
+  p.push({ r:r, c:c }); mpAfterPathChange(); return true;
+}
+function mpAfterPathChange(){ const s = state.mathMP; if (s.failMsg){ s.failMsg = ''; } s.lastHintCell = null; mpPaint(); }
+function mpFlashTrap(r, c){
+  if (navigator.vibrate){ try { navigator.vibrate(40); } catch (e) {} }
+  const el = document.querySelector('#mp-grid .mp-cell[data-r="' + r + '"][data-c="' + c + '"]');
+  if (el){ el.classList.add('mp-cell--flash'); setTimeout(function (){ el.classList.remove('mp-cell--flash'); }, 350); }
+}
+// Incremental repaint of the path overlay + live sum + confirm button (no full
+// re-render — keeps the pointer capture alive while dragging).
+function mpPaint(){
+  const s = state.mathMP; if (!s) return;
+  const onPath = {}; s.path.forEach(function (p){ onPath[mpKeyHost(p.r, p.c)] = true; });
+  const cells = document.querySelectorAll('#mp-grid .mp-cell');
+  for (let i = 0; i < cells.length; i++){ const el = cells[i]; el.classList.toggle('mp-cell--path', !!onPath[el.dataset.r + ',' + el.dataset.c]); }
+  const sumEl = document.getElementById('mp-sum'); if (sumEl) sumEl.textContent = MathEngine.magicpathAcc(s.grid, s.path);
+  const msgEl = document.getElementById('mp-msg'); if (msgEl) msgEl.textContent = s.failMsg || '';
+  const confirm = document.getElementById('mp-confirm');
+  if (confirm){ const last = s.path[s.path.length - 1]; const atExit = last && s.exits.some(function (e){ return e.r === last.r && e.c === last.c; }); confirm.style.display = atExit ? '' : 'none'; }
+}
+function mpClearPath(){ const s = state.mathMP; if (!s || s.ended) return; s.path = []; s.failMsg = ''; s.lastHintCell = null; mpPaint(); }
+function mpConfirmPath(){
+  const s = state.mathMP; if (!s || s.ended) return;
+  const v = MathEngine.magicpathValidatePath(s.grid, s.path, s.exits, s.target);
+  if (v.valid){ mpWinLevel(); return; }
+  s.failMsg = t('mpAlmost').replace('{sum}', v.sum).replace('{target}', s.target);
+  const msgEl = document.getElementById('mp-msg'); if (msgEl) msgEl.textContent = s.failMsg;
+}
+function mpWinLevel(){
+  const s = state.mathMP; s.ended = true; s.timeMs = Date.now() - s.startedAt;
+  s.stars = MathEngine.magicpathCheckStar(s.parTimeMs, { usedHints: s.usedHints, timeMs: s.timeMs }).stars;
+  const beforeEntry = loadMPProgress(s.band, s.difficulty).levels[mpLevelKey(s.world, s.level)];
+  const beforeStars = beforeEntry ? beforeEntry.stars : 0;
+  saveMPLevel(s.band, s.difficulty, s.world, s.level, s.stars, s.timeMs);
+  s.newStars = s.stars > beforeStars;
+  s.award = mpAwardLevel(s.stars, s.world, s.difficulty);
+  render();
+  try { confetti(); } catch (e) {}
+}
+function mpUseHint(){
+  const s = state.mathMP; if (!s || s.ended) return;
+  if (hintsRemaining() <= 0){ toast(t('mpHintsTomorrow')); return; }
+  const next = MathEngine.magicpathHintNext(s.solution, s.path);
+  if (next){
+    s.path.push({ r: next.r, c: next.c });
+    s.hintedCells.push(mpKeyHost(next.r, next.c));
+    s.lastHintCell = mpKeyHost(next.r, next.c);
+  } else {
+    if (mpIsPrefix(s.path, s.solution)) return; // already on the solution; nothing to reveal
+    s.path = s.solution.slice(0, 2).map(function (p){ return { r: p.r, c: p.c }; }); // wrong path → reset + reveal first two
+    s.hintedCells.push(mpKeyHost(s.solution[0].r, s.solution[0].c), mpKeyHost(s.solution[1].r, s.solution[1].c));
+    s.lastHintCell = mpKeyHost(s.solution[1].r, s.solution[1].c);
+  }
+  s.usedHints++; useHint(); s.failMsg = '';
+  render();
+  setTimeout(function (){ if (state.mathMP) state.mathMP.lastHintCell = null; }, 2100);
+}
+function mpIsPrefix(path, sol){ if (path.length > sol.length) return false; for (let i = 0; i < path.length; i++){ if (path[i].r !== sol[i].r || path[i].c !== sol[i].c) return false; } return true; }
+
+function mpSetupHtml(){
+  return ''
+    + '<div class="min-h-screen bg-slate-50">' + Header()
+    + '<main class="max-w-4xl mx-auto px-4 sm:px-6 py-10">'
+    + '  <div class="text-center mb-8">'
+    + '    <span class="chip bg-amber-100 text-amber-800">➗ OraMath</span>'
+    + '    <h1 class="mt-4 font-display text-3xl md:text-4xl font-bold">🗺️ ' + t('mathMPName') + '</h1>'
+    + '    <p class="mt-3 text-slate-600 max-w-2xl mx-auto">' + t('mathMPSub') + '</p>'
+    + '  </div>'
+    + '  <div class="card p-6 md:p-8 space-y-8">'
+    + mathSetupGridsHtml()
+    + '    <div class="text-center">'
+    + '      <button onclick="startMagicPath()" class="mt-2 btn-primary px-8 py-3 text-lg">▶ ' + t('mathPlayNow') + '</button>'
+    + '      <button onclick="go(\'oramath\')" class="mt-4 block mx-auto text-sm text-slate-500 hover:underline focus-ring">← OraMath</button>'
+    + '    </div>'
+    + '  </div>'
+    + '</main>' + Footer() + '</div>';
+}
+function mpWorldsHtml(){
+  const su = mathSetupOrDefault(), band = mpBand(), prog = loadMPProgress(band, su.difficulty);
+  const worlds = MathEngine.MAGICPATH_WORLDS.map(function (w){
+    const unlocked = mpWorldUnlocked(prog, w.id), stars = mpWorldStars(prog, w.id), done = mpWorldLevelsDone(prog, w.id) === MP_LEVELS_PER_WORLD;
+    const cls = !unlocked ? ' mp-world--locked' : (done ? ' mp-world--done' : '');
+    const click = unlocked ? 'onclick="go(\'oramath\',{mode:\'magic-path\',subview:\'levels\',world:' + w.id + '})"' : 'disabled';
+    return '<button ' + click + ' class="mp-world' + cls + ' focus-ring">'
+      + '<span class="text-3xl" aria-hidden="true">' + (unlocked ? w.icon : '🔒') + '</span>'
+      + '<span class="flex-1">'
+      + '<span class="block font-display font-bold text-slate-900">' + t('mpWorldN').replace('{n}', w.id).replace('{name}', t(w.nameKey)) + '</span>'
+      + '<span class="block text-xs text-slate-500">' + (unlocked ? ('⭐ ' + stars + '/' + MP_STARS_PER_WORLD + ' ' + t('mpStarsLabel')) : t('mpWorldLocked')) + '</span>'
+      + '</span>'
+      + (done ? '<span class="text-emerald-500 text-xl">✓</span>' : '')
+      + '</button>';
+  }).join('');
+  return ''
+    + '<div class="min-h-screen bg-slate-50">' + Header()
+    + '<main class="max-w-xl mx-auto px-4 sm:px-6 py-8">'
+    + '  <div class="text-center mb-6">'
+    + '    <span class="chip bg-amber-100 text-amber-800">🗺️ ' + t('mathMPName') + '</span>'
+    + '    <h1 class="mt-3 font-display text-2xl font-bold">' + pick({en:'Choose a world',es:'Elige un mundo',fr:'Choisis un monde'}) + '</h1>'
+    + '  </div>'
+    + '  <div class="mp-worlds">' + worlds + '</div>'
+    + '  <button onclick="go(\'oramath\',{mode:\'magic-path\'})" class="mt-6 block mx-auto text-sm text-slate-500 hover:underline focus-ring">← ' + pick({en:'Change age / difficulty',es:'Cambiar edad / dificultad',fr:'Changer âge / difficulté'}) + '</button>'
+    + '</main>' + Footer() + '</div>';
+}
+function mpLevelsHtml(world){
+  const su = mathSetupOrDefault(), band = mpBand(), prog = loadMPProgress(band, su.difficulty);
+  if (!world || !mpWorldUnlocked(prog, world)) return mpWorldsHtml();
+  const wmeta = MathEngine.MAGICPATH_WORLDS[world - 1];
+  let cells = '';
+  for (let l = 1; l <= MP_LEVELS_PER_WORLD; l++){
+    const e = prog.levels[mpLevelKey(world, l)], unlocked = mpLevelUnlocked(prog, world, l), isCurrent = unlocked && !e;
+    const cls = !unlocked ? ' mp-level--locked' : (e ? ' mp-level--done' : (isCurrent ? ' mp-level--current' : ''));
+    const inner = !unlocked ? '🔒' : ('<span>' + l + '</span><span class="mp-stars">' + (e ? mpStarStr(e.stars) : '☆☆☆') + '</span>');
+    const click = unlocked ? 'onclick="mpOpenLevel(' + world + ',' + l + ')"' : 'disabled';
+    cells += '<button ' + click + ' class="mp-level' + cls + ' focus-ring">' + inner + '</button>';
+  }
+  return ''
+    + '<div class="min-h-screen bg-slate-50">' + Header()
+    + '<main class="max-w-md mx-auto px-4 sm:px-6 py-8">'
+    + '  <div class="text-center mb-5">'
+    + '    <span class="chip bg-amber-100 text-amber-800">' + wmeta.icon + ' ' + t('mpWorldN').replace('{n}', world).replace('{name}', t(wmeta.nameKey)) + '</span>'
+    + '    <p class="mt-2 text-sm text-slate-500">⭐ ' + mpWorldStars(prog, world) + '/' + MP_STARS_PER_WORLD + '</p>'
+    + '  </div>'
+    + '  <div class="mp-level-grid">' + cells + '</div>'
+    + '  <button onclick="go(\'oramath\',{mode:\'magic-path\',subview:\'worlds\'})" class="mt-6 block mx-auto text-sm text-slate-500 hover:underline focus-ring">← ' + t('mpBackToMap') + '</button>'
+    + '</main>' + Footer() + '</div>';
+}
+function mpCellHtml(s, r, c, onPath, hinted){
+  const cell = s.grid[r][c], k = mpKeyHost(r, c);
+  const isStart = s.start.r === r && s.start.c === c;
+  const isExit = s.exits.some(function (e){ return e.r === r && e.c === c; });
+  let cls = 'mp-cell', label = '';
+  if (cell.t === 'trap'){ cls += ' mp-cell--trap'; label = '💀'; }
+  else if (cell.t === 'mul2'){ cls += ' mp-cell--mul'; label = '×2'; }
+  else if (cell.t === 'div2'){ cls += ' mp-cell--div'; label = '÷2'; }
+  else { label = cell.v < 0 ? ('−' + Math.abs(cell.v)) : ('' + cell.v); if (cell.v < 0) cls += ' mp-cell--negative'; }
+  if (isStart) cls += ' mp-cell--start';
+  if (isExit) cls += ' mp-cell--exit';
+  if (onPath[k]) cls += ' mp-cell--path';
+  if (hinted[k]) cls += ' mp-hinted';
+  if (s.lastHintCell === k) cls += ' mp-cell--hint';
+  const badge = isStart ? '<span class="mp-badge">★</span>' : (isExit ? '<span class="mp-badge">🏁</span>' : '');
+  return '<div class="' + cls + '" data-r="' + r + '" data-c="' + c + '" onclick="mpTapCell(' + r + ',' + c + ')">' + label + badge + '</div>';
+}
+function mpPlayHtml(){
+  const s = state.mathMP;
+  if (!s || !s.started) return mpWorldsHtml();
+  if (s.ended) return mpResultHtml(s);
+  const onPath = {}; s.path.forEach(function (p){ onPath[mpKeyHost(p.r, p.c)] = true; });
+  const hinted = {}; (s.hintedCells || []).forEach(function (k){ hinted[k] = true; });
+  const size = s.grid.length;
+  let cells = '';
+  for (let r = 0; r < size; r++) for (let c = 0; c < size; c++) cells += mpCellHtml(s, r, c, onPath, hinted);
+  const remaining = hintsRemaining();
+  const last = s.path[s.path.length - 1];
+  const atExit = last && s.exits.some(function (e){ return e.r === last.r && e.c === last.c; });
+  return ''
+    + '<div class="min-h-screen bg-slate-50">' + Header()
+    + '<main class="max-w-md mx-auto px-4 sm:px-6 py-6">'
+    + '  <div class="flex items-center justify-between mb-3 text-sm">'
+    + '    <span class="font-semibold text-slate-700">' + t('mpLevelN').replace('{w}', s.world).replace('{l}', s.level) + '</span>'
+    + '    <span class="chip bg-amber-100 text-amber-800 font-bold">' + t('mpTarget') + ': ' + s.target + '</span>'
+    + '    <button onclick="mpUseHint()" class="font-semibold focus-ring ' + (remaining ? 'text-violet-700' : 'text-slate-400') + '"' + (remaining ? '' : ' title="' + t('mpHintsTomorrow') + '"') + '>💡 ' + remaining + '/' + MP_DAILY_HINTS + '</button>'
+    + '  </div>'
+    + '  <div id="mp-grid" class="mp-grid card p-3" style="grid-template-columns:repeat(' + size + ',1fr)" onpointerdown="mpDown(event)" onpointermove="mpMove(event)" onpointerup="mpUp(event)" onpointercancel="mpUp(event)">' + cells + '</div>'
+    + '  <p class="mt-3 text-center text-sm font-semibold text-slate-700">' + t('mpSum') + ': <span id="mp-sum">' + MathEngine.magicpathAcc(s.grid, s.path) + '</span> / ' + s.target + '</p>'
+    + '  <p id="mp-msg" class="mt-1 text-center text-sm font-semibold text-rose-600 min-h-[1.25rem]">' + (s.failMsg || '') + '</p>'
+    + '  <div class="mt-2 flex items-center justify-center gap-3">'
+    + '    <button id="mp-confirm" onclick="mpConfirmPath()" class="btn-primary px-6" style="' + (atExit ? '' : 'display:none') + '">✓ ' + t('mpConfirm') + '</button>'
+    + '    <button onclick="mpClearPath()" class="btn-ghost px-4">🗑️ ' + t('mpClear') + '</button>'
+    + '  </div>'
+    + '  <p class="mt-3 text-center text-xs text-slate-500">' + t('mpHowTo') + '</p>'
+    + '  <button onclick="go(\'oramath\',{mode:\'magic-path\',subview:\'levels\',world:' + s.world + '})" class="mt-4 block mx-auto text-sm text-slate-500 hover:underline focus-ring">← ' + t('mpBackToMap') + '</button>'
+    + '</main>' + Footer() + '</div>';
+}
+function mpResultHtml(s){
+  const stars = s.stars || 0;
+  const starRow = [1, 2, 3].map(function (i){ return '<span class="text-4xl' + (i <= stars ? '' : ' opacity-25') + '">' + (i <= stars ? '⭐' : '☆') + '</span>'; }).join('');
+  const lv = MathEngine.levelForXp(loadMathProfile().xp);
+  const prog = loadMPProgress(s.band, s.difficulty);
+  const nextLevel = s.level < MP_LEVELS_PER_WORLD ? s.level + 1 : null;
+  const nextUnlocked = nextLevel && mpLevelUnlocked(prog, s.world, nextLevel);
+  return ''
+    + '<div class="min-h-screen bg-slate-50">' + Header()
+    + '<main class="max-w-md mx-auto px-4 sm:px-6 py-10">'
+    + '  <div class="card p-8 text-center">'
+    + '    <span class="chip bg-amber-100 text-amber-800">🗺️ ' + t('mpLevelN').replace('{w}', s.world).replace('{l}', s.level) + '</span>'
+    + '    <h1 class="mt-4 font-display text-2xl font-bold">' + t('mpComplete') + '</h1>'
+    + '    <div class="mt-4 flex justify-center gap-2">' + starRow + '</div>'
+    + (s.newStars ? '    <p class="mt-2 text-sm font-bold text-amber-700">🌟 ' + t('mpNewStars') + '</p>' : '')
+    + '    <p class="mt-3 text-sm text-slate-600">⏱️ ' + Math.round((s.timeMs || 0) / 1000) + 's · ' + pick({en:'par',es:'par',fr:'par'}) + ' ' + Math.round(s.parTimeMs / 1000) + 's</p>'
+    + '    <div class="mt-4 text-left max-w-xs mx-auto">'
+    + '      <div class="flex items-center justify-between text-sm font-semibold text-slate-700"><span>' + t('mpXpGained').replace('{xp}', s.award ? s.award.xpGained : 0) + '</span><span>' + t('mathLevel') + ' ' + lv.level + '</span></div>'
+    + '      <div class="mt-1 h-3 rounded-full bg-slate-100 overflow-hidden"><div class="h-full rounded-full bg-gradient-to-r from-amber-400 to-orange-500" style="width:' + lv.pct + '%"></div></div>'
+    + (s.award && s.award.leveledUp ? '      <p class="mt-2 text-sm font-bold text-violet-700">🎉 ' + pick({en:'Level up!',es:'¡Subes de nivel!',fr:'Niveau supérieur !'}) + '</p>' : '')
+    + '    </div>'
+    + '    <p class="mt-3 text-sm font-semibold text-slate-700">🔥 ' + (s.award ? s.award.streakDays : 0) + ' ' + t('mathStreakDays') + '</p>'
+    + '    <div class="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-2">'
+    + (nextUnlocked ? '      <button onclick="mpOpenLevel(' + s.world + ',' + nextLevel + ')" class="btn-primary">' + t('mpNextLevel') + ' →</button>' : '')
+    + '      <button onclick="mpOpenLevel(' + s.world + ',' + s.level + ')" class="btn-ghost">↻ ' + t('mpRetry') + '</button>'
+    + '      <button onclick="go(\'oramath\',{mode:\'magic-path\',subview:\'levels\',world:' + s.world + '})" class="btn-ghost">← ' + t('mpBackToMap') + '</button>'
+    + '    </div>'
+    + '  </div>'
+    + AdSlot()
+    + '</main>' + Footer() + '</div>';
+}
+function viewMagicPath(){
+  const sv = state.params.subview;
+  if (sv === 'worlds') return mpWorldsHtml();
+  if (sv === 'levels') return mpLevelsHtml(state.params.world | 0);
+  if (sv === 'play') return mpPlayHtml();
+  return mpSetupHtml();
+}
+
+/* ---- Ojo de Ora (eye-of-ora) — estimation & number-sense game ----
+   8 varied estimation rounds. Numeric rounds use a custom slider / number line;
+   choice rounds use big buttons (some timed). The pure engine generates and
+   scores; this host layer drives exposure/answer timers, feedback and the
+   accuracy-over-time history chart. Timers self-clear via route/session guards
+   like the other OraMath games. */
+const EYE_HISTORY_LS = 'oramath:eye-history';
+const EYE_DOT_SLIDER_MAX = { '6-8': 40, '9-12': 100, '13+': 200 };
+const EYE_FEEDBACK_MS = 2000;
+const EYE_ANSWER_MS = 5000;
+
+function loadEyeHistory(){ const v = LS.get(EYE_HISTORY_LS, []); return Array.isArray(v) ? v : []; }
+function saveEyeResult(entry){ const h = loadEyeHistory(); h.push(entry); while (h.length > 100) h.shift(); LS.set(EYE_HISTORY_LS, h); return h; }
+function eyeHistoryStats(){
+  const h = loadEyeHistory();
+  if (!h.length) return { best: 0, average: 0, count: 0 };
+  let best = 0, sum = 0;
+  for (let i = 0; i < h.length; i++){ best = Math.max(best, h[i].accuracy); sum += h[i].accuracy; }
+  return { best: best, average: Math.round(sum / h.length), count: h.length };
+}
+
+function eyeIsChoice(type){ return type === 'compare-groups' || type === 'estimate-result' || type === 'quick-magnitude'; }
+function eyeHasExposure(type){ return type === 'dot-cloud' || type === 'compare-groups'; }
+function eyeIsTimed(type){ return type === 'estimate-result' || type === 'quick-magnitude'; }
+function eyeSliderRange(s, ch){
+  if (ch.type === 'number-line') return { min: ch.min, max: ch.max };
+  if (ch.type === 'fraction-visual') return { min: 0, max: 100 };
+  return { min: 0, max: EYE_DOT_SLIDER_MAX[s.band] || 100 };
+}
+function eyeClearTimers(s){
+  if (!s) return;
+  if (s.exposureTimer){ clearTimeout(s.exposureTimer); s.exposureTimer = null; }
+  if (s.answerTimer){ clearTimeout(s.answerTimer); s.answerTimer = null; }
+  if (s.feedbackTimer){ clearTimeout(s.feedbackTimer); s.feedbackTimer = null; }
+}
+function eyeGuard(s){ return state.route === 'oramath' && state.params.mode === 'eye-of-ora' && state.mathEye === s && !s.ended; }
+
+function startEyeOfOra(){
+  const su = mathSetupOrDefault();
+  const info = MathEngine.ORAMATH_AGE_BANDS[su.ageGroup] || MathEngine.ORAMATH_AGE_BANDS.family;
+  if (state.mathEye) eyeClearTimers(state.mathEye);
+  const challenges = MathEngine.eyeGenSession(info.band, su.difficulty);
+  state.mathEye = {
+    ageGroup: su.ageGroup, difficulty: su.difficulty, band: info.band, timeFactor: info.timeFactor,
+    round: 0, challenges: challenges, answers: [],
+    sliderValue: null, selectedOption: null, dragging: false,
+    exposing: false, showingFeedback: false, lastResult: null, roundStartAt: 0,
+    exposureTimer: null, answerTimer: null, feedbackTimer: null,
+    score: 0, totalScore: 0, accuracy: 0, breakdown: [],
+    attempts: 100, correct: 0,
+    ended: false, resultMeta: null, startedAt: Date.now(), durationMs: 0, saved: false
+  };
+  go('oramath', { mode: 'eye-of-ora', play: true });
+  eyeBeginRound();
+}
+function resetEyeOfOra(){ if (state.mathEye) eyeClearTimers(state.mathEye); state.mathEye = null; startEyeOfOra(); }
+
+function eyeBeginRound(){
+  const s = state.mathEye;
+  if (!s || s.ended) return;
+  eyeClearTimers(s);
+  s.showingFeedback = false; s.lastResult = null; s.selectedOption = null; s.dragging = false;
+  const ch = s.challenges[s.round];
+  if (ch.type === 'dot-cloud') s.sliderValue = Math.round((EYE_DOT_SLIDER_MAX[s.band] || 100) / 2);
+  else if (ch.type === 'fraction-visual') s.sliderValue = 50;
+  else if (ch.type === 'number-line') s.sliderValue = Math.round((ch.min + ch.max) / 2);
+  else s.sliderValue = null;
+
+  if (eyeHasExposure(ch.type)){
+    s.exposing = true;
+    const ms = Math.round(ch.exposureMs * s.timeFactor);
+    s.exposureTimer = setTimeout(function (){
+      if (!eyeGuard(s)) return;
+      s.exposing = false; s.roundStartAt = Date.now();
+      render();
+    }, ms);
+  } else {
+    s.exposing = false; s.roundStartAt = Date.now();
+    if (eyeIsTimed(ch.type)) eyeStartAnswerTimer();
+  }
+  render();
+}
+function eyeStartAnswerTimer(){
+  const s = state.mathEye; if (!s) return;
+  const ms = Math.round(EYE_ANSWER_MS * s.timeFactor);
+  s.answerTimer = setTimeout(function (){
+    if (!eyeGuard(s) || s.showingFeedback) return;
+    eyeTimeUp();
+  }, ms);
+}
+function eyeFastThresholdMs(){ const s = state.mathEye; return s && s.band === '6-8' ? 4000 : 2000; }
+
+function eyeChoose(choice){
+  const s = state.mathEye; if (!s || s.ended || s.showingFeedback || s.exposing) return;
+  const ch = s.challenges[s.round];
+  if (!eyeIsChoice(ch.type)) return;
+  eyeClearTimers(s);
+  const fast = (Date.now() - s.roundStartAt) < eyeFastThresholdMs();
+  const res = MathEngine.eyeScoreForRound(ch.type, { choice: choice, fast: fast }, ch.correct, s.difficulty);
+  s.selectedOption = choice;
+  eyeRecord(ch, choice, res);
+}
+function eyeTimeUp(){
+  const s = state.mathEye; if (!s || s.ended || s.showingFeedback) return;
+  const ch = s.challenges[s.round];
+  eyeClearTimers(s);
+  s.selectedOption = null;
+  eyeRecord(ch, null, { points: 0, bonus: 0, total: 0, errorPct: 1, errorAbs: 0, timeUp: true });
+}
+function eyeSubmitNumeric(){
+  const s = state.mathEye; if (!s || s.ended || s.showingFeedback || s.exposing) return;
+  const ch = s.challenges[s.round];
+  if (eyeIsChoice(ch.type)) return;
+  eyeClearTimers(s);
+  const answer = s.sliderValue;
+  eyeRecord(ch, answer, MathEngine.eyeScoreForRound(ch.type, answer, ch.correct, s.difficulty));
+}
+function eyeRecord(ch, answer, res){
+  const s = state.mathEye;
+  const total = res.total != null ? res.total : res.points;
+  s.answers.push({ type: ch.type, answer: answer, correct: ch.correct, points: res.points, bonus: res.bonus || 0, total: total, timeUp: !!res.timeUp });
+  s.score += total;
+  s.showingFeedback = true; s.lastResult = res;
+  render();
+  s.feedbackTimer = setTimeout(function (){ if (!eyeGuard(s)) return; eyeNextRound(); }, EYE_FEEDBACK_MS);
+}
+function eyeNextRound(){
+  const s = state.mathEye; if (!s || s.ended) return;
+  s.round++;
+  if (s.round >= s.challenges.length){ eyeFinish(); return; }
+  eyeBeginRound();
+}
+function eyeFinish(){
+  const s = state.mathEye; if (!s || s.ended) return;
+  eyeClearTimers(s);
+  s.ended = true;
+  s.durationMs = Date.now() - s.startedAt;
+  const totals = MathEngine.eyeTotalScore(s.answers);
+  s.totalScore = totals.total; s.accuracy = totals.accuracy; s.breakdown = totals.breakdown;
+  // Leaderboard "accuracy" (correct/attempts) mirrors the precision %: 100 / accuracy.
+  s.score = totals.total; s.correct = totals.accuracy;
+  s.resultMeta = finishMathGame({ gameMode: 'eye-of-ora', ageGroup: s.ageGroup, difficulty: s.difficulty, score: totals.total, accuracy: totals.accuracy, durationMs: s.durationMs });
+  saveEyeResult({ date: todayKey(), accuracy: totals.accuracy, score: totals.total, ageGroup: s.ageGroup, difficulty: s.difficulty });
+  render();
+  if (s.resultMeta && (s.resultMeta.leveledUp || s.resultMeta.milestone || s.resultMeta.recordIsNew)){ try { confetti(); } catch (e) {} }
+}
+
+/* ---- custom slider / number-line pointer handling (no native <input>) ---- */
+function eyeSliderFromX(clientX){
+  const s = state.mathEye; if (!s) return;
+  const track = document.getElementById('eye-track'); if (!track) return;
+  const rect = track.getBoundingClientRect();
+  let pct = rect.width ? (clientX - rect.left) / rect.width : 0;
+  pct = Math.max(0, Math.min(1, pct));
+  const range = eyeSliderRange(s, s.challenges[s.round]);
+  s.sliderValue = Math.round(range.min + pct * (range.max - range.min));
+  eyePaintSlider();
+}
+function eyePaintSlider(){
+  const s = state.mathEye; if (!s) return;
+  const ch = s.challenges[s.round];
+  const range = eyeSliderRange(s, ch);
+  const pct = range.max > range.min ? (s.sliderValue - range.min) / (range.max - range.min) * 100 : 0;
+  const thumb = document.getElementById('eye-thumb'); if (thumb) thumb.style.left = pct + '%';
+  const fill = document.getElementById('eye-fill'); if (fill) fill.style.width = pct + '%';
+  const marker = document.getElementById('eye-line-marker'); if (marker) marker.style.left = pct + '%';
+  const disp = document.getElementById('eye-value'); if (disp) disp.textContent = ch.type === 'fraction-visual' ? s.sliderValue + '%' : s.sliderValue;
+}
+function eyeTrackDown(e){
+  const s = state.mathEye; if (!s || s.showingFeedback) return;
+  e.preventDefault();
+  const track = document.getElementById('eye-track'); if (track){ try { track.setPointerCapture(e.pointerId); } catch (err) {} }
+  s.dragging = true; eyeSliderFromX(e.clientX);
+}
+function eyeTrackMove(e){ const s = state.mathEye; if (!s || !s.dragging) return; eyeSliderFromX(e.clientX); }
+function eyeTrackUp(e){
+  const s = state.mathEye; if (!s) return;
+  s.dragging = false;
+  const track = document.getElementById('eye-track'); if (track){ try { track.releasePointerCapture(e.pointerId); } catch (err) {} }
+}
+
+/* ---- SVG builders ---- */
+function eyeDotsSvgHtml(dots, color){
+  let circles = '';
+  for (let i = 0; i < dots.length; i++){ const d = dots[i]; circles += '<circle class="eye-dot" cx="' + (d.x * 100).toFixed(2) + '" cy="' + (d.y * 100).toFixed(2) + '" r="' + (d.r * 100).toFixed(2) + '" fill="' + color + '"/>'; }
+  return '<svg class="eye-dots-svg" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet" aria-hidden="true">' + circles + '</svg>';
+}
+function eyeFractionSvgHtml(ch){
+  const fillCol = '#7c3aed', lineCol = '#cbd5e1', emptyCol = '#f1f5f9';
+  const pct = ch.filledPct / 100, segs = Math.max(2, ch.segments | 0);
+  let body = '';
+  if (ch.shape === 'circle'){
+    const cx = 50, cy = 50, r = 44;
+    body += '<circle cx="50" cy="50" r="44" fill="' + emptyCol + '" stroke="' + lineCol + '" stroke-width="1.5"/>';
+    if (pct > 0){
+      if (pct >= 0.999){ body += '<circle cx="50" cy="50" r="44" fill="' + fillCol + '"/>'; }
+      else {
+        const ang = pct * 2 * Math.PI, ex = cx + r * Math.sin(ang), ey = cy - r * Math.cos(ang), large = pct > 0.5 ? 1 : 0;
+        body += '<path d="M50 50 L50 6 A44 44 0 ' + large + ' 1 ' + ex.toFixed(2) + ' ' + ey.toFixed(2) + ' Z" fill="' + fillCol + '"/>';
+      }
+    }
+    for (let i = 0; i < segs; i++){ const a = i / segs * 2 * Math.PI; body += '<line x1="50" y1="50" x2="' + (cx + r * Math.sin(a)).toFixed(2) + '" y2="' + (cy - r * Math.cos(a)).toFixed(2) + '" stroke="' + lineCol + '" stroke-width="0.7"/>'; }
+  } else if (ch.shape === 'square'){
+    body += '<rect x="6" y="6" width="88" height="88" fill="' + emptyCol + '" stroke="' + lineCol + '" stroke-width="1.5"/>';
+    if (pct > 0) body += '<rect x="6" y="6" width="' + (88 * pct).toFixed(2) + '" height="88" fill="' + fillCol + '"/>';
+    for (let i = 1; i < segs; i++){ const x = 6 + 88 * i / segs; body += '<line x1="' + x.toFixed(2) + '" y1="6" x2="' + x.toFixed(2) + '" y2="94" stroke="' + lineCol + '" stroke-width="0.7"/>'; }
+  } else { // triangle (area-accurate bottom fill)
+    body += '<polygon points="50,6 94,94 6,94" fill="' + emptyCol + '" stroke="' + lineCol + '" stroke-width="1.5"/>';
+    if (pct > 0){
+      const f = 1 - Math.sqrt(1 - pct);             // height fraction from base for area = pct
+      const yCut = 94 - f * 88, half = (yCut - 6) / 2;
+      body += '<polygon points="' + (50 - half).toFixed(2) + ',' + yCut.toFixed(2) + ' ' + (50 + half).toFixed(2) + ',' + yCut.toFixed(2) + ' 94,94 6,94" fill="' + fillCol + '"/>';
+    }
+    for (let i = 1; i < segs; i++){ const y = 6 + 88 * i / segs, half = (y - 6) / 2; body += '<line x1="' + (50 - half).toFixed(2) + '" y1="' + y.toFixed(2) + '" x2="' + (50 + half).toFixed(2) + '" y2="' + y.toFixed(2) + '" stroke="' + lineCol + '" stroke-width="0.7"/>'; }
+  }
+  return '<svg class="eye-frac-svg" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet" aria-hidden="true">' + body + '</svg>';
+}
+function eyeTimerBarHtml(ms){ return '<div class="eye-bar-wrap mt-4" aria-hidden="true"><div class="eye-bar" style="animation-duration:' + ms + 'ms"></div></div>'; }
+function eyePointsColor(p){ return p > 70 ? 'text-emerald-600' : p >= 30 ? 'text-amber-600' : 'text-rose-600'; }
+
+/* ---- play view ---- */
+function eyeSliderHtml(s, ch){
+  const range = eyeSliderRange(s, ch);
+  const pct = range.max > range.min ? (s.sliderValue - range.min) / (range.max - range.min) * 100 : 0;
+  const disp = ch.type === 'fraction-visual' ? s.sliderValue + '%' : s.sliderValue;
+  return ''
+    + '<div class="eye-slider mt-5">'
+    + '  <div id="eye-track" class="eye-slider-track" onpointerdown="eyeTrackDown(event)" onpointermove="eyeTrackMove(event)" onpointerup="eyeTrackUp(event)" onpointercancel="eyeTrackUp(event)" role="slider" aria-valuemin="' + range.min + '" aria-valuemax="' + range.max + '" aria-valuenow="' + s.sliderValue + '">'
+    + '    <div id="eye-fill" class="eye-slider-fill" style="width:' + pct + '%"></div>'
+    + '    <div id="eye-thumb" class="eye-slider-thumb" style="left:' + pct + '%"></div>'
+    + '  </div>'
+    + '  <div id="eye-value" class="eye-value">' + disp + '</div>'
+    + '</div>'
+    + '<button onclick="eyeSubmitNumeric()" class="btn-primary mt-4 px-8">' + t('eyeConfirm') + '</button>';
+}
+function eyeOptionBtn(label, choice){ return '<button onclick="eyeChoose(\'' + choice + '\')" class="eye-option-btn focus-ring">' + label + '</button>'; }
+
+function eyeChallengeHtml(s, ch){
+  if (ch.type === 'dot-cloud'){
+    if (s.exposing){
+      return '<div class="eye-stage">' + eyeDotsSvgHtml(ch.dots, '#7c3aed') + '</div>'
+        + eyeTimerBarHtml(Math.round(ch.exposureMs * s.timeFactor))
+        + '<p class="mt-3 text-sm text-slate-500">' + pick({ en:'Look closely…', es:'Observa bien…', fr:'Observe bien…' }) + '</p>';
+    }
+    return '<p class="eye-question">' + t('eyeDotCloudQ') + '</p>' + eyeSliderHtml(s, ch);
+  }
+  if (ch.type === 'compare-groups'){
+    if (s.exposing){
+      return '<div class="eye-compare">'
+        + '<div class="eye-panel eye-panel--left">' + eyeDotsSvgHtml(ch.left.items, '#2563eb') + '</div>'
+        + '<div class="eye-panel eye-panel--right">' + eyeDotsSvgHtml(ch.right.items, '#ea580c') + '</div>'
+        + '</div>'
+        + eyeTimerBarHtml(Math.round(ch.exposureMs * s.timeFactor))
+        + '<p class="mt-3 text-sm text-slate-500">' + pick({ en:'Which side has more?', es:'¿Qué lado tiene más?', fr:'Quel côté en a le plus ?' }) + '</p>';
+    }
+    return '<p class="eye-question">' + t('eyeCompareQ') + '</p>'
+      + '<div class="grid grid-cols-2 gap-3 mt-5">'
+      + eyeOptionBtn('◀ ' + t('eyeLeft'), 'left')
+      + eyeOptionBtn(t('eyeRight') + ' ▶', 'right')
+      + '</div>';
+  }
+  if (ch.type === 'number-line'){
+    const pct = (s.sliderValue - ch.min) / (ch.max - ch.min) * 100;
+    return '<p class="eye-question">' + t('eyeNumberLineQ').replace('{n}', ch.target) + '</p>'
+      + '<div class="eye-numberline mt-6">'
+      + '  <div id="eye-track" class="eye-numberline-track" onpointerdown="eyeTrackDown(event)" onpointermove="eyeTrackMove(event)" onpointerup="eyeTrackUp(event)" onpointercancel="eyeTrackUp(event)" role="slider" aria-valuemin="' + ch.min + '" aria-valuemax="' + ch.max + '" aria-valuenow="' + s.sliderValue + '">'
+      + '    <div id="eye-line-marker" class="eye-numberline-marker" style="left:' + pct + '%"><span id="eye-value" class="eye-numberline-value">' + s.sliderValue + '</span></div>'
+      + '  </div>'
+      + '  <div class="flex justify-between text-xs font-semibold text-slate-500 mt-2"><span>' + ch.min + '</span><span>' + ch.max + '</span></div>'
+      + '</div>'
+      + '<button onclick="eyeSubmitNumeric()" class="btn-primary mt-5 px-8">' + t('eyeConfirm') + '</button>';
+  }
+  if (ch.type === 'estimate-result'){
+    return '<p class="eye-expr">' + ch.expression + ' ≈ ?</p>'
+      + eyeTimerBarHtml(Math.round(EYE_ANSWER_MS * s.timeFactor))
+      + '<div class="grid grid-cols-2 gap-3 mt-4">'
+      + eyeOptionBtn('≈ ' + ch.optionA, 'A')
+      + eyeOptionBtn('≈ ' + ch.optionB, 'B')
+      + '</div>';
+  }
+  if (ch.type === 'fraction-visual'){
+    return '<p class="eye-question">' + t('eyeFractionQ') + '</p>'
+      + '<div class="eye-stage">' + eyeFractionSvgHtml(ch) + '</div>'
+      + eyeSliderHtml(s, ch);
+  }
+  if (ch.type === 'quick-magnitude'){
+    return '<p class="eye-question">' + t('eyeMagnitudeQ') + '</p>'
+      + eyeTimerBarHtml(Math.round(EYE_ANSWER_MS * s.timeFactor))
+      + '<div class="grid grid-cols-2 gap-3 mt-4">'
+      + eyeOptionBtn(ch.exprA, 'A')
+      + eyeOptionBtn(ch.exprB, 'B')
+      + '</div>';
+  }
+  return '';
+}
+function eyeFeedbackHtml(s, ch){
+  const res = s.lastResult, total = res.total != null ? res.total : res.points;
+  const badge = '<div class="mt-3 text-2xl font-bold ' + eyePointsColor(res.points) + '">+' + total + ' ' + t('eyePoints') + (res.bonus ? ' ⚡' : '') + '</div>';
+  if (eyeIsChoice(ch.type)){
+    let opts = '';
+    if (ch.type === 'compare-groups'){
+      const corr = ch.correctSide;
+      opts = '<div class="grid grid-cols-2 gap-3 mt-2">'
+        + '<div class="eye-fb-opt ' + (corr === 'left' ? 'eye-fb-correct' : (s.selectedOption === 'left' ? 'eye-fb-wrong' : '')) + '">◀ ' + t('eyeLeft') + ' · ' + ch.left.count + '</div>'
+        + '<div class="eye-fb-opt ' + (corr === 'right' ? 'eye-fb-correct' : (s.selectedOption === 'right' ? 'eye-fb-wrong' : '')) + '">' + t('eyeRight') + ' ▶ · ' + ch.right.count + '</div>'
+        + '</div>';
+    } else {
+      const labelA = ch.type === 'estimate-result' ? '≈ ' + ch.optionA : ch.exprA;
+      const labelB = ch.type === 'estimate-result' ? '≈ ' + ch.optionB : ch.exprB;
+      opts = '<div class="grid grid-cols-2 gap-3 mt-2">'
+        + '<div class="eye-fb-opt ' + (ch.correct === 'A' ? 'eye-fb-correct' : (s.selectedOption === 'A' ? 'eye-fb-wrong' : '')) + '">' + labelA + '</div>'
+        + '<div class="eye-fb-opt ' + (ch.correct === 'B' ? 'eye-fb-correct' : (s.selectedOption === 'B' ? 'eye-fb-wrong' : '')) + '">' + labelB + '</div>'
+        + '</div>';
+    }
+    const head = res.timeUp ? '<p class="font-semibold text-rose-600">⏱ ' + t('eyeTimeUp') + '</p>' : '';
+    return '<div class="eye-feedback">' + head + opts + badge + '</div>';
+  }
+  // numeric: show your answer vs real
+  const given = s.answers[s.answers.length - 1].answer;
+  const yourTxt = ch.type === 'fraction-visual' ? given + '%' : given;
+  const realTxt = ch.type === 'fraction-visual' ? ch.correct + '%' : ch.correct;
+  return '<div class="eye-feedback">'
+    + '<p class="text-sm text-slate-600"><span class="font-semibold">' + t('eyeYourAnswer') + ':</span> ' + yourTxt + ' &nbsp;·&nbsp; <span class="font-semibold">' + t('eyeRealAnswer') + ':</span> ' + realTxt + '</p>'
+    + badge
+    + '</div>';
+}
+function eyePlayHtml(s){
+  const ch = s.challenges[s.round];
+  const body = s.showingFeedback ? eyeFeedbackHtml(s, ch) : eyeChallengeHtml(s, ch);
+  return ''
+    + '<div class="min-h-screen bg-slate-50">'
+    + Header()
+    + '<main class="max-w-md mx-auto px-4 sm:px-6 py-6">'
+    + '  <div class="flex items-center justify-between mb-3 text-sm">'
+    + '    <span class="font-semibold text-slate-700">' + t('eyeRoundN').replace('{n}', s.round + 1) + '</span>'
+    + '    <span class="font-semibold text-amber-700">' + pick({ en:'Score', es:'Puntos', fr:'Score' }) + ': ' + s.score + '</span>'
+    + '  </div>'
+    + '  <div class="h-1.5 rounded-full bg-slate-100 overflow-hidden mb-4" aria-hidden="true"><div class="h-full bg-gradient-to-r from-violet-500 to-fuchsia-500 transition-all" style="width:' + Math.round((s.round) / s.challenges.length * 100) + '%"></div></div>'
+    + '  <div class="card p-6 text-center fade-in">' + body + '</div>'
+    + '  <button onclick="go(\'oramath\')" class="mt-5 block mx-auto text-sm text-slate-500 hover:underline focus-ring">' + pick({ en:'Quit round', es:'Salir de la partida', fr:'Quitter la partie' }) + '</button>'
+    + '</main>'
+    + '</div>';
+}
+
+/* ---- results extras + history chart ---- */
+function eyeVerdictText(acc){ return acc > 80 ? t('eyeGreat') : acc >= 50 ? t('eyeGood') : t('eyeTryAgain'); }
+function eyeBreakdownHtml(bd){
+  let bars = '';
+  for (let i = 0; i < bd.length; i++){
+    const p = bd[i].points, col = p > 70 ? 'bg-emerald-500' : p >= 30 ? 'bg-amber-400' : 'bg-rose-500';
+    bars += '<div class="eye-round-bar"><div class="eye-round-track"><div class="eye-round-fill ' + col + '" style="height:' + Math.max(4, p) + '%"></div></div><span class="eye-round-num">' + (i + 1) + '</span></div>';
+  }
+  return '<div class="mt-5 text-left"><p class="text-xs font-semibold text-slate-600 mb-2">' + t('eyeRoundBreakdown') + '</p><div class="eye-round-bars">' + bars + '</div></div>';
+}
+function eyeResultsHtml(s){
+  const precision = '<p class="mt-3 text-base font-bold text-slate-800">' + t('eyeAccuracy').replace('{n}', s.accuracy) + '</p>';
+  const evoBtn = '<button onclick="go(\'oramath\',{mode:\'eye-of-ora\',subview:\'history\'})" class="btn-ghost">📈 ' + t('eyeEvolution') + '</button>';
+  return mathResultsHtml({
+    gameMode: 'eye-of-ora', score: s.totalScore, accuracy: s.accuracy, meta: s.resultMeta,
+    retryFn: 'resetEyeOfOra()', saved: s.saved,
+    statLine: eyeVerdictText(s.accuracy),
+    extraHtml: precision + eyeBreakdownHtml(s.breakdown || []),
+    extraButtons: evoBtn
+  });
+}
+function eyeChartSvg(data){
+  const W = 600, H = 200, padL = 30, padR = 12, padT = 12, padB = 22, n = data.length;
+  const xAt = function (i){ return padL + (n === 1 ? (W - padL - padR) / 2 : (i / (n - 1)) * (W - padL - padR)); };
+  const yAt = function (v){ return padT + (1 - v / 100) * (H - padT - padB); };
+  let grid = '';
+  [0, 25, 50, 75, 100].forEach(function (g){ const y = yAt(g); grid += '<line x1="' + padL + '" y1="' + y.toFixed(1) + '" x2="' + (W - padR) + '" y2="' + y.toFixed(1) + '" stroke="#e2e8f0" stroke-width="1"/><text x="' + (padL - 5) + '" y="' + (y + 3).toFixed(1) + '" text-anchor="end" font-size="9" fill="#94a3b8">' + g + '</text>'; });
+  let pts = '', dots = '';
+  for (let i = 0; i < n; i++){ const x = xAt(i).toFixed(1), y = yAt(data[i].accuracy).toFixed(1); pts += (i ? ' ' : '') + x + ',' + y; dots += '<circle cx="' + x + '" cy="' + y + '" r="3.5" fill="#7c3aed"/>'; }
+  return '<svg class="eye-history-chart" viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" role="img" aria-label="' + pick({ en:'Eye accuracy over time', es:'Precisión de ojo a lo largo del tiempo', fr:'Précision de l’œil au fil du temps' }) + '">'
+    + grid + '<polyline points="' + pts + '" fill="none" stroke="#7c3aed" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>' + dots + '</svg>';
+}
+function eyeHistoryHtml(){
+  const h = loadEyeHistory(), stats = eyeHistoryStats();
+  const chart = h.length < 2
+    ? '<p class="text-center text-slate-500 py-10">' + t('eyeNeedMore') + '</p>'
+    : '<div class="card p-4">' + eyeChartSvg(h.slice(-20)) + '</div>'
+      + '<div class="eye-history-stats mt-4 grid grid-cols-3 gap-3 text-center">'
+      + '  <div class="stat-cell bg-emerald-50 p-3"><div class="text-2xl font-bold text-emerald-700">' + stats.best + '%</div><div class="text-xs text-slate-600 mt-1">' + t('eyeBest') + '</div></div>'
+      + '  <div class="stat-cell bg-sky-50 p-3"><div class="text-2xl font-bold text-sky-700">' + stats.average + '%</div><div class="text-xs text-slate-600 mt-1">' + t('eyeAvg') + '</div></div>'
+      + '  <div class="stat-cell bg-amber-50 p-3"><div class="text-2xl font-bold text-amber-700">' + stats.count + '</div><div class="text-xs text-slate-600 mt-1">' + t('eyeGamesPlayed') + '</div></div>'
+      + '</div>';
+  return ''
+    + '<div class="min-h-screen bg-slate-50">'
+    + Header()
+    + '<main class="max-w-2xl mx-auto px-4 sm:px-6 py-10">'
+    + '  <div class="text-center mb-6">'
+    + '    <span class="chip bg-amber-100 text-amber-800">👁️ ' + t('mathEyeName') + '</span>'
+    + '    <h1 class="mt-4 font-display text-3xl font-bold">📈 ' + t('eyeEvolution') + '</h1>'
+    + '  </div>'
+    + '  ' + chart
+    + '  <button onclick="go(\'oramath\',{mode:\'eye-of-ora\'})" class="mt-6 block mx-auto text-sm text-slate-500 hover:underline focus-ring">← ' + pick({ en:'Back', es:'Volver', fr:'Retour' }) + '</button>'
+    + '</main>'
+    + Footer()
+    + '</div>';
+}
+function eyeSetupHtml(){
+  const evoBtn = '<button onclick="go(\'oramath\',{mode:\'eye-of-ora\',subview:\'history\'})" class="mt-3 block mx-auto text-sm font-semibold text-brand-violet hover:underline focus-ring">📈 ' + t('eyeEvolutionBtn') + '</button>';
+  return mathGameSetupHtml('eye-of-ora', evoBtn);
+}
+function viewEyeOfOra(){
+  if (state.params.subview === 'history') return eyeHistoryHtml();
+  const s = state.mathEye;
+  if (!s || !state.params.play){ if (s) eyeClearTimers(s); state.mathEye = null; return eyeSetupHtml(); }
+  if (s.ended) return eyeResultsHtml(s);
+  return eyePlayHtml(s);
+}
+
 function viewOraMath(){
   const mode = state.params.mode || 'hub';
   if (mode === 'truth-or-trap') return viewMathTrueFalse();
   if (mode === 'math-sprint') return viewMathSprint();
   if (mode === 'numdrop') return viewMathNumDrop();
   if (mode === 'equacode') return viewMathEquaCode();
-  const gameCards = ['truth-or-trap','math-sprint','numdrop','equacode'].map(m => {
+  if (mode === 'magic-path') return viewMagicPath();
+  if (mode === 'eye-of-ora') return viewEyeOfOra();
+  const gameCards = ['truth-or-trap','math-sprint','numdrop','equacode','magic-path','eye-of-ora'].map(m => {
     const g = MATH_GAMES[m];
     return ''
     + '<button onclick="go(\'oramath\',{mode:\'' + m + '\'})" class="card card-hover p-5 text-left focus-ring">'
@@ -11857,6 +13421,12 @@ document.addEventListener('keydown', (e) => {
     if (e.key === 'Enter'){ e.preventDefault(); eqKey('enter'); }
     else if (e.key === 'Backspace'){ e.preventDefault(); eqKey('back'); }
     else if (/^[0-9]$/.test(e.key) || e.key === '+' || e.key === '-' || e.key === '*' || e.key === '/' || e.key === '='){ eqKey(e.key); }
+  } else if (state.params.mode === 'eye-of-ora' && state.mathEye && !state.mathEye.ended && !state.mathEye.showingFeedback && !state.mathEye.exposing){
+    const ch = state.mathEye.challenges[state.mathEye.round];
+    if (eyeIsChoice(ch.type)){
+      if (e.key === 'ArrowLeft'){ e.preventDefault(); eyeChoose(ch.type === 'compare-groups' ? 'left' : 'A'); }
+      else if (e.key === 'ArrowRight'){ e.preventDefault(); eyeChoose(ch.type === 'compare-groups' ? 'right' : 'B'); }
+    } else if (e.key === 'Enter'){ e.preventDefault(); eyeSubmitNumeric(); }
   }
 });
 
