@@ -198,7 +198,6 @@
   from = "/oraquest/"
   to = "/OraQuest.html"
   status = 200
-  force = true
 
 [[redirects]]
   from = "/oraquest"
