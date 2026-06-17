@@ -302,6 +302,7 @@ const LBCore = (function () {
     guessora:     { key:'guessora',     name:'OraGuess',  modes:['guess-challenge','daily-guess'] },
     orawords:     { key:'orawords',     name:'OraWords',  modes:['spelling-sprint','vocabulary-quest','letter-rush','anagram-challenge','daily-quest'] },
     oramath:      { key:'oramath',      name:'OraMath',   modes:['truth-or-trap','math-sprint','numdrop','equacode','magic-path','eye-of-ora'] },
+    oraworld:     { key:'oraworld',     name:'OraWorld',  modes:['oraflag','truth-or-map','capi-ora','world-eye','world-path','continent-drop'] },
     'team-quest': { key:'team-quest',   name:'Team Quest', modes:['team-quest'] }
   };
 
@@ -313,6 +314,7 @@ const LBCore = (function () {
     { id:'guessora', gameKeys:['guessora'] },
     { id:'orawords', gameKeys:['orawords'] },
     { id:'oramath',  gameKeys:['oramath'] },
+    { id:'oraworld', gameKeys:['oraworld'] },
     { id:'daily',    gameKeys:['oraquest','guessora'], modes:['daily-quest','daily-guess'] },
     { id:'teams',    gameKeys:['team-quest'] }
   ];
@@ -470,6 +472,7 @@ const ROUTE_PATHS = {
   'daily-guess': { en:'/oraguess/daily', es:'/es/oraguess/diario', fr:'/fr/oraguess/quotidien' },
   words: { en:'/words', es:'/es/palabras', fr:'/fr/mots' },
   oramath: { en:'/oramath', es:'/es/oramath', fr:'/fr/oramath' },
+  oraworld: { en:'/oraworld', es:'/es/oraworld', fr:'/fr/oraworld' },
   leaderboards: { en:'/leaderboards', es:'/es/clasificaciones', fr:'/fr/classements' },
   shop: { en:'/store', es:'/es/tienda', fr:'/fr/boutique' },
   parents: { en:'/for-families', es:'/es/familias', fr:'/fr/familles' },
@@ -1459,6 +1462,18 @@ const I18N_EXT = {
     eyeAccuracy:'Accuracy: {n}%', eyeRoundBreakdown:'Points per round', eyeGreat:'Sharp eye! 🦅', eyeGood:'Nice estimating! 👍', eyeTryAgain:'Keep practising — your eye is getting sharper!',
     eyeEvolution:'My evolution', eyeEvolutionBtn:'My evolution', eyeBest:'Best', eyeAvg:'Average', eyeGamesPlayed:'Games', eyeNeedMore:'Play at least 2 games to see your evolution.',
     mathShareText:'I scored {score} points in {game} on OraMath (HorusQuest)! Can you beat me? 🦉➗',
+    worldTitle:'OraWorld', worldSub:'Explore the planet with Ora: flags, capitals, borders and landmarks in short games by age.',
+    worldBody:'OraWorld is the geography corner of HorusQuest. Pick an age group and a difficulty, and explore the world in short rounds guided by Ora — no account needed. Playing any OraWorld game keeps your daily streak alive, earns XP and can beat your personal records.',
+    worldLevel:'Level', worldStreakDays:'day streak', worldPlayNow:'Play',
+    worldRecordLine:'Your record: {score} — can you beat it?', worldNoRecordYet:'No record for this combo yet — set the first one!',
+    worldShareText:'I scored {score} points in {game} on OraWorld (HorusQuest)! Can you beat me? 🦉🌍',
+    worldFlagName:'OraFlag', worldFlagSub:'Guess the country from its flag — 10 rounds. Chain correct answers to grow your streak bonus!',
+    worldTOMName:'Truth or Map?', worldTOMSub:'A geography statement appears — swipe to call it true or false before the bar runs out.',
+    worldCapiName:'CapiOra', worldCapiSub:'Match countries to capitals against the clock — 60 seconds, growing combos.',
+    worldEyeName:'World Eye', worldEyeSub:'Name the landmark, place it on a continent and more — 8 quick rounds.',
+    worldPathName:'World Path', worldPathSub:'Hop between bordering countries to travel from start to destination — a calm map puzzle.',
+    worldDropName:'Continent Drop', worldDropSub:'Tap where a country sits on the world map — the closer your pin, the more points.',
+    lbTitleOraworld:'OraWorld leaderboard', lbSubOraworld:'Top geography scores across OraWorld games.', lbTabOraworld:'OraWorld',
     faqWhatHorus:'What is HorusQuest?', faqWhatHorusA:'HorusQuest is the family-friendly learning universe guided by Ora, combining quizzes, guessing games, word challenges and future learning adventures.',
     faqWhatOraQuest:'What is OraQuest?', faqWhatGuess:'What is OraGuess?', faqWhatWords:'What is OraWords?', faqAccount:'Do I need an account?', faqChildren:'Is HorusQuest suitable for children?', faqAds:'Does HorusQuest show ads?', faqBoards:'How do leaderboards work?'
   },
@@ -1508,6 +1523,18 @@ const I18N_EXT = {
     eyeAccuracy:'Precisión: {n}%', eyeRoundBreakdown:'Puntos por ronda', eyeGreat:'¡Buen ojo! 🦅', eyeGood:'¡Buena estimación! 👍', eyeTryAgain:'Sigue practicando: tu ojo mejora cada vez más.',
     eyeEvolution:'Mi evolución', eyeEvolutionBtn:'Mi evolución', eyeBest:'Mejor', eyeAvg:'Media', eyeGamesPlayed:'Partidas', eyeNeedMore:'Juega al menos 2 partidas para ver tu evolución.',
     mathShareText:'¡Hice {score} puntos en {game} de OraMath (HorusQuest)! ¿Me superas? 🦉➗',
+    worldTitle:'OraWorld', worldSub:'Explora el planeta con Ora: banderas, capitales, fronteras y monumentos en juegos cortos por edad.',
+    worldBody:'OraWorld es el rincón de geografía de HorusQuest. Elige un grupo de edad y una dificultad, y explora el mundo en rondas cortas guiadas por Ora, sin necesidad de cuenta. Jugar cualquier juego de OraWorld mantiene viva tu racha diaria, gana XP y puede superar tus récords personales.',
+    worldLevel:'Nivel', worldStreakDays:'días de racha', worldPlayNow:'Jugar',
+    worldRecordLine:'Tu récord: {score} — ¿puedes superarlo?', worldNoRecordYet:'Aún no hay récord para esta combinación, ¡marca el primero!',
+    worldShareText:'¡Hice {score} puntos en {game} de OraWorld (HorusQuest)! ¿Me superas? 🦉🌍',
+    worldFlagName:'OraFlag', worldFlagSub:'Adivina el país por su bandera — 10 rondas. ¡Encadena aciertos para aumentar tu bonus de racha!',
+    worldTOMName:'¿Verdad o Mapa?', worldTOMSub:'Aparece una afirmación geográfica: desliza para decir si es verdadera o falsa antes de que se agote la barra.',
+    worldCapiName:'CapiOra', worldCapiSub:'Relaciona países con capitales contra el reloj — 60 segundos, combos crecientes.',
+    worldEyeName:'Ojo del Mundo', worldEyeSub:'Nombra el monumento, ubícalo en un continente y más — 8 rondas rápidas.',
+    worldPathName:'Camino del Mundo', worldPathSub:'Salta entre países fronterizos para ir del inicio al destino — un puzzle de mapas tranquilo.',
+    worldDropName:'Continente Drop', worldDropSub:'Toca dónde está un país en el mapamundi — cuanto más cerca tu pin, más puntos.',
+    lbTitleOraworld:'Clasificación de OraWorld', lbSubOraworld:'Mejores puntuaciones de geografía en los juegos de OraWorld.', lbTabOraworld:'OraWorld',
     faqWhatHorus:'¿Qué es HorusQuest?', faqWhatHorusA:'HorusQuest es el universo de aprendizaje familiar guiado por Ora, con quizzes, adivinanzas, retos de palabras y futuras aventuras educativas.',
     faqWhatOraQuest:'¿Qué es OraQuest?', faqWhatGuess:'¿Qué es OraGuess?', faqWhatWords:'¿Qué es OraWords?', faqAccount:'¿Necesito una cuenta?', faqChildren:'¿HorusQuest es apto para niños?', faqAds:'¿HorusQuest muestra anuncios?', faqBoards:'¿Cómo funcionan las clasificaciones?'
   },
@@ -1557,6 +1584,18 @@ const I18N_EXT = {
     eyeAccuracy:'Précision : {n}%', eyeRoundBreakdown:'Points par manche', eyeGreat:'Bon œil ! 🦅', eyeGood:'Belle estimation ! 👍', eyeTryAgain:'Continue de t’entraîner : ton œil s’affine.',
     eyeEvolution:'Mon évolution', eyeEvolutionBtn:'Mon évolution', eyeBest:'Meilleur', eyeAvg:'Moyenne', eyeGamesPlayed:'Parties', eyeNeedMore:'Joue au moins 2 parties pour voir ton évolution.',
     mathShareText:'J’ai marqué {score} points à {game} sur OraMath (HorusQuest) ! Tu fais mieux ? 🦉➗',
+    worldTitle:'OraWorld', worldSub:'Explore la planète avec Ora : drapeaux, capitales, frontières et monuments dans des jeux courts par âge.',
+    worldBody:'OraWorld est le coin géographie de HorusQuest. Choisis un groupe d’âge et une difficulté, et explore le monde en courtes manches guidées par Ora — sans compte. Jouer à un jeu OraWorld entretient ta série quotidienne, gagne de l’XP et peut battre tes records personnels.',
+    worldLevel:'Niveau', worldStreakDays:'jours de série', worldPlayNow:'Jouer',
+    worldRecordLine:'Ton record : {score} — peux-tu le battre ?', worldNoRecordYet:'Pas encore de record pour cette combinaison — établis le premier !',
+    worldShareText:'J’ai marqué {score} points à {game} sur OraWorld (HorusQuest) ! Tu fais mieux ? 🦉🌍',
+    worldFlagName:'OraFlag', worldFlagSub:'Devine le pays d’après son drapeau — 10 manches. Enchaîne les bonnes réponses pour augmenter ton bonus de série !',
+    worldTOMName:'Vrai ou Carte ?', worldTOMSub:'Une affirmation géographique s’affiche : glisse pour dire si elle est vraie ou fausse avant la fin de la barre.',
+    worldCapiName:'CapiOra', worldCapiSub:'Associe pays et capitales contre la montre — 60 secondes, combos croissants.',
+    worldEyeName:'Œil du Monde', worldEyeSub:'Nomme le monument, place-le sur un continent et plus — 8 manches rapides.',
+    worldPathName:'Chemin du Monde', worldPathSub:'Saute entre pays frontaliers pour aller du départ à la destination — un puzzle de cartes apaisant.',
+    worldDropName:'Continent Drop', worldDropSub:'Touche où se trouve un pays sur la carte du monde — plus ton repère est proche, plus tu marques.',
+    lbTitleOraworld:'Classement OraWorld', lbSubOraworld:'Meilleurs scores de géographie sur les jeux OraWorld.', lbTabOraworld:'OraWorld',
     faqWhatHorus:'Qu’est-ce que HorusQuest ?', faqWhatHorusA:'HorusQuest est l’univers d’apprentissage familial guidé par Ora, avec des quiz, des devinettes, des défis de mots et de futures aventures éducatives.',
     faqWhatOraQuest:'Qu’est-ce que OraQuest ?', faqWhatGuess:'Qu’est-ce que OraGuess ?', faqWhatWords:'Qu’est-ce que OraWords ?', faqAccount:'Ai-je besoin d’un compte ?', faqChildren:'HorusQuest convient-il aux enfants ?', faqAds:'HorusQuest affiche-t-il des publicités ?', faqBoards:'Comment fonctionnent les classements ?'
   }
@@ -1604,7 +1643,7 @@ const ORA_UNIVERSE_GAMES = [
     description:{ en:'Word games, spelling and vocabulary challenges.', es:'Juegos de palabras, ortografía y vocabulario.', fr:'Jeux de mots, orthographe et vocabulaire.' }
   },
   {
-    key:'oraworld', name:'OraWorld', status:'coming-soon', route:'universe', anchor:'oraworld', icon:'🌍', color:'from-cyan-500 to-blue-500',
+    key:'oraworld', name:'OraWorld', status:'live', route:'oraworld', icon:'🌍', color:'from-cyan-500 to-blue-500',
     description:{ en:'Geography, flags and countries.', es:'Geografía, banderas y países.', fr:'Géographie, drapeaux et pays.' }
   },
   {
@@ -1614,20 +1653,9 @@ const ORA_UNIVERSE_GAMES = [
 ];
 // Honest detail for the not-yet-released universe games: what players will
 // learn and the real development status. No release dates are promised.
-const COMING_SOON_INFO = {
-  oraworld: {
-    learn: {
-      en: 'Geography for curious explorers: continents, countries, capitals, flags and famous landmarks, through friendly map-based challenges with short explanations.',
-      es: 'Geografía para exploradores curiosos: continentes, países, capitales, banderas y monumentos famosos, mediante retos con mapas y explicaciones breves.',
-      fr: 'La géographie pour les explorateurs curieux : continents, pays, capitales, drapeaux et monuments célèbres, via des défis cartographiques avec de courtes explications.'
-    },
-    status: {
-      en: 'In early development. There is no release date yet — when it is ready we will announce it here and on the Ora Universe page.',
-      es: 'En desarrollo inicial. Aún no hay fecha de lanzamiento; cuando esté listo lo anunciaremos aquí y en la página Universo Ora.',
-      fr: 'En début de développement. Il n’y a pas encore de date de sortie ; lorsqu’il sera prêt, nous l’annoncerons ici et sur la page Univers Ora.'
-    }
-  }
-};
+// Empty now that OraWorld is live — every universe game ships. The Ora Universe
+// "Coming soon" section only renders when this has matching entries.
+const COMING_SOON_INFO = {};
 // Short educational guide per playable game: the skill it builds and the
 // approximate ages it suits. Used to enrich the Play hub cards.
 const GAME_GUIDE = {
@@ -6585,7 +6613,7 @@ function Footer() {
   const cols = [
     { t:'HorusQuest', d:t('hqBadge')+'. '+t('trustCopy') },
     { t:t('navPlay'), links:[
-      ['play', t('navPlay')],['oraquest', 'OraQuest'],['guess', 'OraGuess'],['words', 'OraWords'],['oramath', 'OraMath'],['leaderboards', t('navLeader')]
+      ['play', t('navPlay')],['oraquest', 'OraQuest'],['guess', 'OraGuess'],['words', 'OraWords'],['oramath', 'OraMath'],['oraworld', 'OraWorld'],['leaderboards', t('navLeader')]
     ]},
     { t:t('navUniverse'), links:[
       ['universe', t('navUniverse')],['parents', t('navFamilies')],['teams', t('navTeams')+' · '+t('comingSoon')],['blog', t('navBlog')],['shop', t('navShop')]
@@ -6993,6 +7021,7 @@ function viewOraUniverse() {
       <section class="mt-12 grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
         ${ORA_UNIVERSE_GAMES.map(game => UniverseGameCard(game, { compact:true })).join('')}
       </section>
+      ${ORA_UNIVERSE_GAMES.some(g => g.status !== 'live' && COMING_SOON_INFO[g.key]) ? `
       <section class="mt-14" aria-labelledby="coming-soon-title">
         <h2 id="coming-soon-title" class="font-display text-3xl font-bold text-center">${pick({en:'Coming soon to the universe',es:'Próximamente en el universo',fr:'Bientôt dans l’univers'})}</h2>
         <p class="mt-2 text-center text-slate-600 max-w-2xl mx-auto">${pick({
@@ -7015,7 +7044,7 @@ function viewOraUniverse() {
             </article>
           `).join('')}
         </div>
-      </section>
+      </section>` : ''}
       <section class="mt-14 ui-panel p-8 md:p-10">
         <h2 class="font-display text-3xl font-bold">${t('connectTitle')}</h2>
         <p class="mt-4 text-slate-700 leading-relaxed">${t('connectBody')}</p>
@@ -11883,6 +11912,410 @@ function viewOraMath(){
 }
 /* ====== ORAMATH END ====== */
 
+/* ====== ORAWORLD (geography — retention core + hub) ====== */
+const ORAWORLD_LS = { profile:'oraworld:profile', streak:'oraworld:streak', records:'oraworld:records' };
+function loadGeoProfile(){ const p = LS.get(ORAWORLD_LS.profile, null); return p && typeof p.xp === 'number' ? p : { xp:0, games:0 }; }
+function saveGeoProfile(p){ LS.set(ORAWORLD_LS.profile, p); }
+function loadGeoStreak(){ return LS.get(ORAWORLD_LS.streak, null); }
+function loadGeoRecords(){ return LS.get(ORAWORLD_LS.records, {}) || {}; }
+
+// Streak as shown on the hub: alive if last play was today or yesterday.
+function geoActiveStreakDays(){
+  const st = loadGeoStreak();
+  if (!st || !st.last) return 0;
+  const today = todayKey();
+  return (st.last === today || st.last === GeoEngine.prevDayKey(today)) ? st.days : 0;
+}
+
+/* Single funnel every OraWorld game calls when a session ends — record + XP +
+   global daily streak. Mirror of finishMathGame(); leaderboard save stays a
+   separate, optional step on the results screen via saveGeoScore(). todayKey()
+   is LOCAL-date on purpose (a UTC key would break post-midnight streaks). */
+function finishGeoGame(args){
+  const today = todayKey();
+  const upd = GeoEngine.updateRecord(loadGeoRecords(), args.gameMode, args.ageGroup, args.difficulty, args.score, today);
+  LS.set(ORAWORLD_LS.records, upd.records);
+  const profile = loadGeoProfile();
+  const levelBefore = GeoEngine.levelForXp(profile.xp).level;
+  const xpGained = GeoEngine.xpForGame({ score:args.score, difficulty:args.difficulty });
+  profile.xp += xpGained;
+  profile.games = (profile.games || 0) + 1;
+  saveGeoProfile(profile);
+  const levelAfter = GeoEngine.levelForXp(profile.xp).level;
+  const streak = GeoEngine.updateDailyStreak(loadGeoStreak(), today);
+  LS.set(ORAWORLD_LS.streak, { days:streak.days, last:streak.last });
+  return { xpGained, leveledUp: levelAfter > levelBefore, newLevel: levelAfter,
+           recordIsNew: upd.isNew, streakDays: streak.days, milestone: streak.milestone };
+}
+
+function geoSetupOrDefault(){
+  if (!state.geoSetup) state.geoSetup = { ageGroup:'family', difficulty:'easy' };
+  return state.geoSetup;
+}
+function selectGeoOption(key, val){ geoSetupOrDefault()[key] = val; render(); }
+function geoBandInfo(){ const su = geoSetupOrDefault(); return GeoEngine.ORAWORLD_AGE_BANDS[su.ageGroup] || GeoEngine.ORAWORLD_AGE_BANDS.family; }
+
+// ISO-2 → flag emoji via Unicode regional-indicator letters (no image assets).
+function isoToFlagEmoji(iso){
+  if (!iso || iso.length !== 2) return '🏳️';
+  return iso.toUpperCase().replace(/./g, function(c){ return String.fromCodePoint(127397 + c.charCodeAt(0)); });
+}
+
+// One registry the hub, setup, results, share and save flows all read. Games
+// flagged `soon:true` render as locked "coming soon" cards until their phase.
+const GEO_GAMES = {
+  'oraflag':        { icon:'🚩', nameKey:'worldFlagName', subKey:'worldFlagSub', start:'startGeoFlag()',      state:function(){ return state.geoFlag; } },
+  'truth-or-map':   { icon:'🗺️', nameKey:'worldTOMName',  subKey:'worldTOMSub',  soon:true },
+  'capi-ora':       { icon:'🏛️', nameKey:'worldCapiName', subKey:'worldCapiSub', soon:true },
+  'world-eye':      { icon:'👁️', nameKey:'worldEyeName',  subKey:'worldEyeSub',  soon:true },
+  'world-path':     { icon:'🧭', nameKey:'worldPathName', subKey:'worldPathSub', soon:true },
+  'continent-drop': { icon:'📍', nameKey:'worldDropName', subKey:'worldDropSub', soon:true }
+};
+function geoGameName(mode){ const g = GEO_GAMES[mode]; return g ? t(g.nameKey) : t('worldTitle'); }
+
+function geoRecordLineHtml(gameMode){
+  const su = geoSetupOrDefault();
+  const rec = GeoEngine.bestRecord(loadGeoRecords(), gameMode, su.ageGroup, su.difficulty);
+  return rec
+    ? '<p class="mt-5 text-sm font-semibold text-cyan-700">🏅 ' + t('worldRecordLine').replace('{score}', rec.score) + '</p>'
+    : '<p class="mt-5 text-sm text-slate-500">' + t('worldNoRecordYet') + '</p>';
+}
+function geoRecordTextFor(gameMode){
+  const su = geoSetupOrDefault();
+  const rec = GeoEngine.bestRecord(loadGeoRecords(), gameMode, su.ageGroup, su.difficulty);
+  return rec ? '🏅 ' + t('worldRecordLine').replace('{score}', rec.score) : '';
+}
+
+// Shared age + difficulty selector grids (identical layout to OraMath).
+function geoSetupGridsHtml(){
+  const su = geoSetupOrDefault();
+  return ''
+    + '<div>'
+    + '  <h2 class="font-semibold mb-3">' + t('pickAge') + '</h2>'
+    + '  <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2">'
+    + AGE_GROUPS.map(function(a){ return ''
+        + '<button onclick="selectGeoOption(\'ageGroup\',\'' + a.id + '\')" class="select-cell p-3 text-center ' + (su.ageGroup===a.id?'is-selected border-brand-violet bg-violet-50':'border-slate-200') + ' focus-ring">'
+        + '  <div class="text-2xl">' + a.emoji + '</div>'
+        + '  <div class="text-xs font-semibold mt-1">' + ageName(a) + '</div>'
+        + '</button>'; }).join('')
+    + '  </div>'
+    + '</div>'
+    + '<div>'
+    + '  <h2 class="font-semibold mb-3">' + t('pickDiff') + '</h2>'
+    + '  <div class="grid grid-cols-3 gap-2">'
+    + ['easy','medium','hard'].map(function(d){ return ''
+        + '<button onclick="selectGeoOption(\'difficulty\',\'' + d + '\')" class="select-cell p-3 text-center ' + (su.difficulty===d?'is-selected border-brand-violet bg-violet-50':'border-slate-200') + ' focus-ring">'
+        + '  <div class="font-semibold capitalize">' + t('difficulty' + d.charAt(0).toUpperCase() + d.slice(1)) + '</div>'
+        + '</button>'; }).join('')
+    + '  </div>'
+    + '</div>';
+}
+
+function geoPlayerPanelHtml(){
+  const profile = loadGeoProfile();
+  const lv = GeoEngine.levelForXp(profile.xp);
+  const days = geoActiveStreakDays();
+  const nextMilestone = days < 3 ? 3 : days < 7 ? 7 : days < 30 ? 30 : null;
+  const milestoneHint = nextMilestone === null ? '' : pick({
+    en:(nextMilestone-days) + ' more day' + (nextMilestone-days===1?'':'s') + ' to a ' + nextMilestone + '-day streak!',
+    es:'¡' + (nextMilestone-days) + ' día' + (nextMilestone-days===1?'':'s') + ' más para la racha de ' + nextMilestone + '!',
+    fr:'Encore ' + (nextMilestone-days) + ' jour' + (nextMilestone-days===1?'':'s') + ' pour la série de ' + nextMilestone + ' !'
+  });
+  return ''
+    + '<section class="card p-5 md:p-6" aria-label="' + pick({en:'Your OraWorld progress',es:'Tu progreso en OraWorld',fr:'Ta progression OraWorld'}) + '">'
+    + '  <div class="flex flex-wrap items-center gap-x-6 gap-y-3">'
+    + '    <div class="flex items-center gap-3">'
+    + '      <span class="w-11 h-11 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center text-lg font-bold text-white">' + lv.level + '</span>'
+    + '      <div>'
+    + '        <div class="text-sm font-bold text-slate-900">' + t('worldLevel') + ' ' + lv.level + '</div>'
+    + '        <div class="text-xs text-slate-500">' + lv.intoLevel + ' / ' + lv.needed + ' XP</div>'
+    + '      </div>'
+    + '    </div>'
+    + '    <div class="flex-1 min-w-[10rem]">'
+    + '      <div class="h-3 rounded-full bg-slate-100 overflow-hidden" role="progressbar" aria-valuenow="' + lv.pct + '" aria-valuemin="0" aria-valuemax="100">'
+    + '        <div class="h-full rounded-full bg-gradient-to-r from-cyan-400 to-blue-500" style="width:' + lv.pct + '%"></div>'
+    + '      </div>'
+    + '    </div>'
+    + '    <div class="text-right">'
+    + '      <div class="text-sm font-bold text-slate-900">🔥 ' + days + ' ' + t('worldStreakDays') + '</div>'
+    + (milestoneHint ? '      <div class="text-xs text-slate-500">' + milestoneHint + '</div>' : '')
+    + '    </div>'
+    + '  </div>'
+    + '</section>';
+}
+
+// Shared setup screen (age + difficulty + record line) for OraWorld games.
+function geoGameSetupHtml(gameMode, extraCta){
+  const g = GEO_GAMES[gameMode] || GEO_GAMES['oraflag'];
+  return ''
+    + '<div class="min-h-screen bg-slate-50">'
+    + Header()
+    + '<main class="max-w-4xl mx-auto px-4 sm:px-6 py-10">'
+    + '  <div class="text-center mb-8">'
+    + '    <span class="chip bg-cyan-100 text-cyan-800">🌍 OraWorld</span>'
+    + '    <h1 class="mt-4 font-display text-3xl md:text-4xl font-bold">' + g.icon + ' ' + t(g.nameKey) + '</h1>'
+    + '    <p class="mt-3 text-slate-600 max-w-2xl mx-auto">' + t(g.subKey) + '</p>'
+    + '  </div>'
+    + '  <div class="card p-6 md:p-8 space-y-8">'
+    + geoSetupGridsHtml()
+    + '  <div class="text-center">'
+    + geoRecordLineHtml(gameMode)
+    + '    <button onclick="' + g.start + '" class="mt-4 btn-primary px-8 py-3 text-lg">▶ ' + t('worldPlayNow') + '</button>'
+    + (extraCta || '')
+    + '    <button onclick="go(\'oraworld\')" class="mt-4 block mx-auto text-sm text-slate-500 hover:underline focus-ring">← OraWorld</button>'
+    + '  </div>'
+    + '  </div>'
+    + '</main>'
+    + Footer()
+    + '</div>';
+}
+
+// Shared results screen. `meta` is the object returned by finishGeoGame().
+function geoResultsHtml(opts){
+  const meta = opts.meta || {};
+  const lv = GeoEngine.levelForXp(loadGeoProfile().xp);
+  const name = geoGameName(opts.gameMode);
+  const milestoneTxt = meta.milestone ? pick({
+    en:'🏆 ' + meta.milestone + '-day streak — Ora is proud of you!',
+    es:'🏆 ¡Racha de ' + meta.milestone + ' días — Ora está orgullosa de ti!',
+    fr:'🏆 Série de ' + meta.milestone + ' jours — Ora est fière de toi !'
+  }) : '';
+  return ''
+    + '<div class="min-h-screen bg-slate-50">'
+    + Header()
+    + '<main class="max-w-3xl mx-auto px-4 sm:px-6 py-10">'
+    + '  <div class="card p-8 text-center">'
+    + '    <span class="chip bg-cyan-100 text-cyan-800">🌍 OraWorld · ' + name + '</span>'
+    + '    <h1 class="mt-4 font-display text-3xl font-bold">' + pick({en:'Round over!',es:'¡Fin de la partida!',fr:'Partie terminée !'}) + '</h1>'
+    + '    <div class="mt-6 grid grid-cols-2 gap-3">'
+    + '      <div class="stat-cell bg-cyan-50 p-4"><div class="text-3xl font-bold text-cyan-700">' + opts.score + '</div><div class="text-xs text-slate-600 mt-1">' + t('yourScore') + '</div></div>'
+    + '      <div class="stat-cell bg-sky-50 p-4"><div class="text-3xl font-bold text-sky-700">' + opts.accuracy + '%</div><div class="text-xs text-slate-600 mt-1">' + t('accuracy') + '</div></div>'
+    + '    </div>'
+    + (opts.statLine ? '<p class="mt-4 text-sm text-slate-600">' + opts.statLine + '</p>' : '')
+    + (opts.extraHtml || '')
+    + (meta.recordIsNew
+        ? '<p class="mt-4 text-sm font-bold text-cyan-700">🏅 ' + pick({en:'New personal record!',es:'¡Nuevo récord personal!',fr:'Nouveau record personnel !'}) + '</p>'
+        : '<p class="mt-4 text-sm text-slate-500">' + geoRecordTextFor(opts.gameMode) + '</p>')
+    + '    <div class="mt-5 text-left max-w-sm mx-auto">'
+    + '      <div class="flex items-center justify-between text-sm font-semibold text-slate-700"><span>+' + (meta.xpGained || 0) + ' XP</span><span>' + t('worldLevel') + ' ' + lv.level + '</span></div>'
+    + '      <div class="mt-1 h-3 rounded-full bg-slate-100 overflow-hidden"><div class="h-full rounded-full bg-gradient-to-r from-cyan-400 to-blue-500" style="width:' + lv.pct + '%"></div></div>'
+    + (meta.leveledUp ? '<p class="mt-2 text-sm font-bold text-violet-700">🎉 ' + pick({en:'Level up! You reached level ',es:'¡Subes de nivel! Llegaste al nivel ',fr:'Niveau supérieur ! Tu as atteint le niveau '}) + meta.newLevel + '</p>' : '')
+    + '    </div>'
+    + '    <p class="mt-4 text-sm font-semibold text-slate-700">🔥 ' + (meta.streakDays || 0) + ' ' + t('worldStreakDays') + '</p>'
+    + (milestoneTxt ? '<p class="mt-2 text-sm font-bold text-cyan-700">' + milestoneTxt + '</p>' : '')
+    + '    <div class="mt-6 card p-4 text-left">'
+    + '      <label class="text-sm font-medium">' + t('guestName') + '</label>'
+    + '      <input id="guest-name" type="text" maxlength="' + MAX_ALIAS_LENGTH + '" placeholder="' + t('aliasPlaceholder') + '" style="text-transform:uppercase" class="mt-1 w-full px-3 py-2 rounded-lg border border-slate-200 focus-ring" ' + (opts.saved ? 'disabled' : '') + ' />'
+    + '      <p class="mt-2 text-xs text-slate-500">' + t('aliasHelp') + '</p>'
+    + '      <p class="mt-1 text-xs text-slate-500">' + t('guestRules') + '</p>'
+    + '      <label class="mt-2 flex items-center gap-2 text-xs text-slate-600"><input type="checkbox" id="accept-rules" class="focus-ring" ' + (opts.saved ? 'disabled' : '') + '/> ' + t('rulesAccept') + '</label>'
+    + '    </div>'
+    + '    <div class="mt-5 grid sm:grid-cols-2 lg:grid-cols-4 gap-2">'
+    + '      <button onclick="saveGeoScore(\'' + opts.gameMode + '\')" class="btn-primary" ' + (opts.saved ? 'disabled' : '') + '>' + (opts.saved ? t('saved') : t('saveScore')) + '</button>'
+    + '      <button onclick="' + opts.retryFn + '" class="btn-ghost">' + t('playAgain') + '</button>'
+    + '      <button onclick="geoShare(\'' + opts.gameMode + '\',' + opts.score + ')" class="btn-ghost">📤 ' + pick({en:'Share',es:'Compartir',fr:'Partager'}) + '</button>'
+    + (opts.extraButtons || '')
+    + '      <button onclick="go(\'oraworld\')" class="btn-ghost">← OraWorld</button>'
+    + '    </div>'
+    + '  </div>'
+    + AdSlot()
+    + '</main>'
+    + Footer()
+    + '</div>';
+}
+function geoShare(gameMode, score){
+  shareResult(t('worldShareText').replace('{score}', score).replace('{game}', geoGameName(gameMode)));
+}
+/* Explicit, optional leaderboard save with a 3–4 char alias — same flow and
+   validation as OraMath saveMathScore(). Pass durationSeconds (never
+   durationMs — that was the Letter Rush bug). XP/record/streak were applied at
+   game end by finishGeoGame(). */
+function saveGeoScore(gameMode){
+  const meta = GEO_GAMES[gameMode];
+  const s = meta && meta.state ? meta.state() : null;
+  if (!s || !s.ended || s.saved) return;
+  const rulesEl = document.getElementById('accept-rules');
+  if (!rulesEl || !rulesEl.checked) { toast(t('toastAcceptRules')); return; }
+  const nameEl = document.getElementById('guest-name');
+  const typed = nameEl ? nameEl.value : '';
+  let alias;
+  if (!typed.trim()) {
+    alias = generateGuestAlias();
+  } else {
+    alias = normalizeAlias(typed);
+    const check = validateLeaderboardAlias(alias);
+    if (!check.ok) { toast(t(check.error)); if (nameEl) nameEl.focus(); return; }
+  }
+  const acc = s.attempts ? Math.round((s.correct / s.attempts) * 100) : 0;
+  const record = LBCore.makeScoreRecord({
+    gameKey:'oraworld', gameName:'OraWorld', gameMode:gameMode,
+    difficulty:s.difficulty, ageGroup:s.ageGroup, language:state.lang,
+    playerName: alias,
+    score: s.score, accuracy: acc,
+    durationSeconds: s.durationMs ? Math.round(s.durationMs / 1000) : null
+  });
+  state.guestScores.push(record);
+  state.guestScores.sort(function(a, b){ return b.score - a.score; });
+  state.guestScores = state.guestScores.slice(0, 200);
+  LS.set(SCORES_KEY, state.guestScores);
+  state.user = { name: alias, isGuest: true };
+  LS.set('ora.user', state.user);
+  s.saved = true;
+  toast(t('saved'));
+  render();
+}
+
+/* ---- OraFlag (oraflag): identify the country from its flag, 10 rounds.
+   Choice mode (easy/medium) or typed answer with autocomplete (13+ hard). ---- */
+function startGeoFlag(){
+  const su = geoSetupOrDefault();
+  const info = geoBandInfo();
+  const rounds = GeoEngine.generateFlagRound(Math.random, info.band, su.difficulty);
+  state.geoFlag = {
+    ageGroup: su.ageGroup, difficulty: su.difficulty, band: info.band,
+    rounds: rounds, idx: 0, score: 0, correct: 0, attempts: 0,
+    streak: 0, bestStreak: 0, answered: false, lastCorrect: false, picked: null,
+    ended: false, saved: false, startedAt: Date.now(), durationMs: 0, meta: null
+  };
+  go('oraworld', { mode:'oraflag' });
+}
+// Strip accents/case so a typed answer matches any language's country name.
+function geoNorm(s){ return String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]/g,''); }
+function geoFlagTypeMatches(typed, iso){
+  const c = GeoEngine && GEODATA.BY_ISO[iso]; if (!c) return false;
+  const n = geoNorm(typed); if (!n) return false;
+  return ['en','es','fr'].some(function(l){ return geoNorm(c.name[l]) === n; });
+}
+function geoFlagAnswer(picked){
+  const s = state.geoFlag; if (!s || s.answered || s.ended) return;
+  const round = s.rounds[s.idx];
+  const correct = picked === round.correct;
+  s.attempts++;
+  s.answered = true;
+  s.lastCorrect = correct;
+  s.picked = picked;
+  if (correct) { s.correct++; s.streak++; if (s.streak > s.bestStreak) s.bestStreak = s.streak; s.score += 100 + (s.streak - 1) * 20; }
+  else { s.streak = 0; }
+  render();
+}
+function geoFlagTypeSubmit(){
+  const s = state.geoFlag; if (!s || s.answered || s.ended) return;
+  const el = document.getElementById('geo-flag-input');
+  const val = el ? el.value : '';
+  const round = s.rounds[s.idx];
+  geoFlagAnswer(geoFlagTypeMatches(val, round.correct) ? round.correct : '__wrong__');
+}
+function geoFlagNext(){
+  const s = state.geoFlag; if (!s || !s.answered || s.ended) return;
+  s.idx++;
+  if (s.idx >= s.rounds.length) {
+    s.ended = true;
+    s.durationMs = Date.now() - s.startedAt;
+    s.meta = finishGeoGame({ gameMode:'oraflag', ageGroup:s.ageGroup, difficulty:s.difficulty, score:s.score });
+  } else {
+    s.answered = false; s.picked = null;
+  }
+  render();
+}
+function viewGeoFlag(){
+  const s = state.geoFlag;
+  if (!s) return geoGameSetupHtml('oraflag');
+  if (s.ended) {
+    const acc = s.attempts ? Math.round((s.correct / s.attempts) * 100) : 0;
+    return geoResultsHtml({
+      gameMode:'oraflag', score:s.score, accuracy:acc, meta:s.meta, saved:s.saved,
+      retryFn:'startGeoFlag()',
+      statLine: pick({en:s.correct + ' / 10 flags · best streak ' + s.bestStreak + ' 🔥',
+                      es:s.correct + ' / 10 banderas · mejor racha ' + s.bestStreak + ' 🔥',
+                      fr:s.correct + ' / 10 drapeaux · meilleure série ' + s.bestStreak + ' 🔥'})
+    });
+  }
+  const round = s.rounds[s.idx];
+  const num = s.idx + 1;
+  let answerArea;
+  if (s.answered) {
+    const correctName = GeoEngine.nameOf(round.correct, state.lang);
+    const fb = s.lastCorrect
+      ? '<div class="text-emerald-700 font-bold text-lg">✓ ' + correctName + '</div>'
+      : '<div class="text-rose-700 font-bold text-lg">✗ ' + pick({en:'It was',es:'Era',fr:'C’était'}) + ' ' + correctName + '</div>';
+    const cont = '<button onclick="geoFlagNext()" class="mt-5 btn-primary px-8 py-3">' + (num >= 10 ? pick({en:'See results',es:'Ver resultados',fr:'Voir les résultats'}) : pick({en:'Next flag',es:'Siguiente bandera',fr:'Drapeau suivant'})) + ' →</button>';
+    answerArea = '<div class="mt-6">' + fb + cont + '</div>';
+  } else if (round.type === 'type') {
+    const names = GeoEngine.countryPool(s.band, s.difficulty).map(function(c){ return '<option value="' + escapeHtml(GeoEngine.nameOf(c.iso, state.lang)) + '"></option>'; }).join('');
+    answerArea = ''
+      + '<div class="mt-6 max-w-xs mx-auto">'
+      + '  <input id="geo-flag-input" list="geo-flag-names" autocomplete="off" onkeydown="if(event.key===\'Enter\'){event.preventDefault();geoFlagTypeSubmit();}" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus-ring text-center" placeholder="' + pick({en:'Type the country…',es:'Escribe el país…',fr:'Tape le pays…'}) + '" />'
+      + '  <datalist id="geo-flag-names">' + names + '</datalist>'
+      + '  <button onclick="geoFlagTypeSubmit()" class="mt-3 btn-primary px-8 py-2">' + pick({en:'Check',es:'Comprobar',fr:'Vérifier'}) + '</button>'
+      + '</div>';
+  } else {
+    answerArea = '<div class="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-lg mx-auto">'
+      + round.options.map(function(iso){ return '<button onclick="geoFlagAnswer(\'' + iso + '\')" class="select-cell p-4 text-center font-semibold border-slate-200 focus-ring">' + GeoEngine.nameOf(iso, state.lang) + '</button>'; }).join('')
+      + '</div>';
+  }
+  return ''
+    + '<div class="min-h-screen bg-slate-50">'
+    + Header()
+    + '<main class="max-w-3xl mx-auto px-4 sm:px-6 py-10">'
+    + '  <div class="flex items-center justify-between mb-4 text-sm font-semibold text-slate-600">'
+    + '    <span class="chip bg-cyan-100 text-cyan-800">🚩 ' + t('worldFlagName') + '</span>'
+    + '    <span>' + pick({en:'Flag',es:'Bandera',fr:'Drapeau'}) + ' ' + num + '/10</span>'
+    + '    <span>⭐ ' + s.score + (s.streak > 1 ? ' · 🔥' + s.streak : '') + '</span>'
+    + '  </div>'
+    + '  <div class="card p-8 text-center">'
+    + '    <div class="text-[8rem] leading-none select-none" aria-label="' + pick({en:'Flag to identify',es:'Bandera por identificar',fr:'Drapeau à identifier'}) + '">' + isoToFlagEmoji(round.correct) + '</div>'
+    + '    <p class="mt-4 text-slate-600">' + pick({en:'Which country owns this flag?',es:'¿De qué país es esta bandera?',fr:'À quel pays appartient ce drapeau ?'}) + '</p>'
+    + answerArea
+    + '  </div>'
+    + '  <button onclick="go(\'oraworld\')" class="mt-6 block mx-auto text-sm text-slate-500 hover:underline focus-ring">← OraWorld</button>'
+    + '</main>'
+    + Footer()
+    + '</div>';
+}
+
+function viewOraWorld(){
+  const mode = state.params.mode || 'hub';
+  if (mode === 'oraflag') return viewGeoFlag();
+  const order = ['oraflag','truth-or-map','capi-ora','world-eye','world-path','continent-drop'];
+  const gameCards = order.map(function(m){
+    const g = GEO_GAMES[m];
+    if (g.soon) {
+      return ''
+      + '<div class="card p-5 text-left opacity-70">'
+      + '  <div class="text-3xl" aria-hidden="true">' + g.icon + '</div>'
+      + '  <h2 class="mt-3 font-display text-xl font-bold">' + t(g.nameKey) + '</h2>'
+      + '  <p class="mt-2 text-sm text-slate-600">' + t(g.subKey) + '</p>'
+      + '  <span class="mt-3 inline-block chip bg-amber-100 text-amber-800">' + t('comingSoon') + '</span>'
+      + '</div>';
+    }
+    return ''
+    + '<button onclick="go(\'oraworld\',{mode:\'' + m + '\'})" class="card card-hover p-5 text-left focus-ring">'
+    + '  <div class="text-3xl" aria-hidden="true">' + g.icon + '</div>'
+    + '  <h2 class="mt-3 font-display text-xl font-bold">' + t(g.nameKey) + '</h2>'
+    + '  <p class="mt-2 text-sm text-slate-600">' + t(g.subKey) + '</p>'
+    + '  <span class="mt-3 inline-block text-sm font-semibold text-brand-violet">▶ ' + t('worldPlayNow') + '</span>'
+    + '</button>';
+  }).join('');
+  return ''
+    + '<div class="min-h-screen bg-slate-50">'
+    + Header()
+    + '<main class="max-w-5xl mx-auto px-4 sm:px-6 py-10">'
+    + '  <section class="text-center max-w-3xl mx-auto">'
+    + '    <span class="chip bg-cyan-100 text-cyan-800">🌍 OraWorld · HorusQuest</span>'
+    + '    <h1 class="mt-4 font-display text-4xl md:text-5xl font-bold">' + t('worldTitle') + '</h1>'
+    + '    <p class="mt-4 text-lg text-slate-600">' + t('worldSub') + '</p>'
+    + '    <p class="mt-4 text-slate-600 leading-relaxed">' + t('worldBody') + '</p>'
+    + '  </section>'
+    + '  <div class="mt-8">' + geoPlayerPanelHtml() + '</div>'
+    + '  <div class="mt-6 grid sm:grid-cols-2 gap-5">'
+    + gameCards
+    + '  </div>'
+    + '</main>'
+    + Footer()
+    + '</div>';
+}
+/* ====== ORAWORLD END ====== */
+
 function viewOraQuestHome() {
   const seed = dailySeed();
   const dailyCat = CATEGORIES[seed % CATEGORIES.length];
@@ -12646,6 +13079,7 @@ const LB_TAB_META = {
   guessora: { titleKey:'lbTitleGuessora', subKey:'lbSubGuessora', labelKey:'lbTabGuessora' },
   orawords: { titleKey:'lbTitleOrawords', subKey:'lbSubOrawords', labelKey:'lbTabOrawords' },
   oramath:  { titleKey:'lbTitleOramath',  subKey:'lbSubOramath',  labelKey:'lbTabOramath' },
+  oraworld: { titleKey:'lbTitleOraworld', subKey:'lbSubOraworld', labelKey:'lbTabOraworld' },
   daily:    { titleKey:'lbTitleDaily',    subKey:'lbSubDaily',    labelKey:'lbTabDaily' },
   teams:    { titleKey:'lbTitleTeams',    subKey:'lbSubTeams',    labelKey:'lbTabTeams' }
 };
@@ -13845,6 +14279,7 @@ function render() {
     case 'universe': html = viewOraUniverse(); break;
     case 'words': html = viewWords(); break;
     case 'oramath': html = viewOraMath(); break;
+    case 'oraworld': html = viewOraWorld(); break;
     case 'quiz': html = viewQuizSetup(); break;
     case 'quiz-play': html = viewQuizPlay(); break;
     case 'quiz-results': html = viewQuizResults(); break;
