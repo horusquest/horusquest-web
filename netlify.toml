@@ -195,17 +195,12 @@
   status = 200
 
 [[redirects]]
-  from = "/oraquest"
-  to = "/OraQuest.html"
-  status = 200
-
-[[redirects]]
   from = "/oraquest/"
   to = "/OraQuest.html"
   status = 200
 
 [[redirects]]
-  from = "/es/oraquest"
+  from = "/oraquest"
   to = "/OraQuest.html"
   status = 200
 
@@ -215,12 +210,17 @@
   status = 200
 
 [[redirects]]
-  from = "/fr/oraquest"
+  from = "/es/oraquest"
   to = "/OraQuest.html"
   status = 200
 
 [[redirects]]
   from = "/fr/oraquest/"
+  to = "/OraQuest.html"
+  status = 200
+
+[[redirects]]
+  from = "/fr/oraquest"
   to = "/OraQuest.html"
   status = 200
 
