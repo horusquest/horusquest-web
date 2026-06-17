@@ -464,11 +464,11 @@ const LANG_FLAGS = { en:'🇬🇧', es:'🇪🇸', fr:'🇫🇷' };
 const ROUTE_PATHS = {
   home: { en:'/', es:'/es', fr:'/fr' },
   play: { en:'/play', es:'/es/jugar', fr:'/fr/jouer' },
-  oraquest: { en:'/oraquest', es:'/es/oraquest', fr:'/fr/oraquest' },
+  oraquest: { en:'/oraquest/', es:'/es/oraquest/', fr:'/fr/oraquest/' },
   universe: { en:'/ora-universe', es:'/es/universo-ora', fr:'/fr/univers-ora' },
-  guess: { en:'/oraguess', es:'/es/oraguess', fr:'/fr/oraguess' },
-  'daily-guess': { en:'/oraguess/daily', es:'/es/oraguess/diario', fr:'/fr/oraguess/quotidien' },
-  words: { en:'/words', es:'/es/palabras', fr:'/fr/mots' },
+  guess: { en:'/guessora/', es:'/es/guessora/', fr:'/fr/guessora/' },
+  'daily-guess': { en:'/guessora/daily/', es:'/es/guessora/diario/', fr:'/fr/guessora/quotidien/' },
+  words: { en:'/orawords/', es:'/es/orawords/', fr:'/fr/orawords/' },
   oramath: { en:'/oramath', es:'/es/oramath', fr:'/fr/oramath' },
   leaderboards: { en:'/leaderboards', es:'/es/clasificaciones', fr:'/fr/classements' },
   shop: { en:'/store', es:'/es/tienda', fr:'/fr/boutique' },
@@ -495,7 +495,7 @@ const ROUTE_PATHS = {
 // 'report' is a thin utility form (no substantive content) → noindex too.
 const NOINDEX_ROUTES = new Set(['blog', 'shop', 'teams', 'report']);
 const PATH_TO_ROUTE = Object.keys(ROUTE_PATHS).reduce((acc, route) => {
-  LANGS.forEach(lang => { acc[ROUTE_PATHS[route][lang]] = { route, lang }; });
+  LANGS.forEach(lang => { acc[normalizePath(ROUTE_PATHS[route][lang])] = { route, lang }; });
   return acc;
 }, {});
 function normalizePath(pathname) {

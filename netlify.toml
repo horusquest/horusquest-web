@@ -103,18 +103,63 @@
   status = 301
 
 [[redirects]]
-  from = "/guessora"
-  to = "/oraguess"
+  from = "/oraguess"
+  to = "https://horusquest.com/guessora/"
   status = 301
 
 [[redirects]]
-  from = "/es/guessora"
-  to = "/es/oraguess"
+  from = "/oraguess/"
+  to = "https://horusquest.com/guessora/"
   status = 301
 
 [[redirects]]
-  from = "/fr/guessora"
-  to = "/fr/oraguess"
+  from = "/es/oraguess"
+  to = "https://horusquest.com/es/guessora/"
+  status = 301
+
+[[redirects]]
+  from = "/es/oraguess/"
+  to = "https://horusquest.com/es/guessora/"
+  status = 301
+
+[[redirects]]
+  from = "/fr/oraguess"
+  to = "https://horusquest.com/fr/guessora/"
+  status = 301
+
+[[redirects]]
+  from = "/fr/oraguess/"
+  to = "https://horusquest.com/fr/guessora/"
+  status = 301
+
+[[redirects]]
+  from = "/words"
+  to = "https://horusquest.com/orawords/"
+  status = 301
+
+[[redirects]]
+  from = "/words/"
+  to = "https://horusquest.com/orawords/"
+  status = 301
+
+[[redirects]]
+  from = "/es/palabras"
+  to = "https://horusquest.com/es/orawords/"
+  status = 301
+
+[[redirects]]
+  from = "/es/palabras/"
+  to = "https://horusquest.com/es/orawords/"
+  status = 301
+
+[[redirects]]
+  from = "/fr/mots"
+  to = "https://horusquest.com/fr/orawords/"
+  status = 301
+
+[[redirects]]
+  from = "/fr/mots/"
+  to = "https://horusquest.com/fr/orawords/"
   status = 301
 
 # 2) Valid SPA routes -> serve the single-file app (200 rewrite, not redirect).
@@ -155,12 +200,27 @@
   status = 200
 
 [[redirects]]
+  from = "/oraquest/"
+  to = "/OraQuest.html"
+  status = 200
+
+[[redirects]]
   from = "/es/oraquest"
   to = "/OraQuest.html"
   status = 200
 
 [[redirects]]
+  from = "/es/oraquest/"
+  to = "/OraQuest.html"
+  status = 200
+
+[[redirects]]
   from = "/fr/oraquest"
+  to = "/OraQuest.html"
+  status = 200
+
+[[redirects]]
+  from = "/fr/oraquest/"
   to = "/OraQuest.html"
   status = 200
 
@@ -180,47 +240,92 @@
   status = 200
 
 [[redirects]]
-  from = "/oraguess"
+  from = "/guessora"
   to = "/OraQuest.html"
   status = 200
 
 [[redirects]]
-  from = "/es/oraguess"
+  from = "/guessora/"
   to = "/OraQuest.html"
   status = 200
 
 [[redirects]]
-  from = "/fr/oraguess"
+  from = "/es/guessora"
   to = "/OraQuest.html"
   status = 200
 
 [[redirects]]
-  from = "/oraguess/daily"
+  from = "/es/guessora/"
   to = "/OraQuest.html"
   status = 200
 
 [[redirects]]
-  from = "/es/oraguess/diario"
+  from = "/fr/guessora"
   to = "/OraQuest.html"
   status = 200
 
 [[redirects]]
-  from = "/fr/oraguess/quotidien"
+  from = "/fr/guessora/"
   to = "/OraQuest.html"
   status = 200
 
 [[redirects]]
-  from = "/words"
+  from = "/guessora/daily"
   to = "/OraQuest.html"
   status = 200
 
 [[redirects]]
-  from = "/es/palabras"
+  from = "/guessora/daily/"
   to = "/OraQuest.html"
   status = 200
 
 [[redirects]]
-  from = "/fr/mots"
+  from = "/es/guessora/diario"
+  to = "/OraQuest.html"
+  status = 200
+
+[[redirects]]
+  from = "/es/guessora/diario/"
+  to = "/OraQuest.html"
+  status = 200
+
+[[redirects]]
+  from = "/fr/guessora/quotidien"
+  to = "/OraQuest.html"
+  status = 200
+
+[[redirects]]
+  from = "/fr/guessora/quotidien/"
+  to = "/OraQuest.html"
+  status = 200
+
+[[redirects]]
+  from = "/orawords"
+  to = "/OraQuest.html"
+  status = 200
+
+[[redirects]]
+  from = "/orawords/"
+  to = "/OraQuest.html"
+  status = 200
+
+[[redirects]]
+  from = "/es/orawords"
+  to = "/OraQuest.html"
+  status = 200
+
+[[redirects]]
+  from = "/es/orawords/"
+  to = "/OraQuest.html"
+  status = 200
+
+[[redirects]]
+  from = "/fr/orawords"
+  to = "/OraQuest.html"
+  status = 200
+
+[[redirects]]
+  from = "/fr/orawords/"
   to = "/OraQuest.html"
   status = 200
 
