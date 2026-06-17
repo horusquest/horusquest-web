@@ -195,6 +195,12 @@
   status = 200
 
 [[redirects]]
+  from = "/oraquest/"
+  to = "/oraquest/index.html"
+  status = 200
+  force = true
+
+[[redirects]]
   from = "/es/oraquest/"
   to = "/OraQuest.html"
   status = 200
