@@ -10009,6 +10009,17 @@ const GeoEngine = (function () {
   function capitalOf(iso, lang) { const c = byIso(iso); return c ? (c.capital[lang] || c.capital.en) : ''; }
   function continentName(code, lang) { const c = DATA.CONTINENTS[code]; return c ? (c[lang] || c.en) : code; }
 
+  // ISO-2 → flag emoji (two Unicode Regional Indicator Symbols). Pure: strips
+  // non-letters + uppercases first so a stray space/case never corrupts the
+  // code points; falls back to a white flag for anything that is not 2 letters.
+  // 0x1F1E6 is Regional Indicator 'A'; (charCode − 65) maps A..Z → the block.
+  function isoToFlagEmoji(iso) {
+    const code = String(iso || '').toUpperCase().replace(/[^A-Z]/g, '');
+    if (code.length !== 2) return '🏳️';
+    return String.fromCodePoint(0x1F1E6 + (code.charCodeAt(0) - 65))
+         + String.fromCodePoint(0x1F1E6 + (code.charCodeAt(1) - 65));
+  }
+
   /* ---- Country pools by band × difficulty (tier 1 iconic → 3 less known).
      Band widens the tier set; difficulty is a second axis inside the band. ---- */
   const POOL_TABLE = {
@@ -10240,7 +10251,7 @@ const GeoEngine = (function () {
 
   return {
     ORAWORLD_AGE_BANDS: ORAWORLD_AGE_BANDS, bandFor: bandFor, timeFactorFor: timeFactorFor,
-    nameOf: nameOf, capitalOf: capitalOf, continentName: continentName,
+    nameOf: nameOf, capitalOf: capitalOf, continentName: continentName, isoToFlagEmoji: isoToFlagEmoji,
     POOL_TABLE: POOL_TABLE, countryPool: countryPool, distractorsFor: distractorsFor,
     FLAG_TABLE: FLAG_TABLE, generateFlagRound: generateFlagRound, scoreFlag: scoreFlag,
     STATEMENT_KINDS: STATEMENT_KINDS, generateGeoStatement: generateGeoStatement,
@@ -11964,11 +11975,8 @@ function geoSetupOrDefault(){
 function selectGeoOption(key, val){ geoSetupOrDefault()[key] = val; render(); }
 function geoBandInfo(){ const su = geoSetupOrDefault(); return GeoEngine.ORAWORLD_AGE_BANDS[su.ageGroup] || GeoEngine.ORAWORLD_AGE_BANDS.family; }
 
-// ISO-2 → flag emoji via Unicode regional-indicator letters (no image assets).
-function isoToFlagEmoji(iso){
-  if (!iso || iso.length !== 2) return '🏳️';
-  return iso.toUpperCase().replace(/./g, function(c){ return String.fromCodePoint(127397 + c.charCodeAt(0)); });
-}
+// ISO-2 → flag emoji. Thin host wrapper over the pure (tested) engine fn.
+function isoToFlagEmoji(iso){ return GeoEngine.isoToFlagEmoji(iso); }
 
 // One registry the hub, setup, results, share and save flows all read. Games
 // flagged `soon:true` render as locked "coming soon" cards until their phase.
