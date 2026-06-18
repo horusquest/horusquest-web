@@ -10194,6 +10194,14 @@ const GeoEngine = (function () {
     const mult = Math.min(3, 1 + Math.floor(Math.max(0, streakAfter - 1) / 3));
     return 100 * mult;
   }
+  // Per-question time limit (ms). More generous than the maths trap timer —
+  // a geography sentence takes longer to read — and tighter for older bands.
+  // Shrinks with the streak; timeFactor widens it for the youngest groups.
+  function statementTimeLimitMs(band, streak, timeFactor) {
+    const base = { '6-8': 7000, '9-12': 6000, '13+': 5000 }[band] || 6000;
+    const floor = band === '6-8' ? 4500 : 3000;
+    return Math.round(Math.max(floor, base - (streak || 0) * 200) * (timeFactor || 1));
+  }
 
   /* ---- Retention core (XP / level / global daily streak / personal records).
      Cloned verbatim from MathEngine so OraWorld behaves identically; callers
@@ -10237,6 +10245,7 @@ const GeoEngine = (function () {
     FLAG_TABLE: FLAG_TABLE, generateFlagRound: generateFlagRound, scoreFlag: scoreFlag,
     STATEMENT_KINDS: STATEMENT_KINDS, generateGeoStatement: generateGeoStatement,
     geoStatementIsTrue: geoStatementIsTrue, statementScoreFor: statementScoreFor,
+    statementTimeLimitMs: statementTimeLimitMs,
     xpForGame: xpForGame, xpNeededFor: xpNeededFor, levelForXp: levelForXp,
     prevDayKey: prevDayKey, updateDailyStreak: updateDailyStreak,
     recordKey: recordKey, bestRecord: bestRecord, updateRecord: updateRecord
@@ -11965,7 +11974,7 @@ function isoToFlagEmoji(iso){
 // flagged `soon:true` render as locked "coming soon" cards until their phase.
 const GEO_GAMES = {
   'oraflag':        { icon:'🚩', nameKey:'worldFlagName', subKey:'worldFlagSub', start:'startGeoFlag()',      state:function(){ return state.geoFlag; } },
-  'truth-or-map':   { icon:'🗺️', nameKey:'worldTOMName',  subKey:'worldTOMSub',  soon:true },
+  'truth-or-map':   { icon:'🗺️', nameKey:'worldTOMName',  subKey:'worldTOMSub',  start:'startGeoTrueFalse()', state:function(){ return state.geoTOM; } },
   'capi-ora':       { icon:'🏛️', nameKey:'worldCapiName', subKey:'worldCapiSub', soon:true },
   'world-eye':      { icon:'👁️', nameKey:'worldEyeName',  subKey:'worldEyeSub',  soon:true },
   'world-path':     { icon:'🧭', nameKey:'worldPathName', subKey:'worldPathSub', soon:true },
@@ -12273,9 +12282,186 @@ function viewGeoFlag(){
     + '</div>';
 }
 
+/* ---- ¿Verdad o Mapa? (truth-or-map): true/false geography statements.
+   Direct mirror of OraMath's ¿Verdad o Trampa? — swipe / buttons / ←→ keys,
+   3 lives, a CSS time bar RECREATED per question (reusing the .tt-bar shrink
+   animation; reusing the same node would freeze it), and route/session guards
+   on every timeout so a navigated-away timer is a no-op. ---- */
+function startGeoTrueFalse(){
+  const su = geoSetupOrDefault();
+  const info = geoBandInfo();
+  if (state.geoTOM && state.geoTOM.qTimeout) clearTimeout(state.geoTOM.qTimeout);
+  state.geoTOM = {
+    ageGroup: su.ageGroup, difficulty: su.difficulty, band: info.band, timeFactor: info.timeFactor,
+    lives: 3, score: 0, streak: 0, bestStreak: 0, attempts: 0, correct: 0,
+    current: null, qTimeout: null, swipe: null,
+    ended: false, resultMeta: null, startedAt: Date.now(), durationMs: 0, saved: false
+  };
+  go('oraworld', { mode:'truth-or-map', play:true });
+  tomNext();
+}
+function resetGeoTrueFalse(){
+  if (state.geoTOM && state.geoTOM.qTimeout) clearTimeout(state.geoTOM.qTimeout);
+  state.geoTOM = null;
+  startGeoTrueFalse();
+}
+function tomGuard(s){ return state.route === 'oraworld' && state.params.mode === 'truth-or-map' && state.geoTOM === s && !s.ended; }
+function tomNext(){
+  const s = state.geoTOM;
+  if (!s || s.ended) return;
+  if (s.qTimeout){ clearTimeout(s.qTimeout); s.qTimeout = null; }
+  const stmt = GeoEngine.generateGeoStatement(Math.random, s.band, s.difficulty);
+  const timeLimitMs = GeoEngine.statementTimeLimitMs(s.band, s.streak, s.timeFactor);
+  s.current = { stmt: stmt, shownAt: Date.now(), timeLimitMs: timeLimitMs, resolved: false };
+  const zone = document.getElementById('tom-zone');
+  if (zone) zone.innerHTML = geoTOMCardHtml(s);
+  s.qTimeout = setTimeout(function(){
+    if (!tomGuard(s)) return;
+    tomResolve(null);
+  }, timeLimitMs);
+}
+function geoTOMCardHtml(s){
+  const cur = s.current;
+  const elapsed = Math.max(0, Date.now() - cur.shownAt);
+  return ''
+    + '<div id="tom-card" class="tt-card card p-8 text-center fade-in" onpointerdown="tomDown(event)" onpointermove="tomMove(event)" onpointerup="tomUp(event)" onpointercancel="tomCancel(event)">'
+    + '  <div class="h-2 rounded-full bg-slate-100 overflow-hidden mb-6" aria-hidden="true"><div class="tt-bar h-full bg-gradient-to-r from-cyan-400 to-blue-500" style="animation-duration:' + cur.timeLimitMs + 'ms;animation-delay:-' + elapsed + 'ms"></div></div>'
+    + '  <div id="tom-stmt" class="font-display text-2xl md:text-3xl font-bold leading-snug" aria-live="polite">' + escapeHtml(cur.stmt.text[state.lang] || cur.stmt.text.en) + '</div>'
+    + '  <div id="tom-feedback" class="mt-4 min-h-[1.75rem] text-base font-semibold"></div>'
+    + '</div>';
+}
+function tomAnswer(guess){
+  const s = state.geoTOM;
+  if (!s || s.ended || !s.current || s.current.resolved) return;
+  tomResolve(guess);
+}
+function tomResolve(guess){
+  const s = state.geoTOM;
+  if (!s || s.ended || !s.current || s.current.resolved) return;
+  if (s.qTimeout){ clearTimeout(s.qTimeout); s.qTimeout = null; }
+  const cur = s.current;
+  cur.resolved = true;
+  s.attempts++;
+  const correct = guess !== null && guess === cur.stmt.isTrue;
+  if (correct){
+    s.correct++;
+    s.streak++;
+    if (s.streak > s.bestStreak) s.bestStreak = s.streak;
+    const pts = GeoEngine.statementScoreFor(s.streak);
+    s.score += pts;
+    tomFlash(true, pts, false);
+  } else {
+    s.streak = 0;
+    s.lives--;
+    tomFlash(false, 0, guess === null);
+  }
+  tomPatchStats();
+  const delay = correct ? 600 : 1200; // a beat to read the truth on misses
+  setTimeout(function(){
+    if (!tomGuard(s)) return;
+    if (s.lives <= 0) endGeoTrueFalse(); else tomNext();
+  }, delay);
+}
+function tomFlash(ok, pts, timedOut){
+  const s = state.geoTOM;
+  const card = document.getElementById('tom-card');
+  const fb = document.getElementById('tom-feedback');
+  const bar = document.querySelector('#tom-card .tt-bar');
+  if (bar) bar.style.animationPlayState = 'paused';
+  if (card) card.style.background = ok ? '#ecfeff' : '#fff1f2';
+  if (!fb) return;
+  const truth = s && s.current ? (s.current.stmt.isTrue
+    ? pick({en:'It was TRUE.',es:'Era VERDADERA.',fr:'C’était VRAI.'})
+    : pick({en:'It was FALSE.',es:'Era FALSA.',fr:'C’était FAUX.'})) : '';
+  fb.className = 'mt-4 min-h-[1.75rem] text-base font-semibold ' + (ok ? 'text-emerald-600' : 'text-rose-600');
+  fb.textContent = ok ? '+' + pts : ((timedOut ? pick({en:'Time’s up! ',es:'¡Tiempo! ',fr:'Temps écoulé ! '}) : '') + truth);
+}
+function tomPatchStats(){
+  const s = state.geoTOM; if (!s) return;
+  const lives = document.getElementById('tom-lives'); if (lives) lives.textContent = '❤️'.repeat(Math.max(0, s.lives)) + '🖤'.repeat(Math.max(0, 3 - s.lives));
+  const sc = document.getElementById('tom-score'); if (sc) sc.textContent = s.score;
+  const st = document.getElementById('tom-streak'); if (st) st.textContent = s.streak;
+}
+function endGeoTrueFalse(){
+  const s = state.geoTOM;
+  if (!s || s.ended) return;
+  s.ended = true;
+  if (s.qTimeout){ clearTimeout(s.qTimeout); s.qTimeout = null; }
+  s.durationMs = Date.now() - s.startedAt;
+  s.resultMeta = finishGeoGame({ gameMode:'truth-or-map', ageGroup:s.ageGroup, difficulty:s.difficulty, score:s.score });
+  render();
+  if (s.resultMeta.leveledUp || s.resultMeta.milestone || s.resultMeta.recordIsNew) { try { confetti(); } catch (e) {} }
+}
+function tomDown(e){
+  const s = state.geoTOM;
+  if (!s || s.ended || !s.current || s.current.resolved) return;
+  s.swipe = { id:e.pointerId, x:e.clientX, y:e.clientY, dx:0, dy:0 };
+  const card = document.getElementById('tom-card');
+  if (card){ try { card.setPointerCapture(e.pointerId); } catch (err) {} }
+}
+function tomMove(e){
+  const s = state.geoTOM;
+  if (!s || !s.swipe || e.pointerId !== s.swipe.id) return;
+  s.swipe.dx = e.clientX - s.swipe.x;
+  s.swipe.dy = e.clientY - s.swipe.y;
+  const card = document.getElementById('tom-card');
+  if (card && Math.abs(s.swipe.dx) > Math.abs(s.swipe.dy)){
+    card.style.transform = 'translateX(' + s.swipe.dx + 'px) rotate(' + (s.swipe.dx / 20) + 'deg)';
+    card.style.background = s.swipe.dx > 30 ? '#ecfeff' : s.swipe.dx < -30 ? '#fff1f2' : '';
+  }
+}
+function tomUp(e){
+  const s = state.geoTOM;
+  if (!s || !s.swipe || e.pointerId !== s.swipe.id) return;
+  const dx = s.swipe.dx, dy = s.swipe.dy;
+  s.swipe = null;
+  const card = document.getElementById('tom-card');
+  if (card){ card.style.transform = ''; if (!s.current || !s.current.resolved) card.style.background = ''; }
+  if (Math.abs(dx) >= 60 && Math.abs(dx) > Math.abs(dy)) tomAnswer(dx > 0);
+}
+function tomCancel(){
+  const s = state.geoTOM;
+  if (s) s.swipe = null;
+  const card = document.getElementById('tom-card');
+  if (card){ card.style.transform = ''; card.style.background = ''; }
+}
+function viewGeoTrueFalse(){
+  const s = state.geoTOM;
+  if (!s || !state.params.play){
+    if (s){ if (s.qTimeout) clearTimeout(s.qTimeout); state.geoTOM = null; }
+    return geoGameSetupHtml('truth-or-map');
+  }
+  if (s.ended){
+    const acc = s.attempts ? Math.round((s.correct / s.attempts) * 100) : 0;
+    return geoResultsHtml({
+      gameMode:'truth-or-map', score:s.score, accuracy:acc, meta:s.resultMeta, retryFn:'resetGeoTrueFalse()', saved:s.saved,
+      statLine: pick({en:'Best streak',es:'Mejor racha',fr:'Meilleure série'}) + ': <strong>' + s.bestStreak + '</strong> · ' + pick({en:'Answered',es:'Respondidas',fr:'Répondues'}) + ': <strong>' + s.attempts + '</strong>'
+    });
+  }
+  return ''
+    + '<div class="min-h-screen bg-slate-50">'
+    + Header()
+    + '<main class="max-w-xl mx-auto px-4 sm:px-6 py-8">'
+    + '  <div class="flex items-center justify-between mb-4 text-sm">'
+    + '    <span id="tom-lives" class="text-base" aria-label="' + pick({en:'Lives',es:'Vidas',fr:'Vies'}) + '">' + '❤️'.repeat(s.lives) + '🖤'.repeat(3 - s.lives) + '</span>'
+    + '    <span class="font-semibold text-slate-700">🔥 <span id="tom-streak">' + s.streak + '</span></span>'
+    + '    <span class="font-semibold text-cyan-700">' + pick({en:'Score',es:'Puntos',fr:'Score'}) + ': <span id="tom-score">' + s.score + '</span></span>'
+    + '  </div>'
+    + '  <div id="tom-zone">' + (s.current ? geoTOMCardHtml(s) : '') + '</div>'
+    + '  <div class="mt-5 grid grid-cols-2 gap-3">'
+    + '    <button onclick="tomAnswer(false)" class="btn-ghost py-4 text-lg font-bold text-rose-600 focus-ring">✗ ' + pick({en:'False',es:'Falso',fr:'Faux'}) + '</button>'
+    + '    <button onclick="tomAnswer(true)" class="btn-primary py-4 text-lg font-bold focus-ring">✓ ' + pick({en:'True',es:'Verdadero',fr:'Vrai'}) + '</button>'
+    + '  </div>'
+    + '  <p class="mt-3 text-center text-xs text-slate-500">' + pick({en:'Swipe right = true, left = false — or use the buttons or ←/→ keys.',es:'Desliza a la derecha = verdadero, a la izquierda = falso — o usa los botones o las flechas ←/→.',fr:'Glisse à droite = vrai, à gauche = faux — ou utilise les boutons ou les flèches ←/→.'}) + '</p>'
+    + '  <button onclick="go(\'oraworld\')" class="mt-5 block mx-auto text-sm text-slate-500 hover:underline focus-ring">' + pick({en:'Quit round',es:'Salir de la partida',fr:'Quitter la partie'}) + '</button>'
+    + '</main>'
+    + '</div>';
+}
+
 function viewOraWorld(){
   const mode = state.params.mode || 'hub';
   if (mode === 'oraflag') return viewGeoFlag();
+  if (mode === 'truth-or-map') return viewGeoTrueFalse();
   const order = ['oraflag','truth-or-map','capi-ora','world-eye','world-path','continent-drop'];
   const gameCards = order.map(function(m){
     const g = GEO_GAMES[m];
@@ -14353,6 +14539,15 @@ document.addEventListener('keydown', (e) => {
       if (e.key === 'ArrowLeft'){ e.preventDefault(); eyeChoose(ch.type === 'compare-groups' ? 'left' : 'A'); }
       else if (e.key === 'ArrowRight'){ e.preventDefault(); eyeChoose(ch.type === 'compare-groups' ? 'right' : 'B'); }
     } else if (e.key === 'Enter'){ e.preventDefault(); eyeSubmitNumeric(); }
+  }
+});
+
+/* Keyboard support for OraWorld ¿Verdad o Mapa? (←/→ = false/true) */
+document.addEventListener('keydown', (e) => {
+  if (state.route !== 'oraworld' || !state.params.play) return;
+  if (state.params.mode === 'truth-or-map' && state.geoTOM && !state.geoTOM.ended){
+    if (e.key === 'ArrowRight'){ e.preventDefault(); tomAnswer(true); }
+    else if (e.key === 'ArrowLeft'){ e.preventDefault(); tomAnswer(false); }
   }
 });
 
