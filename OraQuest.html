@@ -10214,6 +10214,36 @@ const GeoEngine = (function () {
     return Math.round(Math.max(floor, base - (streak || 0) * 200) * (timeFactor || 1));
   }
 
+  /* ---- CapiOra: country <-> capital, 60s sprint. Mirrors Ora Sprint's combo
+     (×(1+⌊n/3⌋) capped ×5) and +2s fast-answer bonus. Each question emits ISOs
+     only — the host renders names/capitals in the active language. mode
+     'c2cap' asks the capital of a country; 'cap2c' asks the country of a
+     capital; 'mix' alternates randomly. ---- */
+  const CAPI_MODES = ['c2cap', 'cap2c'];
+  function generateCapitalQuestion(rng, band, difficulty, mode) {
+    rng = rng || Math.random;
+    const m = (mode === 'c2cap' || mode === 'cap2c') ? mode : pickFrom(rng, CAPI_MODES);
+    const pool = countryPool(band, difficulty);
+    const me = pickFrom(rng, pool);
+    // Distractors from the same continent so options are plausible; for c2cap
+    // they must have a DIFFERENT capital name, for cap2c a different country.
+    const dis = distractorsFor(me.iso, band, 3, rng, { confuse: false })
+      .filter(function (iso) {
+        const c = byIso(iso);
+        return m === 'c2cap' ? (c && c.capital.en !== me.capital.en) : true;
+      });
+    while (dis.length < 3) { // top up from the whole dataset if a continent is thin
+      const extra = pickFrom(rng, DATA.COUNTRIES);
+      if (extra.iso !== me.iso && dis.indexOf(extra.iso) === -1 &&
+          (m !== 'c2cap' || extra.capital.en !== me.capital.en)) dis.push(extra.iso);
+    }
+    const options = shuffle(rng, [me.iso].concat(dis.slice(0, 3)));
+    return { mode: m, iso: me.iso, correct: me.iso, options: options };
+  }
+  function capiComboMult(consecutive) { return Math.min(5, 1 + Math.floor((consecutive || 0) / 3)); }
+  function capiScoreFor(consecutive) { return 100 * capiComboMult(consecutive); }
+  function capiBonusMs(answerMs) { return answerMs < 2000 ? 2000 : 0; }
+
   /* ---- Retention core (XP / level / global daily streak / personal records).
      Cloned verbatim from MathEngine so OraWorld behaves identically; callers
      MUST pass a LOCAL-date key (host todayKey()), never toISOString(). ---- */
@@ -10257,6 +10287,8 @@ const GeoEngine = (function () {
     STATEMENT_KINDS: STATEMENT_KINDS, generateGeoStatement: generateGeoStatement,
     geoStatementIsTrue: geoStatementIsTrue, statementScoreFor: statementScoreFor,
     statementTimeLimitMs: statementTimeLimitMs,
+    CAPI_MODES: CAPI_MODES, generateCapitalQuestion: generateCapitalQuestion,
+    capiComboMult: capiComboMult, capiScoreFor: capiScoreFor, capiBonusMs: capiBonusMs,
     xpForGame: xpForGame, xpNeededFor: xpNeededFor, levelForXp: levelForXp,
     prevDayKey: prevDayKey, updateDailyStreak: updateDailyStreak,
     recordKey: recordKey, bestRecord: bestRecord, updateRecord: updateRecord
@@ -12002,7 +12034,7 @@ function flagImgFail(img){
 const GEO_GAMES = {
   'oraflag':        { icon:'🚩', nameKey:'worldFlagName', subKey:'worldFlagSub', start:'startGeoFlag()',      state:function(){ return state.geoFlag; } },
   'truth-or-map':   { icon:'🗺️', nameKey:'worldTOMName',  subKey:'worldTOMSub',  start:'startGeoTrueFalse()', state:function(){ return state.geoTOM; } },
-  'capi-ora':       { icon:'🏛️', nameKey:'worldCapiName', subKey:'worldCapiSub', soon:true },
+  'capi-ora':       { icon:'🏛️', nameKey:'worldCapiName', subKey:'worldCapiSub', start:'startGeoCapi()',       state:function(){ return state.geoCapi; } },
   'world-eye':      { icon:'👁️', nameKey:'worldEyeName',  subKey:'worldEyeSub',  soon:true },
   'world-path':     { icon:'🧭', nameKey:'worldPathName', subKey:'worldPathSub', soon:true },
   'continent-drop': { icon:'📍', nameKey:'worldDropName', subKey:'worldDropSub', soon:true }
@@ -12485,10 +12517,155 @@ function viewGeoTrueFalse(){
     + '</div>';
 }
 
+/* ---- CapiOra (capi-ora): 60s country<->capital sprint. endsAt-based clock
+   (fast answers add +2s = endsAt += 2000), a 250ms self-clearing interval with
+   route/session guards (same pattern as Ora Sprint), multiple-choice options
+   (no native <input>, so no OS keyboard on mobile). ---- */
+const CAPI_SECONDS = 60;
+function startGeoCapi(){
+  const su = geoSetupOrDefault();
+  const info = geoBandInfo();
+  if (state.geoCapi && state.geoCapi.timer) clearInterval(state.geoCapi.timer);
+  state.geoCapi = {
+    ageGroup: su.ageGroup, difficulty: su.difficulty, band: info.band, timeFactor: info.timeFactor,
+    mode: 'mix', endsAt: Date.now() + CAPI_SECONDS * 1000, timer: null,
+    consecutive: 0, bestStreak: 0, score: 0, correct: 0, attempts: 0,
+    current: null, answered: false, picked: null,
+    ended: false, resultMeta: null, startedAt: Date.now(), durationMs: 0, saved: false
+  };
+  capiNextQ();
+  go('oraworld', { mode:'capi-ora', play:true });
+  capiStartTimer();
+}
+function resetGeoCapi(){
+  if (state.geoCapi && state.geoCapi.timer) clearInterval(state.geoCapi.timer);
+  state.geoCapi = null;
+  startGeoCapi();
+}
+function capiGuard(s){ return state.route === 'oraworld' && state.params.mode === 'capi-ora' && state.geoCapi === s && !s.ended; }
+function capiNextQ(){
+  const s = state.geoCapi; if (!s || s.ended) return;
+  s.current = { q: GeoEngine.generateCapitalQuestion(Math.random, s.band, s.difficulty, s.mode), askedAt: Date.now() };
+  s.answered = false; s.picked = null;
+  const zone = document.getElementById('capi-zone');
+  if (zone) zone.innerHTML = capiCardHtml(s);
+}
+function capiStartTimer(){
+  const s = state.geoCapi; if (!s) return;
+  if (s.timer) clearInterval(s.timer);
+  s.timer = setInterval(function(){
+    if (!capiGuard(s)){ clearInterval(s.timer); return; }
+    const leftMs = s.endsAt - Date.now();
+    if (leftMs <= 0){ endGeoCapi(); return; }
+    const tEl = document.getElementById('capi-time'); if (tEl) tEl.textContent = Math.ceil(leftMs / 1000);
+    const bar = document.getElementById('capi-bar'); if (bar) bar.style.width = Math.max(0, Math.min(100, (leftMs / (CAPI_SECONDS * 1000)) * 100)) + '%';
+  }, 250);
+}
+// Localised prompt + the four option labels for the current question.
+function capiText(s){
+  const q = s.current.q;
+  if (q.mode === 'c2cap'){
+    return { prompt: GeoEngine.nameOf(q.iso, state.lang),
+             ask: pick({en:'What is the capital?',es:'¿Cuál es la capital?',fr:'Quelle est la capitale ?'}),
+             labelFor: function(iso){ return GeoEngine.capitalOf(iso, state.lang); } };
+  }
+  return { prompt: GeoEngine.capitalOf(q.iso, state.lang),
+           ask: pick({en:'Which country’s capital is this?',es:'¿De qué país es esta capital?',fr:'De quel pays est cette capitale ?'}),
+           labelFor: function(iso){ return GeoEngine.nameOf(iso, state.lang); } };
+}
+function capiCardHtml(s){
+  const q = s.current.q;
+  const tx = capiText(s);
+  const opts = q.options.map(function(iso){
+    return '<button onclick="capiAnswer(\'' + iso + '\')" data-iso="' + iso + '" class="capi-opt select-cell p-4 text-center font-semibold border-slate-200 focus-ring">' + escapeHtml(tx.labelFor(iso)) + '</button>';
+  }).join('');
+  return ''
+    + '<div class="card p-6 text-center fade-in">'
+    + '  <p class="text-sm text-slate-500">' + tx.ask + '</p>'
+    + '  <div class="mt-2 font-display text-2xl md:text-3xl font-bold">' + escapeHtml(tx.prompt) + '</div>'
+    + '  <div id="capi-feedback" class="mt-3 min-h-[1.5rem] text-sm font-semibold"></div>'
+    + '  <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">' + opts + '</div>'
+    + '</div>';
+}
+function capiAnswer(iso){
+  const s = state.geoCapi;
+  if (!s || s.ended || !s.current || s.answered) return;
+  s.answered = true; s.picked = iso;
+  s.attempts++;
+  const q = s.current.q;
+  const correct = iso === q.correct;
+  const answerMs = Date.now() - s.current.askedAt;
+  if (correct){
+    s.correct++; s.consecutive++; if (s.consecutive > s.bestStreak) s.bestStreak = s.consecutive;
+    s.score += GeoEngine.capiScoreFor(s.consecutive);
+    s.endsAt += GeoEngine.capiBonusMs(answerMs);
+  } else {
+    s.consecutive = 0;
+  }
+  capiFlash(correct, q.correct);
+  const sc = document.getElementById('capi-score'); if (sc) sc.textContent = s.score;
+  const cb = document.getElementById('capi-combo'); if (cb) cb.textContent = '×' + GeoEngine.capiComboMult(s.consecutive);
+  setTimeout(function(){ if (!capiGuard(s)) return; capiNextQ(); }, 480);
+}
+function capiFlash(ok, correctIso){
+  const fb = document.getElementById('capi-feedback');
+  const btns = document.querySelectorAll('#capi-zone .capi-opt');
+  btns.forEach(function(b){
+    b.disabled = true;
+    const iso = b.getAttribute('data-iso');
+    if (iso === correctIso) b.style.background = '#ecfdf5';
+    if (iso === (state.geoCapi && state.geoCapi.picked) && iso !== correctIso) b.style.background = '#fff1f2';
+  });
+  if (fb){
+    fb.className = 'mt-3 min-h-[1.5rem] text-sm font-semibold ' + (ok ? 'text-emerald-600' : 'text-rose-600');
+    fb.textContent = ok ? pick({en:'Correct! +' + GeoEngine.capiScoreFor(state.geoCapi.consecutive),es:'¡Correcto! +' + GeoEngine.capiScoreFor(state.geoCapi.consecutive),fr:'Correct ! +' + GeoEngine.capiScoreFor(state.geoCapi.consecutive)})
+      : pick({en:'It was ' + GeoEngine.nameOf(correctIso, state.lang),es:'Era ' + GeoEngine.nameOf(correctIso, state.lang),fr:'C’était ' + GeoEngine.nameOf(correctIso, state.lang)});
+  }
+}
+function endGeoCapi(){
+  const s = state.geoCapi;
+  if (!s || s.ended) return;
+  s.ended = true;
+  if (s.timer){ clearInterval(s.timer); s.timer = null; }
+  s.durationMs = Date.now() - s.startedAt;
+  s.resultMeta = finishGeoGame({ gameMode:'capi-ora', ageGroup:s.ageGroup, difficulty:s.difficulty, score:s.score });
+  render();
+  if (s.resultMeta.leveledUp || s.resultMeta.milestone || s.resultMeta.recordIsNew) { try { confetti(); } catch (e) {} }
+}
+function viewGeoCapi(){
+  const s = state.geoCapi;
+  if (!s || !state.params.play){
+    if (s){ if (s.timer) clearInterval(s.timer); state.geoCapi = null; }
+    return geoGameSetupHtml('capi-ora');
+  }
+  if (s.ended){
+    const acc = s.attempts ? Math.round((s.correct / s.attempts) * 100) : 0;
+    return geoResultsHtml({
+      gameMode:'capi-ora', score:s.score, accuracy:acc, meta:s.resultMeta, retryFn:'resetGeoCapi()', saved:s.saved,
+      statLine: pick({en:'Correct',es:'Aciertos',fr:'Corrects'}) + ': <strong>' + s.correct + '</strong> · ' + pick({en:'Best combo',es:'Mejor combo',fr:'Meilleur combo'}) + ': <strong>×' + GeoEngine.capiComboMult(s.bestStreak) + '</strong>'
+    });
+  }
+  return ''
+    + '<div class="min-h-screen bg-slate-50">'
+    + Header()
+    + '<main class="max-w-xl mx-auto px-4 sm:px-6 py-8">'
+    + '  <div class="flex items-center justify-between mb-3 text-sm font-semibold">'
+    + '    <span class="text-slate-700">⏱ <span id="capi-time">' + Math.ceil((s.endsAt - Date.now()) / 1000) + '</span>s</span>'
+    + '    <span class="text-cyan-700">🔥 ×<span id="capi-combo">' + GeoEngine.capiComboMult(s.consecutive) + '</span></span>'
+    + '    <span class="text-cyan-700">' + pick({en:'Score',es:'Puntos',fr:'Score'}) + ': <span id="capi-score">' + s.score + '</span></span>'
+    + '  </div>'
+    + '  <div class="h-2 rounded-full bg-slate-100 overflow-hidden mb-5"><div id="capi-bar" class="h-full bg-gradient-to-r from-cyan-400 to-blue-500" style="width:100%"></div></div>'
+    + '  <div id="capi-zone">' + (s.current ? capiCardHtml(s) : '') + '</div>'
+    + '  <button onclick="go(\'oraworld\')" class="mt-5 block mx-auto text-sm text-slate-500 hover:underline focus-ring">' + pick({en:'Quit round',es:'Salir de la partida',fr:'Quitter la partie'}) + '</button>'
+    + '</main>'
+    + '</div>';
+}
+
 function viewOraWorld(){
   const mode = state.params.mode || 'hub';
   if (mode === 'oraflag') return viewGeoFlag();
   if (mode === 'truth-or-map') return viewGeoTrueFalse();
+  if (mode === 'capi-ora') return viewGeoCapi();
   const order = ['oraflag','truth-or-map','capi-ora','world-eye','world-path','continent-drop'];
   const gameCards = order.map(function(m){
     const g = GEO_GAMES[m];
@@ -14575,6 +14752,10 @@ document.addEventListener('keydown', (e) => {
   if (state.params.mode === 'truth-or-map' && state.geoTOM && !state.geoTOM.ended){
     if (e.key === 'ArrowRight'){ e.preventDefault(); tomAnswer(true); }
     else if (e.key === 'ArrowLeft'){ e.preventDefault(); tomAnswer(false); }
+  } else if (state.params.mode === 'capi-ora' && state.geoCapi && !state.geoCapi.ended && !state.geoCapi.answered){
+    const n = parseInt(e.key, 10);
+    const q = state.geoCapi.current && state.geoCapi.current.q;
+    if (q && n >= 1 && n <= q.options.length){ e.preventDefault(); capiAnswer(q.options[n - 1]); }
   }
 });
 
