@@ -11977,6 +11977,25 @@ function geoBandInfo(){ const su = geoSetupOrDefault(); return GeoEngine.ORAWORL
 
 // ISO-2 → flag emoji. Thin host wrapper over the pure (tested) engine fn.
 function isoToFlagEmoji(iso){ return GeoEngine.isoToFlagEmoji(iso); }
+// Self-hosted flag SVGs (/assets/flags/, flag-icons MIT) render consistently on
+// every platform — native flag emoji fall back to plain ISO letters on Windows
+// desktop, which would leak the answer in OraFlag. isoToFlagEmoji stays as the
+// last-resort fallback (onerror) if an asset ever fails to load.
+// Renders an <img> that fills its container (inline styles only — the sizing
+// utilities are not in the precompiled tailwind.css). The container controls the
+// box; the flag-icons SVGs are 4:3 so object-fit:cover never crops them.
+function flagImg(iso){
+  const code = String(iso || '').toLowerCase().replace(/[^a-z]/g, '');
+  const fill = 'display:block;width:100%;height:100%;object-fit:cover';
+  if (code.length !== 2) return '<span style="' + fill + ';font-size:5rem;text-align:center">' + isoToFlagEmoji(iso) + '</span>';
+  return '<img src="/assets/flags/' + code + '.svg" alt="" loading="lazy" style="' + fill + '" data-iso="' + code + '" onerror="flagImgFail(this)">';
+}
+function flagImgFail(img){
+  const span = document.createElement('span');
+  span.textContent = isoToFlagEmoji((img.getAttribute('data-iso') || '').toUpperCase());
+  span.style.cssText = 'display:flex;align-items:center;justify-content:center;width:100%;height:100%;font-size:5rem';
+  img.replaceWith(span);
+}
 
 // One registry the hub, setup, results, share and save flows all read. Games
 // flagged `soon:true` render as locked "coming soon" cards until their phase.
@@ -12280,7 +12299,7 @@ function viewGeoFlag(){
     + '    <span>⭐ ' + s.score + (s.streak > 1 ? ' · 🔥' + s.streak : '') + '</span>'
     + '  </div>'
     + '  <div class="card p-8 text-center">'
-    + '    <div class="text-[8rem] leading-none select-none" aria-label="' + pick({en:'Flag to identify',es:'Bandera por identificar',fr:'Drapeau à identifier'}) + '">' + isoToFlagEmoji(round.correct) + '</div>'
+    + '    <div class="mx-auto rounded-lg overflow-hidden ring-1 ring-slate-200 shadow-sm" role="img" aria-label="' + pick({en:'Flag to identify',es:'Bandera por identificar',fr:'Drapeau à identifier'}) + '" style="width:15rem;max-width:100%;aspect-ratio:4 / 3">' + flagImg(round.correct) + '</div>'
     + '    <p class="mt-4 text-slate-600">' + pick({en:'Which country owns this flag?',es:'¿De qué país es esta bandera?',fr:'À quel pays appartient ce drapeau ?'}) + '</p>'
     + answerArea
     + '  </div>'
