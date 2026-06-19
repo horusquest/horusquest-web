@@ -163,7 +163,7 @@
   status = 301
 
 # 2) Valid SPA routes -> serve the single-file app (200 rewrite, not redirect).
-#    23 routes x 3 languages = 69 served URLs (sitemap.xml lists the indexable subset).
+#    24 routes x 3 languages = 72 served URLs (sitemap.xml lists the indexable subset).
 [[redirects]]
   from = "/"
   to = "/OraQuest.html"
@@ -337,6 +337,21 @@
 
 [[redirects]]
   from = "/fr/oramath"
+  to = "/OraQuest.html"
+  status = 200
+
+[[redirects]]
+  from = "/oraworld"
+  to = "/OraQuest.html"
+  status = 200
+
+[[redirects]]
+  from = "/es/oraworld"
+  to = "/OraQuest.html"
+  status = 200
+
+[[redirects]]
+  from = "/fr/oraworld"
   to = "/OraQuest.html"
   status = 200
 
