@@ -9828,7 +9828,7 @@ const GEODATA = (function () {
     {"iso":"JP","name":{"en":"Japan","es":"Japón","fr":"Japon"},"capital":{"en":"Tokyo","es":"Tokio","fr":"Tokyo"},"continent":"AS","tier":1,"borders":[],"lat":36.2,"lng":138.2,"confuse":[]},
     {"iso":"JO","name":{"en":"Jordan","es":"Jordania","fr":"Jordanie"},"capital":{"en":"Amman","es":"Amán","fr":"Amman"},"continent":"AS","tier":2,"borders":["IL","IQ","PS","SA","SY"],"lat":31.2,"lng":36.5,"confuse":[]},
     {"iso":"KZ","name":{"en":"Kazakhstan","es":"Kazajistán","fr":"Kazakhstan"},"capital":{"en":"Astana","es":"Astaná","fr":"Astana"},"continent":"AS","tier":2,"borders":["CN","KG","RU","TM","UZ"],"lat":48,"lng":68,"confuse":[]},
-    {"iso":"KW","name":{"en":"Kuwait","es":"Kuwait","fr":"Koweït"},"capital":{"en":"Kuwait City","es":"Kuwait","fr":"Koweït"},"continent":"AS","tier":2,"borders":["IQ","SA"],"lat":29.3,"lng":47.7,"confuse":[]},
+    {"iso":"KW","name":{"en":"Kuwait","es":"Kuwait","fr":"Koweït"},"capital":{"en":"Kuwait City","es":"Ciudad de Kuwait","fr":"Koweït"},"continent":"AS","tier":2,"borders":["IQ","SA"],"lat":29.3,"lng":47.7,"confuse":[]},
     {"iso":"KG","name":{"en":"Kyrgyzstan","es":"Kirguistán","fr":"Kirghizistan"},"capital":{"en":"Bishkek","es":"Biskek","fr":"Bichkek"},"continent":"AS","tier":3,"borders":["CN","KZ","TJ","UZ"],"lat":41.2,"lng":74.8,"confuse":[]},
     {"iso":"LA","name":{"en":"Laos","es":"Laos","fr":"Laos"},"capital":{"en":"Vientiane","es":"Vientián","fr":"Vientiane"},"continent":"AS","tier":3,"borders":["CN","KH","MM","TH","VN"],"lat":18,"lng":105,"confuse":[]},
     {"iso":"LB","name":{"en":"Lebanon","es":"Líbano","fr":"Liban"},"capital":{"en":"Beirut","es":"Beirut","fr":"Beyrouth"},"continent":"AS","tier":2,"borders":["IL","SY"],"lat":33.9,"lng":35.9,"confuse":[]},
@@ -9923,7 +9923,7 @@ const GEODATA = (function () {
     {"iso":"DO","name":{"en":"Dominican Republic","es":"República Dominicana","fr":"République dominicaine"},"capital":{"en":"Santo Domingo","es":"Santo Domingo","fr":"Saint-Domingue"},"continent":"NA","tier":2,"borders":["HT"],"lat":19,"lng":-70.7,"confuse":[]},
     {"iso":"SV","name":{"en":"El Salvador","es":"El Salvador","fr":"Salvador"},"capital":{"en":"San Salvador","es":"San Salvador","fr":"San Salvador"},"continent":"NA","tier":3,"borders":["GT","HN"],"lat":13.8,"lng":-88.9,"confuse":[]},
     {"iso":"GD","name":{"en":"Grenada","es":"Granada","fr":"Grenade"},"capital":{"en":"Saint George’s","es":"Saint George","fr":"Saint-Georges"},"continent":"NA","tier":3,"borders":[],"lat":12.1,"lng":-61.7,"confuse":[]},
-    {"iso":"GT","name":{"en":"Guatemala","es":"Guatemala","fr":"Guatemala"},"capital":{"en":"Guatemala City","es":"Guatemala","fr":"Guatemala"},"continent":"NA","tier":2,"borders":["BZ","HN","MX","SV"],"lat":15.7,"lng":-90.2,"confuse":[]},
+    {"iso":"GT","name":{"en":"Guatemala","es":"Guatemala","fr":"Guatemala"},"capital":{"en":"Guatemala City","es":"Ciudad de Guatemala","fr":"Guatemala"},"continent":"NA","tier":2,"borders":["BZ","HN","MX","SV"],"lat":15.7,"lng":-90.2,"confuse":[]},
     {"iso":"HT","name":{"en":"Haiti","es":"Haití","fr":"Haïti"},"capital":{"en":"Port-au-Prince","es":"Puerto Príncipe","fr":"Port-au-Prince"},"continent":"NA","tier":2,"borders":["DO"],"lat":19.1,"lng":-72.3,"confuse":[]},
     {"iso":"HN","name":{"en":"Honduras","es":"Honduras","fr":"Honduras"},"capital":{"en":"Tegucigalpa","es":"Tegucigalpa","fr":"Tegucigalpa"},"continent":"NA","tier":2,"borders":["GT","NI","SV"],"lat":15,"lng":-86.5,"confuse":[]},
     {"iso":"JM","name":{"en":"Jamaica","es":"Jamaica","fr":"Jamaïque"},"capital":{"en":"Kingston","es":"Kingston","fr":"Kingston"},"continent":"NA","tier":2,"borders":[],"lat":18.1,"lng":-77.3,"confuse":[]},
@@ -10220,11 +10220,20 @@ const GeoEngine = (function () {
      'c2cap' asks the capital of a country; 'cap2c' asks the country of a
      capital; 'mix' alternates randomly. ---- */
   const CAPI_MODES = ['c2cap', 'cap2c'];
-  function generateCapitalQuestion(rng, band, difficulty, mode) {
+  function capiPoolSize(band, difficulty) { return countryPool(band, difficulty).length; }
+  // `used` = ISOs already asked this session (sampling WITHOUT replacement). The
+  // prompt country is drawn from the pool minus `used`; once the pool is
+  // exhausted the caller reshuffles (passes a smaller/empty `used`) and repeats
+  // are allowed again. Distractors may still come from anywhere in the dataset.
+  function generateCapitalQuestion(rng, band, difficulty, mode, used) {
     rng = rng || Math.random;
     const m = (mode === 'c2cap' || mode === 'cap2c') ? mode : pickFrom(rng, CAPI_MODES);
     const pool = countryPool(band, difficulty);
-    const me = pickFrom(rng, pool);
+    const usedSet = {};
+    (used || []).forEach(function (iso) { usedSet[iso] = true; });
+    let avail = pool.filter(function (c) { return !usedSet[c.iso]; });
+    if (!avail.length) avail = pool; // pool exhausted → allow repeats (reshuffle)
+    const me = pickFrom(rng, avail);
     // Distractors from the same continent so options are plausible; for c2cap
     // they must have a DIFFERENT capital name, for cap2c a different country.
     const dis = distractorsFor(me.iso, band, 3, rng, { confuse: false })
@@ -10287,7 +10296,7 @@ const GeoEngine = (function () {
     STATEMENT_KINDS: STATEMENT_KINDS, generateGeoStatement: generateGeoStatement,
     geoStatementIsTrue: geoStatementIsTrue, statementScoreFor: statementScoreFor,
     statementTimeLimitMs: statementTimeLimitMs,
-    CAPI_MODES: CAPI_MODES, generateCapitalQuestion: generateCapitalQuestion,
+    CAPI_MODES: CAPI_MODES, generateCapitalQuestion: generateCapitalQuestion, capiPoolSize: capiPoolSize,
     capiComboMult: capiComboMult, capiScoreFor: capiScoreFor, capiBonusMs: capiBonusMs,
     xpForGame: xpForGame, xpNeededFor: xpNeededFor, levelForXp: levelForXp,
     prevDayKey: prevDayKey, updateDailyStreak: updateDailyStreak,
@@ -12530,7 +12539,7 @@ function startGeoCapi(){
     ageGroup: su.ageGroup, difficulty: su.difficulty, band: info.band, timeFactor: info.timeFactor,
     mode: 'mix', endsAt: Date.now() + CAPI_SECONDS * 1000, timer: null,
     consecutive: 0, bestStreak: 0, score: 0, correct: 0, attempts: 0,
-    current: null, answered: false, picked: null,
+    asked: [], current: null, answered: false, picked: null,
     ended: false, resultMeta: null, startedAt: Date.now(), durationMs: 0, saved: false
   };
   capiNextQ();
@@ -12545,7 +12554,13 @@ function resetGeoCapi(){
 function capiGuard(s){ return state.route === 'oraworld' && state.params.mode === 'capi-ora' && state.geoCapi === s && !s.ended; }
 function capiNextQ(){
   const s = state.geoCapi; if (!s || s.ended) return;
-  s.current = { q: GeoEngine.generateCapitalQuestion(Math.random, s.band, s.difficulty, s.mode), askedAt: Date.now() };
+  // Sample without replacement: once the whole pool has been asked, reshuffle
+  // (keep only the last country as "used" so the boundary never repeats it).
+  if (!s.asked) s.asked = [];
+  if (s.asked.length >= GeoEngine.capiPoolSize(s.band, s.difficulty)) s.asked = s.asked.slice(-1);
+  const q = GeoEngine.generateCapitalQuestion(Math.random, s.band, s.difficulty, s.mode, s.asked);
+  s.asked.push(q.iso);
+  s.current = { q: q, askedAt: Date.now() };
   s.answered = false; s.picked = null;
   const zone = document.getElementById('capi-zone');
   if (zone) zone.innerHTML = capiCardHtml(s);
