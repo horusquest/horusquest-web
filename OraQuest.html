@@ -1479,6 +1479,9 @@ const I18N_EXT = {
     worldCapiName:'CapiOra', worldCapiSub:'Match countries to capitals against the clock — 60 seconds, growing combos.',
     worldEyeName:'World Eye', worldEyeSub:'Name the landmark, place it on a continent and more — 8 quick rounds.',
     worldPathName:'World Path', worldPathSub:'Hop between bordering countries to travel from start to destination — a calm map puzzle.',
+    worldPathGoal:'Travel from {start} to {dest}', worldPathPick:'Hop to a neighbour:', worldPathUndo:'Undo hop',
+    worldPathArrived:'Arrived in {n} hops!', worldPathBest:'Best route: {n} hops', worldPathOptimalHit:'Perfect route! 🌟',
+    worldPathCloser:'Getting closer!', worldPathFarther:'Farther away…', worldPathJourney:'Journey', worldPathStars:'Stars',
     worldDropName:'Continent Drop', worldDropSub:'Tap where a country sits on the world map — the closer your pin, the more points.',
     worldDropTapHint:'Tap the map where {country} is.', worldDropConfirm:'Drop pin here', worldDropPlaceFirst:'Tap the map to place your pin first.',
     worldDropAway:'{km} km away', worldDropClosest:'Closest this game: {km} km', worldDropEvolution:'Precision over time',
@@ -1543,6 +1546,9 @@ const I18N_EXT = {
     worldCapiName:'CapiOra', worldCapiSub:'Relaciona países con capitales contra el reloj — 60 segundos, combos crecientes.',
     worldEyeName:'Ojo del Mundo', worldEyeSub:'Nombra el monumento, ubícalo en un continente y más — 8 rondas rápidas.',
     worldPathName:'Camino del Mundo', worldPathSub:'Salta entre países fronterizos para ir del inicio al destino — un puzzle de mapas tranquilo.',
+    worldPathGoal:'Viaja de {start} a {dest}', worldPathPick:'Salta a un vecino:', worldPathUndo:'Deshacer salto',
+    worldPathArrived:'¡Llegaste en {n} saltos!', worldPathBest:'Mejor ruta: {n} saltos', worldPathOptimalHit:'¡Ruta perfecta! 🌟',
+    worldPathCloser:'¡Te acercas!', worldPathFarther:'Te alejas…', worldPathJourney:'Viaje', worldPathStars:'Estrellas',
     worldDropName:'Continente Drop', worldDropSub:'Toca dónde está un país en el mapamundi — cuanto más cerca tu pin, más puntos.',
     worldDropTapHint:'Toca en el mapa dónde está {country}.', worldDropConfirm:'Soltar pin aquí', worldDropPlaceFirst:'Toca el mapa para colocar tu pin primero.',
     worldDropAway:'a {km} km', worldDropClosest:'Lo más cerca esta partida: {km} km', worldDropEvolution:'Precisión a lo largo del tiempo',
@@ -1607,6 +1613,9 @@ const I18N_EXT = {
     worldCapiName:'CapiOra', worldCapiSub:'Associe pays et capitales contre la montre — 60 secondes, combos croissants.',
     worldEyeName:'Œil du Monde', worldEyeSub:'Nomme le monument, place-le sur un continent et plus — 8 manches rapides.',
     worldPathName:'Chemin du Monde', worldPathSub:'Saute entre pays frontaliers pour aller du départ à la destination — un puzzle de cartes apaisant.',
+    worldPathGoal:'Voyage de {start} à {dest}', worldPathPick:'Saute vers un voisin :', worldPathUndo:'Annuler le saut',
+    worldPathArrived:'Arrivé en {n} sauts !', worldPathBest:'Meilleur trajet : {n} sauts', worldPathOptimalHit:'Trajet parfait ! 🌟',
+    worldPathCloser:'Tu te rapproches !', worldPathFarther:'Tu t’éloignes…', worldPathJourney:'Voyage', worldPathStars:'Étoiles',
     worldDropName:'Continent Drop', worldDropSub:'Touche où se trouve un pays sur la carte du monde — plus ton repère est proche, plus tu marques.',
     worldDropTapHint:'Touche la carte là où se trouve {country}.', worldDropConfirm:'Poser le repère ici', worldDropPlaceFirst:'Touche la carte pour placer ton repère.',
     worldDropAway:'à {km} km', worldDropClosest:'Le plus proche cette partie : {km} km', worldDropEvolution:'Précision au fil du temps',
@@ -10482,6 +10491,107 @@ const GeoEngine = (function () {
   }
   function dropMaxScore(count) { return (count || 8) * 100; }
 
+  /* ---- Camino del Mundo (world-path): border-hop puzzle. Travel from a start
+     country to a destination by hopping between bordering countries, using the
+     symmetrised border graph in GEODATA. "Calm" → no clock, unlimited hops; the
+     player always arrives and earns more for matching the shortest route (BFS).
+     Pure + DOM-free: the host reads neighborsOf / pathBfs / generatePathJourneys
+     and grades with pathStars + pathScoreFor. ---- */
+  // Endpoint pool tiers + target shortest-hop window per band × difficulty. Band 1
+  // = short routes between famous countries; band 3 = longer routes, less-known.
+  const PATH_TABLE = {
+    '6-8':  { easy: { tiers: [1],    minHops: 1, maxHops: 2 }, medium: { tiers: [1],    minHops: 2, maxHops: 3 }, hard: { tiers: [1],    minHops: 2, maxHops: 3 } },
+    '9-12': { easy: { tiers: [1, 2], minHops: 2, maxHops: 3 }, medium: { tiers: [1, 2], minHops: 3, maxHops: 4 }, hard: { tiers: [2, 3], minHops: 3, maxHops: 5 } },
+    '13+':  { easy: { tiers: [1, 2], minHops: 3, maxHops: 4 }, medium: { tiers: [2, 3], minHops: 4, maxHops: 5 }, hard: { tiers: [2, 3], minHops: 5, maxHops: 7 } }
+  };
+  function pathCell(band, difficulty) {
+    const row = PATH_TABLE[band] || PATH_TABLE['9-12'];
+    return row[difficulty] || row.medium;
+  }
+  function neighborsOf(iso) { const c = byIso(iso); return c ? c.borders.slice() : []; }
+  // BFS shortest path over the land-border graph. Returns { hops, path:[iso…] }
+  // (path includes both endpoints) or null if b is unreachable from a (different
+  // landmass component, or an island with no borders).
+  function pathBfs(a, b) {
+    if (!byIso(a) || !byIso(b)) return null;
+    if (a === b) return { hops: 0, path: [a] };
+    const prev = {}; prev[a] = null;
+    const q = [a];
+    while (q.length) {
+      const u = q.shift();
+      const nb = byIso(u).borders;
+      for (let i = 0; i < nb.length; i++) {
+        const v = nb[i];
+        if (prev.hasOwnProperty(v) || !byIso(v)) continue;
+        prev[v] = u;
+        if (v === b) {
+          const path = [b]; let cur = b;
+          while (prev[cur] !== null) { cur = prev[cur]; path.unshift(cur); }
+          return { hops: path.length - 1, path: path };
+        }
+        q.push(v);
+      }
+    }
+    return null;
+  }
+  // Endpoint pool: countries in the band's tier window that actually have borders.
+  function pathPool(band, difficulty) {
+    const set = {}; pathCell(band, difficulty).tiers.forEach(function (t) { set[t] = true; });
+    const pool = DATA.COUNTRIES.filter(function (c) { return set[c.tier] && c.borders.length; });
+    return pool.length >= 6 ? pool : DATA.COUNTRIES.filter(function (c) { return c.borders.length; });
+  }
+  // Build `count` journeys: each is a start→dest pair whose shortest route falls in
+  // the band's [minHops,maxHops] window, sampled without replacement on the start.
+  function generatePathJourneys(rng, band, difficulty, count, used) {
+    rng = rng || Math.random;
+    count = count || 5;
+    const cell = pathCell(band, difficulty);
+    const pool = pathPool(band, difficulty);
+    const poolSet = {}; pool.forEach(function (c) { poolSet[c.iso] = true; });
+    const usedStart = {}; (used || []).forEach(function (iso) { usedStart[iso] = true; });
+    const out = [];
+    const starts = shuffle(rng, pool);
+    for (let i = 0; i < starts.length && out.length < count; i++) {
+      const start = starts[i].iso;
+      if (usedStart[start]) continue;
+      // BFS distances from start; collect in-pool destinations within the window.
+      const dist = {}; dist[start] = 0; const q = [start];
+      while (q.length) {
+        const u = q.shift();
+        const nb = byIso(u).borders;
+        for (let k = 0; k < nb.length; k++) { const v = nb[k]; if (byIso(v) && !dist.hasOwnProperty(v)) { dist[v] = dist[u] + 1; q.push(v); } }
+      }
+      const cands = Object.keys(dist).filter(function (iso) {
+        return iso !== start && poolSet[iso] && dist[iso] >= cell.minHops && dist[iso] <= cell.maxHops;
+      });
+      if (!cands.length) continue;
+      const dest = pickFrom(rng, shuffle(rng, cands));
+      usedStart[start] = true;
+      out.push({ start: start, dest: dest, optimalHops: dist[dest] });
+    }
+    // Fallback: if a band's pool is thin, top up by widening to any bordered country.
+    if (out.length < count) {
+      const wide = shuffle(rng, DATA.COUNTRIES.filter(function (c) { return c.borders.length; }));
+      for (let i = 0; i < wide.length && out.length < count; i++) {
+        const start = wide[i].iso; if (usedStart[start]) continue;
+        const r = pathBfs(start, pickFrom(rng, neighborsOf(start)));
+        if (r) { usedStart[start] = true; out.push({ start: start, dest: r.path[r.path.length - 1], optimalHops: r.hops }); }
+      }
+    }
+    return out;
+  }
+  // Stars: 3 = matched the shortest route, 2 = within +2 hops, 1 = arrived. Score:
+  // 100 optimal, −20 per extra hop, floor 40 (you always score for arriving).
+  function pathStars(optimalHops, actualHops) {
+    if (actualHops <= optimalHops) return 3;
+    if (actualHops <= optimalHops + 2) return 2;
+    return 1;
+  }
+  function pathScoreFor(optimalHops, actualHops) {
+    return Math.max(40, 100 - Math.max(0, actualHops - optimalHops) * 20);
+  }
+  function pathMaxScore(count) { return (count || 5) * 100; }
+
   /* ---- Retention core (XP / level / global daily streak / personal records).
      Cloned verbatim from MathEngine so OraWorld behaves identically; callers
      MUST pass a LOCAL-date key (host todayKey()), never toISOString(). ---- */
@@ -10535,6 +10645,8 @@ const GeoEngine = (function () {
     DROP_TABLE: DROP_TABLE, dropPool: dropPool, targetCoords: targetCoords,
     latLngToPixel: latLngToPixel, pixelToLatLng: pixelToLatLng, haversineKm: haversineKm,
     scoreByDistance: scoreByDistance, generateDropRound: generateDropRound, dropMaxScore: dropMaxScore,
+    PATH_TABLE: PATH_TABLE, neighborsOf: neighborsOf, pathBfs: pathBfs, pathPool: pathPool,
+    generatePathJourneys: generatePathJourneys, pathStars: pathStars, pathScoreFor: pathScoreFor, pathMaxScore: pathMaxScore,
     xpForGame: xpForGame, xpNeededFor: xpNeededFor, levelForXp: levelForXp,
     prevDayKey: prevDayKey, updateDailyStreak: updateDailyStreak,
     recordKey: recordKey, bestRecord: bestRecord, updateRecord: updateRecord
@@ -12282,7 +12394,7 @@ const GEO_GAMES = {
   'truth-or-map':   { icon:'🗺️', nameKey:'worldTOMName',  subKey:'worldTOMSub',  start:'startGeoTrueFalse()', state:function(){ return state.geoTOM; } },
   'capi-ora':       { icon:'🏛️', nameKey:'worldCapiName', subKey:'worldCapiSub', start:'startGeoCapi()',       state:function(){ return state.geoCapi; } },
   'world-eye':      { icon:'👁️', nameKey:'worldEyeName',  subKey:'worldEyeSub',  start:'startGeoEye()',       state:function(){ return state.geoEye; } },
-  'world-path':     { icon:'🧭', nameKey:'worldPathName', subKey:'worldPathSub', soon:true },
+  'world-path':     { icon:'🧭', nameKey:'worldPathName', subKey:'worldPathSub', start:'startGeoPath()',       state:function(){ return state.geoPath; } },
   'continent-drop': { icon:'📍', nameKey:'worldDropName', subKey:'worldDropSub', start:'startGeoDrop()',     state:function(){ return state.geoDrop; } }
 };
 function geoGameName(mode){ const g = GEO_GAMES[mode]; return g ? t(g.nameKey) : t('worldTitle'); }
@@ -13495,12 +13607,185 @@ function viewGeoDrop(){
   return dropPlayHtml(s);
 }
 
+/* ---- Camino del Mundo (world-path): border-hop puzzle. Travel start→dest by
+   hopping to a bordering country (GEODATA border graph). Calm: no clock, unlimited
+   hops, undo allowed. 5 journeys /500; stars for matching the BFS-optimal route.
+   Reuses Continente Drop's world map (asset + band scaffolding) for the journey
+   visualisation; neighbours are chosen via accessible name buttons (and tappable
+   map markers). Uses finishGeoGame; never touches the distance scoring. ---- */
+const PATH_JOURNEYS = 5;
+function startGeoPath(){
+  const su = geoSetupOrDefault();
+  const info = geoBandInfo();
+  const journeys = GeoEngine.generatePathJourneys(Math.random, info.band, su.difficulty, PATH_JOURNEYS);
+  state.geoPath = {
+    ageGroup: su.ageGroup, difficulty: su.difficulty, band: info.band,
+    journeys: journeys, idx: 0,
+    current: journeys[0] ? journeys[0].start : null,
+    trail: journeys[0] ? [journeys[0].start] : [],
+    arrived: false, lastMove: null,
+    results: [], score: 0, stars: 0,
+    ended: false, saved: false, accuracy: 0, correct: 0, attempts: 0,
+    startedAt: Date.now(), durationMs: 0, resultMeta: null
+  };
+  go('oraworld', { mode:'world-path', play:true });
+}
+function resetGeoPath(){ state.geoPath = null; startGeoPath(); }
+function pathJourney(s){ return s.journeys[s.idx]; }
+function pathDistToDest(s){ const r = GeoEngine.pathBfs(s.current, pathJourney(s).dest); return r ? r.hops : null; }
+function pathMove(iso){
+  const s = state.geoPath; if (!s || s.ended || s.arrived) return;
+  const j = pathJourney(s);
+  if (GeoEngine.neighborsOf(s.current).indexOf(iso) === -1) return; // only real neighbours
+  const before = pathDistToDest(s);
+  s.trail.push(iso); s.current = iso;
+  if (iso === j.dest){
+    s.arrived = true; s.lastMove = null;
+    const actual = s.trail.length - 1;
+    const stars = GeoEngine.pathStars(j.optimalHops, actual);
+    const pts = GeoEngine.pathScoreFor(j.optimalHops, actual);
+    s.score += pts; s.stars += stars; s.attempts++;
+    if (stars === 3) s.correct++;
+    s.results.push({ optimalHops: j.optimalHops, actualHops: actual, stars: stars, points: pts });
+  } else {
+    const after = pathDistToDest(s);
+    s.lastMove = (before != null && after != null) ? { closer: after < before } : null;
+  }
+  render();
+}
+function pathUndo(){
+  const s = state.geoPath; if (!s || s.ended || s.arrived || s.trail.length <= 1) return;
+  s.trail.pop(); s.current = s.trail[s.trail.length - 1]; s.lastMove = null;
+  render();
+}
+function pathNextJourney(){
+  const s = state.geoPath; if (!s || !s.arrived || s.ended) return;
+  s.idx++;
+  if (s.idx >= s.journeys.length){
+    s.ended = true;
+    s.durationMs = Date.now() - s.startedAt;
+    s.accuracy = Math.round((s.stars / (s.journeys.length * 3)) * 100);
+    s.resultMeta = finishGeoGame({ gameMode:'world-path', ageGroup:s.ageGroup, difficulty:s.difficulty, score:s.score });
+    render();
+    if (s.resultMeta.leveledUp || s.resultMeta.milestone || s.resultMeta.recordIsNew) { try { confetti(); } catch (e) {} }
+  } else {
+    const j = pathJourney(s);
+    s.current = j.start; s.trail = [j.start]; s.arrived = false; s.lastMove = null;
+    render();
+  }
+}
+function pathMarkerSvg(iso, color, r){
+  const c = GEODATA.BY_ISO[iso]; if (!c) return '';
+  const p = GeoEngine.latLngToPixel(c.lat, c.lng, DROP_MAP_W, DROP_MAP_H);
+  return '<circle cx="' + p.x.toFixed(1) + '" cy="' + p.y.toFixed(1) + '" r="' + r + '" fill="' + color + '" stroke="#fff" stroke-width="1"/>';
+}
+function pathMapSvg(s){
+  dropLoadWorld();
+  const scaf = dropScaffold(s.band);
+  let layers;
+  if (DROP_WORLD && typeof DROP_WORLD === 'object'){
+    layers = '<g>' + DROP_WORLD.coast + '</g>' + (scaf.borders ? '<g>' + DROP_WORLD.borders + '</g>' : '');
+  } else { layers = dropLandSvg(); }
+  const labels = scaf.labels ? dropContLabelsSvg() : '';
+  const j = pathJourney(s);
+  let trail = '';
+  for (let i = 1; i < s.trail.length; i++){
+    const a = GEODATA.BY_ISO[s.trail[i - 1]], b = GEODATA.BY_ISO[s.trail[i]];
+    if (!a || !b) continue;
+    const pa = GeoEngine.latLngToPixel(a.lat, a.lng, DROP_MAP_W, DROP_MAP_H), pb = GeoEngine.latLngToPixel(b.lat, b.lng, DROP_MAP_W, DROP_MAP_H);
+    trail += '<line x1="' + pa.x.toFixed(1) + '" y1="' + pa.y.toFixed(1) + '" x2="' + pb.x.toFixed(1) + '" y2="' + pb.y.toFixed(1) + '" stroke="#7c3aed" stroke-width="1" stroke-linecap="round"/>';
+  }
+  let nb = '';
+  if (!s.arrived){
+    GeoEngine.neighborsOf(s.current).forEach(function(iso){
+      const c = GEODATA.BY_ISO[iso]; if (!c) return;
+      const p = GeoEngine.latLngToPixel(c.lat, c.lng, DROP_MAP_W, DROP_MAP_H);
+      nb += '<circle onclick="pathMove(\'' + iso + '\')" cx="' + p.x.toFixed(1) + '" cy="' + p.y.toFixed(1) + '" r="2.4" fill="#38bdf8" stroke="#fff" stroke-width="0.8" style="cursor:pointer"/>';
+    });
+  }
+  return '<svg id="path-map" class="drop-map" viewBox="0 0 ' + DROP_MAP_W + ' ' + DROP_MAP_H + '" role="img" aria-label="' + pick({en:'Journey map',es:'Mapa del viaje',fr:'Carte du voyage'}) + '">'
+    + '<rect x="0" y="0" width="' + DROP_MAP_W + '" height="' + DROP_MAP_H + '" fill="#eff6ff"/>'
+    + layers + dropGraticuleSvg() + labels + trail + nb
+    + pathMarkerSvg(j.dest, '#059669', 3.2) + pathMarkerSvg(s.current, '#7c3aed', 3.4)
+    + '</svg>';
+}
+function pathSetupHtml(){ return geoGameSetupHtml('world-path'); }
+function pathPlayHtml(s){
+  const j = pathJourney(s);
+  const num = s.idx + 1;
+  const startName = GeoEngine.nameOf(j.start, state.lang), destName = GeoEngine.nameOf(j.dest, state.lang);
+  let panel;
+  if (s.arrived){
+    const last = s.results[s.results.length - 1];
+    const starStr = '⭐'.repeat(last.stars) + '☆'.repeat(3 - last.stars);
+    panel = ''
+      + '<div class="mt-4 text-center">'
+      + '  <div class="text-2xl">' + starStr + '</div>'
+      + '  <div class="mt-1 font-bold text-emerald-700">' + t('worldPathArrived').replace('{n}', last.actualHops) + '</div>'
+      + '  <div class="text-sm text-slate-600">' + t('worldPathBest').replace('{n}', last.optimalHops) + (last.stars === 3 ? ' · ' + t('worldPathOptimalHit') : '') + '</div>'
+      + '  <button onclick="pathNextJourney()" class="mt-4 btn-primary px-8 py-3">' + (num >= s.journeys.length ? pick({en:'See results',es:'Ver resultados',fr:'Voir les résultats'}) : pick({en:'Next journey',es:'Siguiente viaje',fr:'Voyage suivant'})) + ' →</button>'
+      + '</div>';
+  } else {
+    const neighbors = GeoEngine.neighborsOf(s.current);
+    const closerSet = {};
+    if (s.band === '6-8'){
+      const before = pathDistToDest(s);
+      neighbors.forEach(function(iso){ const r = GeoEngine.pathBfs(iso, j.dest); if (r && before != null && r.hops < before) closerSet[iso] = true; });
+    }
+    const btns = neighbors.map(function(iso){
+      const hint = closerSet[iso] ? ' style="border-color:#34d399;background:#ecfdf5"' : '';
+      return '<button onclick="pathMove(\'' + iso + '\')"' + hint + ' class="select-cell px-3 py-2 text-sm font-semibold border-slate-200 focus-ring">' + isoToFlagEmoji(iso) + ' ' + escapeHtml(GeoEngine.nameOf(iso, state.lang)) + '</button>';
+    }).join('');
+    const moveFb = (s.lastMove && s.band === '6-8') ? '<div class="mt-2 text-center text-sm font-semibold ' + (s.lastMove.closer ? 'text-emerald-600' : 'text-amber-600') + '">' + (s.lastMove.closer ? t('worldPathCloser') : t('worldPathFarther')) + '</div>' : '';
+    panel = ''
+      + '<div class="mt-4">'
+      + '  <div class="text-center text-sm text-slate-600">' + pick({en:'You are in',es:'Estás en',fr:'Tu es en'}) + ' <strong>' + isoToFlagEmoji(s.current) + ' ' + escapeHtml(GeoEngine.nameOf(s.current, state.lang)) + '</strong> · ' + (s.trail.length - 1) + ' ' + pick({en:'hops',es:'saltos',fr:'sauts'}) + '</div>'
+      + moveFb
+      + '  <p class="mt-3 text-sm font-semibold text-slate-700 text-center">' + t('worldPathPick') + '</p>'
+      + '  <div class="mt-2 flex flex-wrap gap-2 justify-center">' + btns + '</div>'
+      + (s.trail.length > 1 ? '<div class="text-center mt-3"><button onclick="pathUndo()" class="text-sm text-slate-500 hover:underline focus-ring">↩ ' + t('worldPathUndo') + '</button></div>' : '')
+      + '</div>';
+  }
+  return ''
+    + '<div class="min-h-screen bg-slate-50">'
+    + Header()
+    + '<main class="max-w-5xl mx-auto px-4 sm:px-6 py-8">'
+    + '  <div class="flex items-center justify-between mb-3 text-sm font-semibold">'
+    + '    <span class="chip bg-cyan-100 text-cyan-800">🧭 ' + t('worldPathName') + '</span>'
+    + '    <span class="text-slate-600">' + t('worldPathJourney') + ' ' + num + '/' + s.journeys.length + '</span>'
+    + '    <span class="text-cyan-700">⭐ ' + s.score + '</span>'
+    + '  </div>'
+    + '  <div class="card p-4">'
+    + '    <p class="text-center font-display text-lg md:text-xl font-bold">' + t('worldPathGoal').replace('{start}', '<span class="text-brand-violet">' + isoToFlagEmoji(j.start) + ' ' + escapeHtml(startName) + '</span>').replace('{dest}', '<span class="text-emerald-600">' + isoToFlagEmoji(j.dest) + ' ' + escapeHtml(destName) + '</span>') + '</p>'
+    + '    <div class="mt-3 rounded-lg overflow-hidden ring-1 ring-slate-200">' + pathMapSvg(s) + '</div>'
+    + panel
+    + '  </div>'
+    + '  <button onclick="go(\'oraworld\')" class="mt-5 block mx-auto text-sm text-slate-500 hover:underline focus-ring">' + pick({en:'Quit',es:'Salir',fr:'Quitter'}) + '</button>'
+    + '</main>'
+    + '</div>';
+}
+function pathResultsHtml(s){
+  const maxStars = s.journeys.length * 3;
+  return geoResultsHtml({
+    gameMode:'world-path', score:s.score, accuracy:s.accuracy, meta:s.resultMeta,
+    retryFn:'resetGeoPath()', saved:s.saved,
+    statLine: '🌟 ' + s.stars + ' / ' + maxStars + ' ' + t('worldPathStars')
+  });
+}
+function viewGeoPath(){
+  const s = state.geoPath;
+  if (!s || !state.params.play){ state.geoPath = null; return pathSetupHtml(); }
+  if (s.ended) return pathResultsHtml(s);
+  return pathPlayHtml(s);
+}
+
 function viewOraWorld(){
   const mode = state.params.mode || 'hub';
   if (mode === 'oraflag') return viewGeoFlag();
   if (mode === 'truth-or-map') return viewGeoTrueFalse();
   if (mode === 'capi-ora') return viewGeoCapi();
   if (mode === 'world-eye') return viewGeoEye();
+  if (mode === 'world-path') return viewGeoPath();
   if (mode === 'continent-drop') return viewGeoDrop();
   const order = ['oraflag','truth-or-map','capi-ora','world-eye','world-path','continent-drop'];
   const gameCards = order.map(function(m){
@@ -15594,6 +15879,13 @@ document.addEventListener('keydown', (e) => {
     if (q && n >= 1 && n <= q.options.length){ e.preventDefault(); capiAnswer(q.options[n - 1]); }
   } else if (state.params.mode === 'continent-drop' && state.geoDrop && !state.geoDrop.ended){
     if (e.key === 'Enter'){ e.preventDefault(); if (state.geoDrop.answered) dropNext(); else dropConfirm(); }
+  } else if (state.params.mode === 'world-path' && state.geoPath && !state.geoPath.ended){
+    const s = state.geoPath;
+    if (s.arrived){ if (e.key === 'Enter'){ e.preventDefault(); pathNextJourney(); } return; }
+    if ((e.key === 'u' || e.key === 'U' || e.key === 'Backspace')){ e.preventDefault(); pathUndo(); return; }
+    const nb = GeoEngine.neighborsOf(s.current);
+    const n = parseInt(e.key, 10);
+    if (n >= 1 && n <= nb.length){ e.preventDefault(); pathMove(nb[n - 1]); }
   } else if (state.params.mode === 'world-eye' && state.geoEye && !state.geoEye.ended){
     const s = state.geoEye;
     if (s.mode === 'time'){
