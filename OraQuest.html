@@ -1481,7 +1481,7 @@ const I18N_EXT = {
     worldPathName:'World Path', worldPathSub:'Hop between bordering countries to travel from start to destination — a calm map puzzle.',
     worldPathGoal:'Travel from {start} to {dest}', worldPathPick:'Hop to a neighbour:', worldPathUndo:'Undo hop',
     worldPathArrived:'Arrived in {n} hops!', worldPathBest:'Best route: {n} hops', worldPathOptimalHit:'Perfect route! 🌟',
-    worldPathCloser:'Getting closer!', worldPathFarther:'Farther away…', worldPathJourney:'Journey', worldPathStars:'Stars',
+    worldPathHint:'Hint: {dest} is in {continent}', worldPathJourney:'Journey', worldPathStars:'Stars',
     worldDropName:'Continent Drop', worldDropSub:'Tap where a country sits on the world map — the closer your pin, the more points.',
     worldDropTapHint:'Tap the map where {country} is.', worldDropConfirm:'Drop pin here', worldDropPlaceFirst:'Tap the map to place your pin first.',
     worldDropAway:'{km} km away', worldDropClosest:'Closest this game: {km} km', worldDropEvolution:'Precision over time',
@@ -1548,7 +1548,7 @@ const I18N_EXT = {
     worldPathName:'Camino del Mundo', worldPathSub:'Salta entre países fronterizos para ir del inicio al destino — un puzzle de mapas tranquilo.',
     worldPathGoal:'Viaja de {start} a {dest}', worldPathPick:'Salta a un vecino:', worldPathUndo:'Deshacer salto',
     worldPathArrived:'¡Llegaste en {n} saltos!', worldPathBest:'Mejor ruta: {n} saltos', worldPathOptimalHit:'¡Ruta perfecta! 🌟',
-    worldPathCloser:'¡Te acercas!', worldPathFarther:'Te alejas…', worldPathJourney:'Viaje', worldPathStars:'Estrellas',
+    worldPathHint:'Pista: {dest} está en {continent}', worldPathJourney:'Viaje', worldPathStars:'Estrellas',
     worldDropName:'Continente Drop', worldDropSub:'Toca dónde está un país en el mapamundi — cuanto más cerca tu pin, más puntos.',
     worldDropTapHint:'Toca en el mapa dónde está {country}.', worldDropConfirm:'Soltar pin aquí', worldDropPlaceFirst:'Toca el mapa para colocar tu pin primero.',
     worldDropAway:'a {km} km', worldDropClosest:'Lo más cerca esta partida: {km} km', worldDropEvolution:'Precisión a lo largo del tiempo',
@@ -1615,7 +1615,7 @@ const I18N_EXT = {
     worldPathName:'Chemin du Monde', worldPathSub:'Saute entre pays frontaliers pour aller du départ à la destination — un puzzle de cartes apaisant.',
     worldPathGoal:'Voyage de {start} à {dest}', worldPathPick:'Saute vers un voisin :', worldPathUndo:'Annuler le saut',
     worldPathArrived:'Arrivé en {n} sauts !', worldPathBest:'Meilleur trajet : {n} sauts', worldPathOptimalHit:'Trajet parfait ! 🌟',
-    worldPathCloser:'Tu te rapproches !', worldPathFarther:'Tu t’éloignes…', worldPathJourney:'Voyage', worldPathStars:'Étoiles',
+    worldPathHint:'Indice : {dest} est en {continent}', worldPathJourney:'Voyage', worldPathStars:'Étoiles',
     worldDropName:'Continent Drop', worldDropSub:'Touche où se trouve un pays sur la carte du monde — plus ton repère est proche, plus tu marques.',
     worldDropTapHint:'Touche la carte là où se trouve {country}.', worldDropConfirm:'Poser le repère ici', worldDropPlaceFirst:'Touche la carte pour placer ton repère.',
     worldDropAway:'à {km} km', worldDropClosest:'Le plus proche cette partie : {km} km', worldDropEvolution:'Précision au fil du temps',
@@ -13632,24 +13632,28 @@ function startGeoPath(){
 }
 function resetGeoPath(){ state.geoPath = null; startGeoPath(); }
 function pathJourney(s){ return s.journeys[s.idx]; }
-function pathDistToDest(s){ const r = GeoEngine.pathBfs(s.current, pathJourney(s).dest); return r ? r.hops : null; }
+// Neighbours of the current country, sorted ALPHABETICALLY by localised name. So
+// no band ever orders them by proximity to the destination (which would let the
+// player just pick the first option). Shared by the buttons + keyboard so the
+// number keys match the on-screen order.
+function pathOrderedNeighbors(iso){
+  return GeoEngine.neighborsOf(iso).slice().sort(function(a, b){
+    return GeoEngine.nameOf(a, state.lang).localeCompare(GeoEngine.nameOf(b, state.lang), state.lang);
+  });
+}
 function pathMove(iso){
   const s = state.geoPath; if (!s || s.ended || s.arrived) return;
   const j = pathJourney(s);
   if (GeoEngine.neighborsOf(s.current).indexOf(iso) === -1) return; // only real neighbours
-  const before = pathDistToDest(s);
   s.trail.push(iso); s.current = iso;
   if (iso === j.dest){
-    s.arrived = true; s.lastMove = null;
+    s.arrived = true;
     const actual = s.trail.length - 1;
     const stars = GeoEngine.pathStars(j.optimalHops, actual);
     const pts = GeoEngine.pathScoreFor(j.optimalHops, actual);
     s.score += pts; s.stars += stars; s.attempts++;
     if (stars === 3) s.correct++;
     s.results.push({ optimalHops: j.optimalHops, actualHops: actual, stars: stars, points: pts });
-  } else {
-    const after = pathDistToDest(s);
-    s.lastMove = (before != null && after != null) ? { closer: after < before } : null;
   }
   render();
 }
@@ -13687,7 +13691,6 @@ function pathMapSvg(s){
     layers = '<g>' + DROP_WORLD.coast + '</g>' + (scaf.borders ? '<g>' + DROP_WORLD.borders + '</g>' : '');
   } else { layers = dropLandSvg(); }
   const labels = scaf.labels ? dropContLabelsSvg() : '';
-  const j = pathJourney(s);
   let trail = '';
   for (let i = 1; i < s.trail.length; i++){
     const a = GEODATA.BY_ISO[s.trail[i - 1]], b = GEODATA.BY_ISO[s.trail[i]];
@@ -13706,7 +13709,7 @@ function pathMapSvg(s){
   return '<svg id="path-map" class="drop-map" viewBox="0 0 ' + DROP_MAP_W + ' ' + DROP_MAP_H + '" role="img" aria-label="' + pick({en:'Journey map',es:'Mapa del viaje',fr:'Carte du voyage'}) + '">'
     + '<rect x="0" y="0" width="' + DROP_MAP_W + '" height="' + DROP_MAP_H + '" fill="#eff6ff"/>'
     + layers + dropGraticuleSvg() + labels + trail + nb
-    + pathMarkerSvg(j.dest, '#059669', 3.2) + pathMarkerSvg(s.current, '#7c3aed', 3.4)
+    + pathMarkerSvg(s.current, '#7c3aed', 3.4) // current position only — never the destination
     + '</svg>';
 }
 function pathSetupHtml(){ return geoGameSetupHtml('world-path'); }
@@ -13726,26 +13729,23 @@ function pathPlayHtml(s){
       + '  <button onclick="pathNextJourney()" class="mt-4 btn-primary px-8 py-3">' + (num >= s.journeys.length ? pick({en:'See results',es:'Ver resultados',fr:'Voir les résultats'}) : pick({en:'Next journey',es:'Siguiente viaje',fr:'Voyage suivant'})) + ' →</button>'
       + '</div>';
   } else {
-    const neighbors = GeoEngine.neighborsOf(s.current);
-    const closerSet = {};
-    if (s.band === '6-8'){
-      const before = pathDistToDest(s);
-      neighbors.forEach(function(iso){ const r = GeoEngine.pathBfs(iso, j.dest); if (r && before != null && r.hops < before) closerSet[iso] = true; });
-    }
-    const btns = neighbors.map(function(iso){
-      const hint = closerSet[iso] ? ' style="border-color:#34d399;background:#ecfdf5"' : '';
-      return '<button onclick="pathMove(\'' + iso + '\')"' + hint + ' class="select-cell px-3 py-2 text-sm font-semibold border-slate-200 focus-ring">' + isoToFlagEmoji(iso) + ' ' + escapeHtml(GeoEngine.nameOf(iso, state.lang)) + '</button>';
+    // Alphabetical neighbours (never by proximity to the destination).
+    const btns = pathOrderedNeighbors(s.current).map(function(iso){
+      return '<button onclick="pathMove(\'' + iso + '\')" class="select-cell px-3 py-2 text-sm font-semibold border-slate-200 focus-ring">' + isoToFlagEmoji(iso) + ' ' + escapeHtml(GeoEngine.nameOf(iso, state.lang)) + '</button>';
     }).join('');
-    const moveFb = (s.lastMove && s.band === '6-8') ? '<div class="mt-2 text-center text-sm font-semibold ' + (s.lastMove.closer ? 'text-emerald-600' : 'text-amber-600') + '">' + (s.lastMove.closer ? t('worldPathCloser') : t('worldPathFarther')) + '</div>' : '';
     panel = ''
       + '<div class="mt-4">'
       + '  <div class="text-center text-sm text-slate-600">' + pick({en:'You are in',es:'Estás en',fr:'Tu es en'}) + ' <strong>' + isoToFlagEmoji(s.current) + ' ' + escapeHtml(GeoEngine.nameOf(s.current, state.lang)) + '</strong> · ' + (s.trail.length - 1) + ' ' + pick({en:'hops',es:'saltos',fr:'sauts'}) + '</div>'
-      + moveFb
       + '  <p class="mt-3 text-sm font-semibold text-slate-700 text-center">' + t('worldPathPick') + '</p>'
       + '  <div class="mt-2 flex flex-wrap gap-2 justify-center">' + btns + '</div>'
       + (s.trail.length > 1 ? '<div class="text-center mt-3"><button onclick="pathUndo()" class="text-sm text-slate-500 hover:underline focus-ring">↩ ' + t('worldPathUndo') + '</button></div>' : '')
       + '</div>';
   }
+  // Band 1 only: a textual continent hint for the destination — narrows the
+  // direction without revealing the route (replaces the old map proximity cues).
+  const hint = (s.band === '6-8')
+    ? '<p class="mt-2 text-center text-sm text-cyan-700">💡 ' + escapeHtml(t('worldPathHint').replace('{dest}', destName).replace('{continent}', GeoEngine.continentName((GEODATA.BY_ISO[j.dest] || {}).continent, state.lang))) + '</p>'
+    : '';
   return ''
     + '<div class="min-h-screen bg-slate-50">'
     + Header()
@@ -13757,6 +13757,7 @@ function pathPlayHtml(s){
     + '  </div>'
     + '  <div class="card p-4">'
     + '    <p class="text-center font-display text-lg md:text-xl font-bold">' + t('worldPathGoal').replace('{start}', '<span class="text-brand-violet">' + isoToFlagEmoji(j.start) + ' ' + escapeHtml(startName) + '</span>').replace('{dest}', '<span class="text-emerald-600">' + isoToFlagEmoji(j.dest) + ' ' + escapeHtml(destName) + '</span>') + '</p>'
+    + hint
     + '    <div class="mt-3 rounded-lg overflow-hidden ring-1 ring-slate-200">' + pathMapSvg(s) + '</div>'
     + panel
     + '  </div>'
@@ -15883,7 +15884,7 @@ document.addEventListener('keydown', (e) => {
     const s = state.geoPath;
     if (s.arrived){ if (e.key === 'Enter'){ e.preventDefault(); pathNextJourney(); } return; }
     if ((e.key === 'u' || e.key === 'U' || e.key === 'Backspace')){ e.preventDefault(); pathUndo(); return; }
-    const nb = GeoEngine.neighborsOf(s.current);
+    const nb = pathOrderedNeighbors(s.current); // same alphabetical order as the buttons
     const n = parseInt(e.key, 10);
     if (n >= 1 && n <= nb.length){ e.preventDefault(); pathMove(nb[n - 1]); }
   } else if (state.params.mode === 'world-eye' && state.geoEye && !state.geoEye.ended){
