@@ -199,6 +199,12 @@
   .eye-round-fill { width: 100%; border-radius: 4px 4px 0 0; transition: height .3s ease; }
   .eye-round-num { font-size: .65rem; color: rgb(148 163 184); font-weight: 700; }
   .eye-history-chart { width: 100%; height: 200px; display: block; }
+  /* Fills the container width and scales up on desktop; aspect-ratio 2/1 keeps the
+     equirectangular proportion at any size. min-height is a legibility floor (and a
+     collapse guard). The SVG keeps its default preserveAspectRatio (xMidYMid meet),
+     so any size deviation just letterboxes — taps stay exact because dropTap maps
+     via getScreenCTM (the real rendered transform), never fixed pixels. */
+  .drop-map { width: 100%; height: auto; display: block; aspect-ratio: 2 / 1; min-height: 200px; max-height: 70vh; cursor: crosshair; touch-action: manipulation; background: rgb(239 246 255); }
   @keyframes dotsFadeOut { from { opacity: 1; } to { opacity: 0; } }
   @keyframes feedbackSlide { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
   @media (max-width: 380px) { .eye-option-btn { font-size: 1.05rem; } .eye-expr { font-size: 1.75rem; } }
@@ -1474,6 +1480,8 @@ const I18N_EXT = {
     worldEyeName:'World Eye', worldEyeSub:'Name the landmark, place it on a continent and more — 8 quick rounds.',
     worldPathName:'World Path', worldPathSub:'Hop between bordering countries to travel from start to destination — a calm map puzzle.',
     worldDropName:'Continent Drop', worldDropSub:'Tap where a country sits on the world map — the closer your pin, the more points.',
+    worldDropTapHint:'Tap the map where {country} is.', worldDropConfirm:'Drop pin here', worldDropPlaceFirst:'Tap the map to place your pin first.',
+    worldDropAway:'{km} km away', worldDropClosest:'Closest this game: {km} km', worldDropEvolution:'Precision over time',
     lbTitleOraworld:'OraWorld leaderboard', lbSubOraworld:'Top geography scores across OraWorld games.', lbTabOraworld:'OraWorld',
     faqWhatHorus:'What is HorusQuest?', faqWhatHorusA:'HorusQuest is the family-friendly learning universe guided by Ora, combining quizzes, guessing games, word challenges and future learning adventures.',
     faqWhatOraQuest:'What is OraQuest?', faqWhatGuess:'What is OraGuess?', faqWhatWords:'What is OraWords?', faqAccount:'Do I need an account?', faqChildren:'Is HorusQuest suitable for children?', faqAds:'Does HorusQuest show ads?', faqBoards:'How do leaderboards work?'
@@ -1536,6 +1544,8 @@ const I18N_EXT = {
     worldEyeName:'Ojo del Mundo', worldEyeSub:'Nombra el monumento, ubícalo en un continente y más — 8 rondas rápidas.',
     worldPathName:'Camino del Mundo', worldPathSub:'Salta entre países fronterizos para ir del inicio al destino — un puzzle de mapas tranquilo.',
     worldDropName:'Continente Drop', worldDropSub:'Toca dónde está un país en el mapamundi — cuanto más cerca tu pin, más puntos.',
+    worldDropTapHint:'Toca en el mapa dónde está {country}.', worldDropConfirm:'Soltar pin aquí', worldDropPlaceFirst:'Toca el mapa para colocar tu pin primero.',
+    worldDropAway:'a {km} km', worldDropClosest:'Lo más cerca esta partida: {km} km', worldDropEvolution:'Precisión a lo largo del tiempo',
     lbTitleOraworld:'Clasificación de OraWorld', lbSubOraworld:'Mejores puntuaciones de geografía en los juegos de OraWorld.', lbTabOraworld:'OraWorld',
     faqWhatHorus:'¿Qué es HorusQuest?', faqWhatHorusA:'HorusQuest es el universo de aprendizaje familiar guiado por Ora, con quizzes, adivinanzas, retos de palabras y futuras aventuras educativas.',
     faqWhatOraQuest:'¿Qué es OraQuest?', faqWhatGuess:'¿Qué es OraGuess?', faqWhatWords:'¿Qué es OraWords?', faqAccount:'¿Necesito una cuenta?', faqChildren:'¿HorusQuest es apto para niños?', faqAds:'¿HorusQuest muestra anuncios?', faqBoards:'¿Cómo funcionan las clasificaciones?'
@@ -1598,6 +1608,8 @@ const I18N_EXT = {
     worldEyeName:'Œil du Monde', worldEyeSub:'Nomme le monument, place-le sur un continent et plus — 8 manches rapides.',
     worldPathName:'Chemin du Monde', worldPathSub:'Saute entre pays frontaliers pour aller du départ à la destination — un puzzle de cartes apaisant.',
     worldDropName:'Continent Drop', worldDropSub:'Touche où se trouve un pays sur la carte du monde — plus ton repère est proche, plus tu marques.',
+    worldDropTapHint:'Touche la carte là où se trouve {country}.', worldDropConfirm:'Poser le repère ici', worldDropPlaceFirst:'Touche la carte pour placer ton repère.',
+    worldDropAway:'à {km} km', worldDropClosest:'Le plus proche cette partie : {km} km', worldDropEvolution:'Précision au fil du temps',
     lbTitleOraworld:'Classement OraWorld', lbSubOraworld:'Meilleurs scores de géographie sur les jeux OraWorld.', lbTabOraworld:'OraWorld',
     faqWhatHorus:'Qu’est-ce que HorusQuest ?', faqWhatHorusA:'HorusQuest est l’univers d’apprentissage familial guidé par Ora, avec des quiz, des devinettes, des défis de mots et de futures aventures éducatives.',
     faqWhatOraQuest:'Qu’est-ce que OraQuest ?', faqWhatGuess:'Qu’est-ce que OraGuess ?', faqWhatWords:'Qu’est-ce que OraWords ?', faqAccount:'Ai-je besoin d’un compte ?', faqChildren:'HorusQuest convient-il aux enfants ?', faqAds:'HorusQuest affiche-t-il des publicités ?', faqBoards:'Comment fonctionnent les classements ?'
@@ -10406,6 +10418,70 @@ const GeoEngine = (function () {
     return { total: total, accuracy: accuracy, breakdown: breakdown };
   }
 
+  /* ---- Continente Drop (continent-drop): tap a country's location on a
+     simplified equirectangular world map. Distance-based scoring (haversine,
+     closer = more points) so a near miss still scores — no binary fail, mirroring
+     Ojo de Ora's continuous accuracy curve. 8 rounds, /800. Pure + DOM-free: the
+     host reads targetCoords/latLngToPixel to draw and pixelToLatLng to read a tap,
+     then scoreByDistance to grade. Band 1 draws large/famous countries with a
+     generous radius; band 3 draws small/less-known ones with a strict radius. ---- */
+  // Pools: band 1 (6-8) = tier-1 famous countries on every difficulty; band 3
+  // (13+) = tier 2/3 small/less-known. Radii: 100 pts within fullKm, linear decay
+  // to 0 at maxKm — harder is stricter both across bands and within a band, while
+  // band 1 stays generous so little kids are rewarded. (The map scaffolding in the
+  // host is the third differentiation axis: borders+labels for band 1, borders for
+  // band 2, coastlines only for band 3.)
+  const DROP_TABLE = {
+    '6-8':  { easy: { tiers: [1],    maxKm: 3000, fullKm: 500 }, medium: { tiers: [1], maxKm: 2500, fullKm: 400 }, hard: { tiers: [1],    maxKm: 2000, fullKm: 350 } },
+    '9-12': { easy: { tiers: [1, 2], maxKm: 2200, fullKm: 350 }, medium: { tiers: [2], maxKm: 1700, fullKm: 300 }, hard: { tiers: [2, 3], maxKm: 1300, fullKm: 250 } },
+    '13+':  { easy: { tiers: [2, 3], maxKm: 1600, fullKm: 300 }, medium: { tiers: [3], maxKm: 1100, fullKm: 250 }, hard: { tiers: [3],    maxKm: 750,  fullKm: 200 } }
+  };
+  function dropCell(band, difficulty) {
+    const row = DROP_TABLE[band] || DROP_TABLE['9-12'];
+    return row[difficulty] || row.medium;
+  }
+  function hasCentroid(c) { return typeof c.lat === 'number' && typeof c.lng === 'number'; }
+  function dropPool(band, difficulty) {
+    const set = {}; dropCell(band, difficulty).tiers.forEach(function (t) { set[t] = true; });
+    const pool = DATA.COUNTRIES.filter(function (c) { return set[c.tier] && hasCentroid(c); });
+    return pool.length >= 8 ? pool : DATA.COUNTRIES.filter(hasCentroid);
+  }
+  function targetCoords(iso) { const c = byIso(iso); return c ? { lat: c.lat, lng: c.lng } : null; }
+  // Equirectangular (plate carrée) projection on a w×h canvas: lng -180..180 maps
+  // across the width, lat 90..-90 down the height. Linear → a tap read and a pin
+  // draw use the same maths at any rendered size.
+  function latLngToPixel(lat, lng, w, h) {
+    return { x: (lng + 180) / 360 * w, y: (90 - lat) / 180 * h };
+  }
+  function pixelToLatLng(x, y, w, h) {
+    return { lat: 90 - (y / h) * 180, lng: (x / w) * 360 - 180 };
+  }
+  // Great-circle distance in km between two lat/lng points (haversine, R=6371).
+  function haversineKm(lat1, lng1, lat2, lng2) {
+    const R = 6371, toRad = Math.PI / 180;
+    const dLat = (lat2 - lat1) * toRad, dLng = (lng2 - lng1) * toRad;
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+      + Math.cos(lat1 * toRad) * Math.cos(lat2 * toRad) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+    return 2 * R * Math.asin(Math.min(1, Math.sqrt(a)));
+  }
+  // 100 pts within fullKm, linear decay to 0 at maxKm (band/difficulty scaled).
+  function scoreByDistance(distanceKm, band, difficulty) {
+    const cell = dropCell(band, difficulty);
+    if (distanceKm <= cell.fullKm) return 100;
+    if (distanceKm >= cell.maxKm) return 0;
+    return Math.round(100 * (cell.maxKm - distanceKm) / (cell.maxKm - cell.fullKm));
+  }
+  // 8 target countries sampled WITHOUT replacement from the band×difficulty pool.
+  function generateDropRound(rng, band, difficulty, count, used) {
+    rng = rng || Math.random;
+    count = count || 8;
+    const usedSet = {}; (used || []).forEach(function (iso) { usedSet[iso] = true; });
+    let pool = dropPool(band, difficulty).filter(function (c) { return !usedSet[c.iso]; });
+    if (pool.length < count) pool = dropPool(band, difficulty);
+    return shuffle(rng, pool).slice(0, count).map(function (c) { return { iso: c.iso }; });
+  }
+  function dropMaxScore(count) { return (count || 8) * 100; }
+
   /* ---- Retention core (XP / level / global daily streak / personal records).
      Cloned verbatim from MathEngine so OraWorld behaves identically; callers
      MUST pass a LOCAL-date key (host todayKey()), never toISOString(). ---- */
@@ -10456,6 +10532,9 @@ const GeoEngine = (function () {
     generateLandmarkRound: generateLandmarkRound, nextLandmarkChallenge: nextLandmarkChallenge,
     landmarkScoreForRound: landmarkScoreForRound, landmarkTotalScore: landmarkTotalScore,
     eyeStartSeconds: eyeStartSeconds, eyeComboMult: eyeComboMult, eyeTaScoreFor: eyeTaScoreFor, eyeTaBonusMs: eyeTaBonusMs,
+    DROP_TABLE: DROP_TABLE, dropPool: dropPool, targetCoords: targetCoords,
+    latLngToPixel: latLngToPixel, pixelToLatLng: pixelToLatLng, haversineKm: haversineKm,
+    scoreByDistance: scoreByDistance, generateDropRound: generateDropRound, dropMaxScore: dropMaxScore,
     xpForGame: xpForGame, xpNeededFor: xpNeededFor, levelForXp: levelForXp,
     prevDayKey: prevDayKey, updateDailyStreak: updateDailyStreak,
     recordKey: recordKey, bestRecord: bestRecord, updateRecord: updateRecord
@@ -12204,7 +12283,7 @@ const GEO_GAMES = {
   'capi-ora':       { icon:'🏛️', nameKey:'worldCapiName', subKey:'worldCapiSub', start:'startGeoCapi()',       state:function(){ return state.geoCapi; } },
   'world-eye':      { icon:'👁️', nameKey:'worldEyeName',  subKey:'worldEyeSub',  start:'startGeoEye()',       state:function(){ return state.geoEye; } },
   'world-path':     { icon:'🧭', nameKey:'worldPathName', subKey:'worldPathSub', soon:true },
-  'continent-drop': { icon:'📍', nameKey:'worldDropName', subKey:'worldDropSub', soon:true }
+  'continent-drop': { icon:'📍', nameKey:'worldDropName', subKey:'worldDropSub', start:'startGeoDrop()',     state:function(){ return state.geoDrop; } }
 };
 function geoGameName(mode){ const g = GEO_GAMES[mode]; return g ? t(g.nameKey) : t('worldTitle'); }
 
@@ -12386,7 +12465,9 @@ function saveGeoScore(gameMode){
     const check = validateLeaderboardAlias(alias);
     if (!check.ok) { toast(t(check.error)); if (nameEl) nameEl.focus(); return; }
   }
-  const acc = s.attempts ? Math.round((s.correct / s.attempts) * 100) : 0;
+  // Distance-graded games (Continente Drop) expose a precomputed precision % via
+  // s.accuracy; binary-scored games fall back to correct/attempts.
+  const acc = (typeof s.accuracy === 'number') ? s.accuracy : (s.attempts ? Math.round((s.correct / s.attempts) * 100) : 0);
   const record = LBCore.makeScoreRecord({
     gameKey:'oraworld', gameName:'OraWorld', gameMode:gameMode,
     difficulty:s.difficulty, ageGroup:s.ageGroup, language:state.lang,
@@ -13110,12 +13191,317 @@ function viewGeoEyeTA(s){
     + '</div>';
 }
 
+/* ---- Continente Drop (continent-drop): tap where a country sits on a simplified
+   equirectangular world map. Distance-based scoring (haversine) so a near miss
+   still scores — no binary fail. 8 rounds /800. The map is a self-hosted Natural
+   Earth 1:110m SVG (assets/world-110m.svg, public domain, generated by
+   tools/_gen-worldmap.js) in PURE equirectangular projection (viewBox 0 0 360 180),
+   so it overlays the engine's projection 1:1 — no maths change, taps stay exact.
+   It carries two separable layers: #coast (filled land = coastline silhouette) and
+   #borders (internal country boundaries). The host shows different layers per age
+   band (the key differentiation): band 1 = coast + borders + continent labels;
+   band 2 = coast + borders; band 3 = coast only. Reads taps via getScreenCTM +
+   pixelToLatLng, draws pins via latLngToPixel, grades with scoreByDistance (never
+   touched). A coarse inline outline is the offline fallback if the asset fails.
+   A precision-over-days chart (oraworld:drop-history) is the come-back hook. ---- */
+const DROP_HISTORY_LS = 'oraworld:drop-history';
+const DROP_ROUNDS = 8;
+const DROP_MAP_W = 360, DROP_MAP_H = 180; // equirectangular viewBox (matches the asset)
+const DROP_MAP_ASSET = '/assets/world-110m.svg';
+let DROP_LAND_CACHE = null;               // coarse inline fallback layer, built once
+// DROP_WORLD: null = not fetched, 'loading', { coast, borders } = ready, false = failed.
+let DROP_WORLD = null;
+// Approx label anchors [lng, lat] per continent code (band-1 scaffolding hint).
+const DROP_CONT_LABELS = { NA: [-100, 45], SA: [-60, -15], EU: [16, 52], AF: [20, 6], AS: [92, 46], OC: [134, -25] };
+/* Coarse continent outlines as [lng, lat] rings — the OFFLINE FALLBACK only (used
+   if assets/world-110m.svg fails to load, e.g. local-file protocol). Equirectangular
+   maps 1°→1 viewBox unit (x = lng+180, y = 90−lat). Never used for scoring. */
+const DROP_LAND = [
+  /* North America + Central America */
+  [[-168,66],[-165,60],[-152,58],[-135,58],[-130,52],[-124,48],[-124,40],[-117,32],[-110,23],[-105,22],[-97,16],[-92,15],[-83,9],[-81,23],[-80,26],[-75,35],[-70,42],[-66,44],[-60,47],[-56,51],[-64,60],[-78,62],[-95,57],[-85,66],[-95,69],[-110,69],[-125,70],[-140,70],[-156,71]],
+  /* Greenland */
+  [[-45,60],[-30,60],[-20,70],[-22,78],[-40,83],[-60,80],[-55,70],[-50,64]],
+  /* South America */
+  [[-81,8],[-77,1],[-80,-4],[-71,-18],[-70,-30],[-73,-40],[-75,-48],[-68,-55],[-64,-55],[-65,-48],[-62,-40],[-58,-34],[-48,-25],[-40,-22],[-35,-8],[-44,-2],[-50,0],[-52,5],[-62,10],[-72,12],[-78,8]],
+  /* Africa */
+  [[-17,15],[-16,21],[-10,30],[0,36],[10,37],[11,33],[20,32],[25,32],[32,31],[35,28],[43,12],[51,12],[44,2],[41,-5],[40,-15],[35,-23],[27,-34],[20,-35],[18,-30],[12,-17],[9,-1],[8,4],[-4,5],[-8,4],[-12,8],[-16,12]],
+  /* Eurasia (Europe + Asia, with India / Arabia / SE-Asia dips) */
+  [[-9,38],[-9,43],[-2,49],[2,51],[8,54],[5,58],[10,64],[15,68],[24,71],[30,70],[55,68],[70,73],[90,76],[105,78],[140,73],[160,70],[170,68],[178,66],[160,60],[143,55],[135,48],[130,42],[122,40],[121,32],[110,22],[108,15],[105,10],[100,8],[98,12],[92,20],[88,22],[82,18],[78,9],[73,18],[68,24],[62,25],[57,25],[48,30],[43,30],[36,36],[28,41],[28,46],[40,45],[40,38],[35,36],[26,40],[20,42],[14,44],[12,38],[3,43]],
+  /* Australia */
+  [[114,-22],[114,-34],[123,-34],[131,-32],[138,-35],[147,-38],[150,-37],[153,-28],[145,-15],[137,-12],[130,-12],[125,-14],[122,-18]],
+  /* Reference islands (orientation for island/peninsula countries) */
+  [[-6,50],[-5,58],[-2,58],[1,52],[-2,50]],            // British Isles
+  [[130,31],[141,40],[142,44],[136,36],[131,33]],      // Japan
+  [[44,-12],[50,-15],[49,-25],[44,-22]],               // Madagascar
+  [[167,-44],[174,-41],[178,-37],[173,-42]],           // New Zealand
+  [[-24,64],[-14,65],[-14,66],[-22,66]],               // Iceland
+  [[131,-1],[150,-7],[141,-9],[132,-4]]                // New Guinea
+];
+function loadDropHistory(){ const v = LS.get(DROP_HISTORY_LS, []); return Array.isArray(v) ? v : []; }
+function saveDropResult(entry){ const h = loadDropHistory(); h.push(entry); while (h.length > 100) h.shift(); LS.set(DROP_HISTORY_LS, h); return h; }
+function dropHistoryStats(){
+  const h = loadDropHistory();
+  if (!h.length) return { best: 0, average: 0, count: 0 };
+  let best = 0, sum = 0;
+  for (let i = 0; i < h.length; i++){ best = Math.max(best, h[i].accuracy); sum += h[i].accuracy; }
+  return { best: best, average: Math.round(sum / h.length), count: h.length };
+}
+
+function startGeoDrop(){
+  const su = geoSetupOrDefault();
+  const info = geoBandInfo();
+  state.geoDrop = {
+    ageGroup: su.ageGroup, difficulty: su.difficulty, band: info.band,
+    rounds: GeoEngine.generateDropRound(Math.random, info.band, su.difficulty, DROP_ROUNDS),
+    idx: 0, score: 0, results: [], pin: null,
+    answered: false, lastResult: null,
+    ended: false, saved: false, accuracy: 0, correct: 0, attempts: 0,
+    startedAt: Date.now(), durationMs: 0, resultMeta: null
+  };
+  go('oraworld', { mode:'continent-drop', play:true });
+}
+function resetGeoDrop(){ state.geoDrop = null; startGeoDrop(); }
+
+// A single map pin: a small filled circle with a white outline so it reads on the
+// land and on the connecting line.
+function dropPinSvg(x, y, color){
+  return '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="3.2" fill="' + color + '" stroke="#fff" stroke-width="1.2"/>';
+}
+// Fetch the world-map asset once, split it into its two layers and re-render.
+function dropLoadWorld(){
+  if (DROP_WORLD !== null) return; // ready, failed, or already loading
+  DROP_WORLD = 'loading';
+  fetch(DROP_MAP_ASSET).then(function(r){ return r.ok ? r.text() : Promise.reject(); }).then(function(txt){
+    const doc = new DOMParser().parseFromString(txt, 'image/svg+xml');
+    const coast = doc.getElementById('coast'), borders = doc.getElementById('borders');
+    DROP_WORLD = { coast: coast ? coast.innerHTML : '', borders: borders ? borders.innerHTML : '' };
+    if (state.route === 'oraworld' && state.params.mode === 'continent-drop' && !state.params.subview) render();
+  }).catch(function(){ DROP_WORLD = false; });
+}
+// Map scaffolding per age band — the key differentiation: band 1 (6-8) gets country
+// borders + continent labels, band 2 (9-12) borders only, band 3 (13+) coastlines only.
+function dropScaffold(band){
+  if (band === '6-8')  return { borders: true,  labels: true };
+  if (band === '9-12') return { borders: true,  labels: false };
+  return { borders: false, labels: false }; // 13+
+}
+// Coarse inline continent outline — OFFLINE FALLBACK only (asset failed to load).
+function dropLandSvg(){
+  if (DROP_LAND_CACHE !== null) return DROP_LAND_CACHE;
+  let d = '';
+  DROP_LAND.forEach(function(ring){
+    ring.forEach(function(pt, i){
+      const p = GeoEngine.latLngToPixel(pt[1], pt[0], DROP_MAP_W, DROP_MAP_H);
+      d += (i ? 'L' : 'M') + p.x.toFixed(1) + ',' + p.y.toFixed(1) + ' ';
+    });
+    d += 'Z ';
+  });
+  DROP_LAND_CACHE = '<path d="' + d.trim() + '" fill="#e6efe4" stroke="#a8c0a4" stroke-width="0.5" stroke-linejoin="round"/>';
+  return DROP_LAND_CACHE;
+}
+// Continent labels (band-1 scaffolding hint), translated per language. A white
+// halo (paint-order:stroke) keeps them legible over land/borders even at small
+// mobile sizes; kept readable for young kids without overpowering the map. Drawn
+// under the pin layer, so a pin dropped on a label always sits on top.
+function dropContLabelsSvg(){
+  let out = '';
+  Object.keys(DROP_CONT_LABELS).forEach(function(code){
+    const ll = DROP_CONT_LABELS[code];
+    const p = GeoEngine.latLngToPixel(ll[1], ll[0], DROP_MAP_W, DROP_MAP_H);
+    out += '<text x="' + p.x.toFixed(1) + '" y="' + p.y.toFixed(1) + '" font-size="8" font-weight="bold" text-anchor="middle"'
+      + ' fill="#334155" stroke="#ffffff" stroke-width="1.8" stroke-linejoin="round" paint-order="stroke" opacity="0.85"'
+      + ' style="pointer-events:none">' + escapeHtml(GeoEngine.continentName(code, state.lang)) + '</text>';
+  });
+  return out;
+}
+// Graticule: meridians/parallels every 30°, with the equator and prime meridian
+// drawn a touch stronger and labelled (the "B" reference cues).
+function dropGraticuleSvg(){
+  let g = '';
+  for (let lng = -150; lng <= 150; lng += 30){ if (lng === 0) continue; const x = (lng + 180).toFixed(1); g += '<line x1="' + x + '" y1="0" x2="' + x + '" y2="' + DROP_MAP_H + '" stroke="#cbd5e1" stroke-width="0.4"/>'; }
+  for (let lat = -60; lat <= 60; lat += 30){ if (lat === 0) continue; const y = (90 - lat).toFixed(1); g += '<line x1="0" y1="' + y + '" x2="' + DROP_MAP_W + '" y2="' + y + '" stroke="#cbd5e1" stroke-width="0.4"/>'; }
+  g += '<line x1="0" y1="90" x2="' + DROP_MAP_W + '" y2="90" stroke="#94a3b8" stroke-width="0.8"/>';                 // equator
+  g += '<line x1="180" y1="0" x2="180" y2="' + DROP_MAP_H + '" stroke="#94a3b8" stroke-width="0.8"/>';              // prime meridian
+  g += '<text x="2" y="88" font-size="4.5" fill="#64748b">0°</text>';
+  g += '<text x="182" y="8" font-size="4.5" fill="#64748b">0°</text>';
+  return g;
+}
+function dropMapSvg(s){
+  dropLoadWorld();
+  const scaf = dropScaffold(s.band);
+  // Land + borders: real asset layers when loaded; coarse inline outline otherwise.
+  let mapLayers;
+  if (DROP_WORLD && typeof DROP_WORLD === 'object'){
+    mapLayers = '<g>' + DROP_WORLD.coast + '</g>'
+      + (scaf.borders ? '<g>' + DROP_WORLD.borders + '</g>' : '');
+  } else {
+    mapLayers = dropLandSvg(); // fallback (no separable borders)
+  }
+  const labels = scaf.labels ? dropContLabelsSvg() : '';
+  let overlay = '', live = '';
+  if (s.answered && s.lastResult){
+    const g = GeoEngine.latLngToPixel(s.lastResult.guess.lat, s.lastResult.guess.lng, DROP_MAP_W, DROP_MAP_H);
+    const tp = GeoEngine.latLngToPixel(s.lastResult.target.lat, s.lastResult.target.lng, DROP_MAP_W, DROP_MAP_H);
+    overlay = '<line x1="' + g.x.toFixed(1) + '" y1="' + g.y.toFixed(1) + '" x2="' + tp.x.toFixed(1) + '" y2="' + tp.y.toFixed(1) + '" stroke="#f59e0b" stroke-width="1.2" stroke-dasharray="3 2"/>'
+      + dropPinSvg(g.x, g.y, '#7c3aed') + dropPinSvg(tp.x, tp.y, '#059669');
+  } else if (s.pin){
+    const p = GeoEngine.latLngToPixel(s.pin.lat, s.pin.lng, DROP_MAP_W, DROP_MAP_H);
+    live = dropPinSvg(p.x, p.y, '#7c3aed');
+  }
+  return '<svg id="drop-map" class="drop-map" viewBox="0 0 ' + DROP_MAP_W + ' ' + DROP_MAP_H + '" ' + (s.answered ? '' : 'onclick="dropTap(event)" ') + 'role="img" aria-label="' + pick({en:'World map — tap a location',es:'Mapa del mundo — toca una ubicación',fr:'Carte du monde — touche un emplacement'}) + '">'
+    + '<rect x="0" y="0" width="' + DROP_MAP_W + '" height="' + DROP_MAP_H + '" fill="#eff6ff"/>'
+    + mapLayers + dropGraticuleSvg() + labels
+    + '<g id="drop-pin-layer">' + live + '</g>'
+    + overlay
+    + '</svg>';
+}
+// Map a tap to viewBox coords via the SVG's live screen transform (getScreenCTM),
+// then to lat/lng. Using the CTM — not the bounding box — keeps taps exact at any
+// CSS size, under scaling, and even when the map letterboxes (preserveAspectRatio
+// meet), because the matrix carries the real rendered scale + centring offset.
+// pixelToLatLng/latLngToPixel then both work in the fixed viewBox space (W×H), so
+// the player's pin and the true pin share one consistent coordinate system.
+function dropTapToViewBox(svg, cx, cy){
+  if (svg.getScreenCTM && svg.createSVGPoint){
+    const ctm = svg.getScreenCTM();
+    if (ctm){ const pt = svg.createSVGPoint(); pt.x = cx; pt.y = cy; const loc = pt.matrixTransform(ctm.inverse()); return { x: loc.x, y: loc.y }; }
+  }
+  // Fallback (no SVG matrix API): rect-relative, assuming the box matches the 2:1 viewBox.
+  const r = svg.getBoundingClientRect();
+  return { x: (cx - r.left) / (r.width || 1) * DROP_MAP_W, y: (cy - r.top) / (r.height || 1) * DROP_MAP_H };
+}
+function dropTap(ev){
+  const s = state.geoDrop; if (!s || s.ended || s.answered) return;
+  const svg = document.getElementById('drop-map'); if (!svg) return;
+  const cx = ev.clientX != null ? ev.clientX : (ev.touches && ev.touches[0] ? ev.touches[0].clientX : 0);
+  const cy = ev.clientY != null ? ev.clientY : (ev.touches && ev.touches[0] ? ev.touches[0].clientY : 0);
+  const v = dropTapToViewBox(svg, cx, cy);
+  const vx = Math.max(0, Math.min(DROP_MAP_W, v.x));
+  const vy = Math.max(0, Math.min(DROP_MAP_H, v.y));
+  s.pin = GeoEngine.pixelToLatLng(vx, vy, DROP_MAP_W, DROP_MAP_H);
+  const layer = document.getElementById('drop-pin-layer');
+  if (layer){ const p = GeoEngine.latLngToPixel(s.pin.lat, s.pin.lng, DROP_MAP_W, DROP_MAP_H); layer.innerHTML = dropPinSvg(p.x, p.y, '#7c3aed'); }
+  const btn = document.getElementById('drop-confirm'); if (btn) btn.disabled = false;
+}
+function dropConfirm(){
+  const s = state.geoDrop; if (!s || s.ended || s.answered) return;
+  if (!s.pin){ toast(t('worldDropPlaceFirst')); return; }
+  const round = s.rounds[s.idx];
+  const tgt = GeoEngine.targetCoords(round.iso);
+  const distanceKm = Math.round(GeoEngine.haversineKm(s.pin.lat, s.pin.lng, tgt.lat, tgt.lng));
+  const points = GeoEngine.scoreByDistance(distanceKm, s.band, s.difficulty);
+  s.answered = true; s.attempts++; s.score += points;
+  if (points >= 100) s.correct++;
+  s.lastResult = { iso: round.iso, guess: s.pin, target: tgt, distanceKm: distanceKm, points: points };
+  s.results.push({ iso: round.iso, distanceKm: distanceKm, points: points });
+  render();
+}
+function dropNext(){
+  const s = state.geoDrop; if (!s || !s.answered || s.ended) return;
+  s.idx++;
+  if (s.idx >= s.rounds.length){
+    s.ended = true;
+    s.durationMs = Date.now() - s.startedAt;
+    s.accuracy = s.results.length ? Math.round(s.results.reduce(function(a, r){ return a + r.points; }, 0) / s.results.length) : 0;
+    s.resultMeta = finishGeoGame({ gameMode:'continent-drop', ageGroup:s.ageGroup, difficulty:s.difficulty, score:s.score });
+    saveDropResult({ date: todayKey(), accuracy: s.accuracy, score: s.score, ageGroup: s.ageGroup, difficulty: s.difficulty });
+    render();
+    if (s.resultMeta.leveledUp || s.resultMeta.milestone || s.resultMeta.recordIsNew) { try { confetti(); } catch (e) {} }
+  } else {
+    s.answered = false; s.pin = null; s.lastResult = null;
+    render();
+  }
+}
+function dropSetupHtml(){
+  const evoBtn = '<button onclick="go(\'oraworld\',{mode:\'continent-drop\',subview:\'history\'})" class="mt-3 block mx-auto text-sm font-semibold text-brand-violet hover:underline focus-ring">📈 ' + t('eyeEvolutionBtn') + '</button>';
+  return geoGameSetupHtml('continent-drop', evoBtn);
+}
+function dropPlayHtml(s){
+  const round = s.rounds[s.idx];
+  const country = GeoEngine.nameOf(round.iso, state.lang);
+  const num = s.idx + 1;
+  let footer;
+  if (s.answered && s.lastResult){
+    const r = s.lastResult;
+    const fbColor = r.points >= 70 ? 'text-emerald-700' : (r.points > 0 ? 'text-amber-700' : 'text-rose-700');
+    footer = ''
+      + '<div class="mt-4 text-center">'
+      + '  <div class="' + fbColor + ' font-bold text-lg">' + t('worldDropAway').replace('{km}', r.distanceKm.toLocaleString()) + ' · +' + r.points + ' pts</div>'
+      + '  <div class="mt-1 text-sm text-slate-600">📍 ' + isoToFlagEmoji(r.iso) + ' ' + escapeHtml(country) + '</div>'
+      + '  <button onclick="dropNext()" class="mt-4 btn-primary px-8 py-3">' + (num >= s.rounds.length ? pick({en:'See results',es:'Ver resultados',fr:'Voir les résultats'}) : pick({en:'Next country',es:'Siguiente país',fr:'Pays suivant'})) + ' →</button>'
+      + '</div>';
+  } else {
+    footer = '<div class="mt-4 text-center"><button id="drop-confirm" onclick="dropConfirm()" ' + (s.pin ? '' : 'disabled') + ' class="btn-primary px-8 py-3">' + t('worldDropConfirm') + '</button></div>';
+  }
+  return ''
+    + '<div class="min-h-screen bg-slate-50">'
+    + Header()
+    + '<main class="max-w-5xl mx-auto px-4 sm:px-6 py-8">'
+    + '  <div class="flex items-center justify-between mb-3 text-sm font-semibold">'
+    + '    <span class="chip bg-cyan-100 text-cyan-800">📍 ' + t('worldDropName') + '</span>'
+    + '    <span class="text-slate-600">' + num + '/' + s.rounds.length + '</span>'
+    + '    <span class="text-cyan-700">⭐ ' + s.score + '</span>'
+    + '  </div>'
+    + '  <div class="card p-4 text-center">'
+    + '    <p class="font-display text-lg md:text-xl font-bold">' + t('worldDropTapHint').replace('{country}', '<span class="text-brand-violet">' + escapeHtml(country) + '</span>') + '</p>'
+    + '    <div class="mt-3 rounded-lg overflow-hidden ring-1 ring-slate-200">' + dropMapSvg(s) + '</div>'
+    + footer
+    + '  </div>'
+    + '  <button onclick="go(\'oraworld\')" class="mt-5 block mx-auto text-sm text-slate-500 hover:underline focus-ring">' + pick({en:'Quit round',es:'Salir de la partida',fr:'Quitter la partie'}) + '</button>'
+    + '</main>'
+    + '</div>';
+}
+function dropResultsHtml(s){
+  const closest = s.results.length ? Math.min.apply(null, s.results.map(function(r){ return r.distanceKm; })) : 0;
+  const closestHtml = '<p class="mt-3 text-sm text-slate-600">🎯 ' + t('worldDropClosest').replace('{km}', closest.toLocaleString()) + '</p>';
+  const evoBtn = '<button onclick="go(\'oraworld\',{mode:\'continent-drop\',subview:\'history\'})" class="btn-ghost">📈 ' + t('eyeEvolution') + '</button>';
+  return geoResultsHtml({
+    gameMode:'continent-drop', score:s.score, accuracy:s.accuracy, meta:s.resultMeta,
+    retryFn:'resetGeoDrop()', saved:s.saved,
+    statLine: pick({en:'Best possible',es:'Máximo posible',fr:'Maximum possible'}) + ': ' + GeoEngine.dropMaxScore(s.rounds.length),
+    extraHtml: closestHtml,
+    extraButtons: evoBtn
+  });
+}
+function dropHistoryHtml(){
+  const h = loadDropHistory(), stats = dropHistoryStats();
+  const chart = h.length < 2
+    ? '<p class="text-center text-slate-500 py-10">' + t('eyeNeedMore') + '</p>'
+    : '<div class="card p-4">' + eyeChartSvg(h.slice(-20)) + '</div>'
+      + '<div class="mt-4 grid grid-cols-3 gap-3 text-center">'
+      + '  <div class="stat-cell bg-emerald-50 p-3"><div class="text-2xl font-bold text-emerald-700">' + stats.best + '%</div><div class="text-xs text-slate-600 mt-1">' + t('eyeBest') + '</div></div>'
+      + '  <div class="stat-cell bg-sky-50 p-3"><div class="text-2xl font-bold text-sky-700">' + stats.average + '%</div><div class="text-xs text-slate-600 mt-1">' + t('eyeAvg') + '</div></div>'
+      + '  <div class="stat-cell bg-amber-50 p-3"><div class="text-2xl font-bold text-amber-700">' + stats.count + '</div><div class="text-xs text-slate-600 mt-1">' + t('eyeGamesPlayed') + '</div></div>'
+      + '</div>';
+  return ''
+    + '<div class="min-h-screen bg-slate-50">'
+    + Header()
+    + '<main class="max-w-2xl mx-auto px-4 sm:px-6 py-10">'
+    + '  <div class="text-center mb-6">'
+    + '    <span class="chip bg-cyan-100 text-cyan-800">📍 ' + t('worldDropName') + '</span>'
+    + '    <h1 class="mt-4 font-display text-3xl font-bold">📈 ' + t('worldDropEvolution') + '</h1>'
+    + '  </div>'
+    + '  ' + chart
+    + '  <button onclick="go(\'oraworld\',{mode:\'continent-drop\'})" class="mt-6 block mx-auto text-sm text-slate-500 hover:underline focus-ring">← ' + pick({en:'Back',es:'Volver',fr:'Retour'}) + '</button>'
+    + '</main>'
+    + Footer()
+    + '</div>';
+}
+function viewGeoDrop(){
+  if (state.params.subview === 'history') return dropHistoryHtml();
+  const s = state.geoDrop;
+  if (!s || !state.params.play){ state.geoDrop = null; return dropSetupHtml(); }
+  if (s.ended) return dropResultsHtml(s);
+  return dropPlayHtml(s);
+}
+
 function viewOraWorld(){
   const mode = state.params.mode || 'hub';
   if (mode === 'oraflag') return viewGeoFlag();
   if (mode === 'truth-or-map') return viewGeoTrueFalse();
   if (mode === 'capi-ora') return viewGeoCapi();
   if (mode === 'world-eye') return viewGeoEye();
+  if (mode === 'continent-drop') return viewGeoDrop();
   const order = ['oraflag','truth-or-map','capi-ora','world-eye','world-path','continent-drop'];
   const gameCards = order.map(function(m){
     const g = GEO_GAMES[m];
@@ -15206,6 +15592,8 @@ document.addEventListener('keydown', (e) => {
     const n = parseInt(e.key, 10);
     const q = state.geoCapi.current && state.geoCapi.current.q;
     if (q && n >= 1 && n <= q.options.length){ e.preventDefault(); capiAnswer(q.options[n - 1]); }
+  } else if (state.params.mode === 'continent-drop' && state.geoDrop && !state.geoDrop.ended){
+    if (e.key === 'Enter'){ e.preventDefault(); if (state.geoDrop.answered) dropNext(); else dropConfirm(); }
   } else if (state.params.mode === 'world-eye' && state.geoEye && !state.geoEye.ended){
     const s = state.geoEye;
     if (s.mode === 'time'){
