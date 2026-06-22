@@ -495,14 +495,18 @@ const ROUTE_PATHS = {
   affiliate: { en:'/affiliate-disclosure', es:'/es/afiliados', fr:'/fr/affiliation' },
   report: { en:'/report', es:'/es/reportar', fr:'/fr/signaler' }
 };
-// Routes whose content is still thin / "coming soon" (blog has no real
-// articles yet; the store only shows placeholder products). They stay fully
+// Routes excluded from the index (noindex,follow) and from sitemap.xml. Two
+// groups: (1) thin / "coming soon" content — 'blog' (no real articles), 'shop'
+// and 'teams' (placeholder), 'report' (thin utility form); (2) dynamic game /
+// interaction screens with no static descriptive content for search engines —
+// 'quiz' (age/difficulty setup), 'daily' (daily quiz play), 'daily-guess'
+// (daily OraGuess play) and 'leaderboards' (the leaderboard). All stay fully
 // accessible — netlify.toml still 200-rewrites them and they render normally —
-// but they are marked noindex,follow and excluded from sitemap.xml so search
-// engines don't index placeholder/under-construction content (AdSense readiness).
-// Keep in sync with NOINDEX_ROUTES in tools/_gen-sitemap.js.
-// 'report' is a thin utility form (no substantive content) → noindex too.
-const NOINDEX_ROUTES = new Set(['blog', 'shop', 'teams', 'report']);
+// they are just kept out of search results. The indexable hubs (oramath,
+// oraworld, words, guess, oraquest, universe, play) and legal/institutional
+// pages remain indexable. Keep in sync with NOINDEX_ROUTES in
+// tools/_gen-sitemap.js and tools/_gen-netlify.js.
+const NOINDEX_ROUTES = new Set(['blog', 'shop', 'teams', 'report', 'leaderboards', 'quiz', 'daily', 'daily-guess']);
 const PATH_TO_ROUTE = Object.keys(ROUTE_PATHS).reduce((acc, route) => {
   LANGS.forEach(lang => { acc[normalizePath(ROUTE_PATHS[route][lang])] = { route, lang }; });
   return acc;
