@@ -26,9 +26,11 @@
   [headers.values]
     Content-Type = "text/plain; charset=utf-8"
 
-# Thin / "coming soon" routes (store, teams, blog) — EN/ES/FR. Served 200 but
-# kept out of the index via an X-Robots-Tag header (defense-in-depth alongside
-# the runtime <meta name="robots"> the SPA injects). Excluded from sitemap.xml.
+# Routes kept out of the index — EN/ES/FR. Served 200 but noindex via an
+# X-Robots-Tag header (defense-in-depth alongside the runtime <meta name="robots">
+# the SPA injects). Excluded from sitemap.xml. Two groups: thin/"coming soon"
+# (store, teams, blog, report) and dynamic game/interaction screens
+# (leaderboards, daily quiz, quiz setup, daily OraGuess).
 [[headers]]
   for = "/store"
   [headers.values]
@@ -89,11 +91,71 @@
   [headers.values]
     X-Robots-Tag = "noindex"
 
+[[headers]]
+  for = "/leaderboards"
+  [headers.values]
+    X-Robots-Tag = "noindex"
+
+[[headers]]
+  for = "/es/clasificaciones"
+  [headers.values]
+    X-Robots-Tag = "noindex"
+
+[[headers]]
+  for = "/fr/classements"
+  [headers.values]
+    X-Robots-Tag = "noindex"
+
+[[headers]]
+  for = "/oraquest/daily"
+  [headers.values]
+    X-Robots-Tag = "noindex"
+
+[[headers]]
+  for = "/es/oraquest/diario"
+  [headers.values]
+    X-Robots-Tag = "noindex"
+
+[[headers]]
+  for = "/fr/oraquest/quotidien"
+  [headers.values]
+    X-Robots-Tag = "noindex"
+
+[[headers]]
+  for = "/oraquest/quiz"
+  [headers.values]
+    X-Robots-Tag = "noindex"
+
+[[headers]]
+  for = "/es/oraquest/quiz"
+  [headers.values]
+    X-Robots-Tag = "noindex"
+
+[[headers]]
+  for = "/fr/oraquest/quiz"
+  [headers.values]
+    X-Robots-Tag = "noindex"
+
+[[headers]]
+  for = "/guessora/daily/"
+  [headers.values]
+    X-Robots-Tag = "noindex"
+
+[[headers]]
+  for = "/es/guessora/diario/"
+  [headers.values]
+    X-Robots-Tag = "noindex"
+
+[[headers]]
+  for = "/fr/guessora/quotidien/"
+  [headers.values]
+    X-Robots-Tag = "noindex"
+
 # ----------------------------------------------------------------------------
 # Static files (robots.txt, sitemap.xml, ads.txt, /assets/*, tailwind.css,
-# OraQuest.html) are served as real files: Netlify matches existing files
-# before applying these redirects (force = false, the default), so none of the
-# rules below can swallow them.
+# OraQuest.html, oraquest/index.html) are served as real files: Netlify matches
+# existing files before applying these redirects (force = false, the default),
+# so none of the rules below can swallow them.
 # ----------------------------------------------------------------------------
 
 # 1) Legacy aliases -> canonical paths (301, permanent).
@@ -163,7 +225,9 @@
   status = 301
 
 # 2) Valid SPA routes -> serve the single-file app (200 rewrite, not redirect).
-#    24 routes x 3 languages = 72 served URLs (sitemap.xml lists the indexable subset).
+#    24 routes (with trailing-slash variants + the
+#    oraquest static snapshot) = 83 served rewrites. sitemap.xml
+#    lists the indexable subset.
 [[redirects]]
   from = "/"
   to = "/OraQuest.html"
